@@ -1,63 +1,134 @@
 #!/usr/bin/env bash
-# Minimal, non-interactive, hardened k3s + Terraform installer (linux x86_64/amd64)
-# - N'installe k3s et terraform que s'ils ne sont pas déjà présents.
-# - Garde traefik, servicelb et local-storage (par défaut).
-# - Applique des bonnes pratiques de durcissement basiques :
-#   * désactive l'accès anonyme à l'API
-#   * active l'audit logging
-#   * restreint l'accès anonyme au kubelet
-#   * kubeconfig en 0640 et accès via groupe 'k3s' pour un utilisateur non-root
-# - Pas d'utilisation de yum; apt-get uniquement si nécessaire pour dépendances.
+# Installe k3s et/ou Terraform uniquement si listés dans install-config.yaml
+# Format YAML attendu (options placées sous chaque composant) :
+# components:
+#   - terraform:
+#       version: "1.5.7"
+#   - k3s:
+#       disable: "traefik,servicelb"
+#       extra_args: "--node-ip=10.0.0.5"
 #
-# Usage:
-#   sudo TF_VERSION=1.5.7 ./install-k3s.sh
-#   sudo ./install-k3s.sh
+# Cible: Linux x86_64 (amd64), non-interactif, utilise apt-get si nécessaire pour dépendances.
 set -euo pipefail
 
-TF_VERSION="${TF_VERSION:-}"
+CONFIG_FILE="[0m"
+TF_VERSION_ENV="[0m"
 
-# Vérifier exécution en root
+err() { echo "ERREUR: $*" >&2; }
+
+# root check
 if [[ $EUID -ne 0 ]]; then
-  echo "ERREUR: exécuter en root (sudo)." >&2
+  err "exécuter en root (sudo)."
   exit 2
 fi
 
-# Vérifier arch (amd64 requis)
+# arch check
 ARCH_RAW="$(uname -m)"
 if [[ "$ARCH_RAW" != "x86_64" && "$ARCH_RAW" != "amd64" ]]; then
-  echo "ERREUR: script conçu pour linux x86_64 (amd64). Architecture détectée: $ARCH_RAW" >&2
+  err "script conçu pour linux x86_64 (amd64). Architecture détectée: $ARCH_RAW"
   exit 3
 fi
 ARCH="amd64"
 
-# Détecteurs
-is_k3s_installed() {
-  if command -v k3s >/dev/null 2>&1; then
-    return 0
+# if no config file -> no-op
+if [[ ! -f "$CONFIG_FILE" ]]; then
+  echo "Fichier de configuration $CONFIG_FILE introuvable. Aucune action effectuée."
+  exit 0
+fi
+
+# --- Parse components list with nested mappings ---
+# Expect:
+# components:
+#   - terraform:
+#       version: "1.5.7"
+#   - k3s:
+#       disable: "traefik"
+#
+# The awk below emits lines:
+# COMPONENT:<name>
+#   key: value
+parse_output=$(awk '
+  BEGIN { in=0 }
+  /^[0mcomponents[0m:[0m/ { in=1; next }
+  in {
+    # line like: - name:
+    if (match($0, /^[0m-[0m([a-zA-Z0-9_-]+)[0m:[0m/, m)) {
+      print "COMPONENT:" m[1]
+      next
+    }
+    # nested lines with at least two spaces indentation, like: "    key: value"
+    if (match($0, /^[0m [0m{2,}([a-zA-Z0-9._-]+)[0m:[0m(.*)$/, m)) {
+      k=m[1]; v=m[2]; gsub(/^[ 	]+|[ 	]+$/, "", v)
+      print "  " k ":" v
+      next
+    }
+    # stop processing components at next top-level key
+    if (in && match($0, /^[^[:space:]]/)) { exit }
+  }
+' "$CONFIG_FILE")
+
+# Build associative map comp_props["component.key"]=value
+declare -A comp_props
+declare -a components_list
+current_comp=""
+while IFS= read -r line; do
+  [[ -z "${line:-}" ]] && continue
+  if [[ "$line" == COMPONENT:* ]]; then
+    current_comp="${line#COMPONENT:}"
+    components_list+=("$current_comp")
+    continue
   fi
-  if [[ -f /usr/local/bin/k3s || -f /usr/bin/k3s ]]; then
-    return 0
+  if [[ "$line" =~ ^[[:space:]]+([a-zA-Z0-9._-]+):(.*)$ ]]; then
+    key="${BASH_REMATCH[1]}"
+    val="${BASH_REMATCH[2]}"
+    # trim leading/trailing spaces
+    val="${val#"${val%%[![:space:]]*}"}"
+    val="${val%"${val##*[![:space:]]}"}"
+    # remove surrounding quotes if present
+    if [[ "$val" =~ ^"(.*)"$ ]]; then val="${BASH_REMATCH[1]}"; fi
+    if [[ "$val" =~ ^"(.*)"$ ]]; then val="${BASH_REMATCH[1]}"; fi
+    comp_props["${current_comp}.${key}"]="$val"
   fi
-  if command -v systemctl >/dev/null 2>&1 && systemctl is-active --quiet k3s; then
-    return 0
-  fi
-  if [[ -f /etc/rancher/k3s/k3s.yaml ]]; then
-    return 0
-  fi
+done <<< "$parse_output"
+
+# Helper to check presence
+contains_component() {
+  local target="$1"
+  for c in "${components_list[@]}"; do
+    if [[ "$c" == "$target" ]]; then
+      return 0
+    fi
+  done
   return 1
+}
+
+# Decide installs
+INSTALL_K3S=false
+INSTALL_TF=false
+if contains_component "k3s"; then INSTALL_K3S=true; fi
+if contains_component "terraform"; then INSTALL_TF=true; fi
+
+if [[ "$INSTALL_K3S" != true && "$INSTALL_TF" != true ]]; then
+  echo "Aucune des options 'k3s' ou 'terraform' présente dans components. Aucune action effectuée."
+  exit 0
+fi
+
+# Utilities
+is_k3s_installed() {
+  command -v k3s >/dev/null 2>&1 || [[ -f /usr/local/bin/k3s || -f /usr/bin/k3s ]] || \
+    ( command -v systemctl >/dev/null 2>&1 && systemctl is-active --quiet k3s )
 }
 
 is_terraform_installed() {
   command -v terraform >/dev/null 2>&1
 }
 
-# Installer paquets requis via apt-get uniquement (sinon exit)
 ensure_packages() {
-  local pkgs=( "$@" )
+  local pkgs=("$@")
   local miss=()
   for p in "${pkgs[@]}"; do
     if ! command -v "$p" >/dev/null 2>&1; then
-      miss+=( "$p" )
+      miss+=("$p")
     fi
   done
   if [[ ${#miss[@]} -gt 0 ]]; then
@@ -65,15 +136,14 @@ ensure_packages() {
       apt-get update -y
       apt-get install -y "${miss[@]}"
     else
-      echo "ERREUR: paquets manquants: ${miss[*]}. Aucune apt-get trouvée; installe-les manuellement." >&2
+      err "Paquets manquants: ${miss[*]}. Aucune apt-get trouvée; installe-les manuellement."
       exit 4
     fi
   fi
 }
 
-# Flags k3s sécurisés (traefik, servicelb, local-storage laissés par défaut)
-# Bonnes pratiques minimales : disable anonymous auth, audit logs, kubelet anonymous off
-K3S_EXEC_FLAGS="server --write-kubeconfig-mode 0640 \
+# k3s default secure flags (we keep traefik/servicelb/local-storage by default)
+K3S_EXEC_FLAGS_BASE="server --write-kubeconfig-mode 0640 \
 --kube-apiserver-arg=anonymous-auth=false \
 --kube-apiserver-arg=audit-log-path=/var/log/k3s/audit.log \
 --kube-apiserver-arg=audit-log-maxage=30 \
@@ -81,7 +151,6 @@ K3S_EXEC_FLAGS="server --write-kubeconfig-mode 0640 \
 --kube-apiserver-arg=audit-log-maxsize=100 \
 --kubelet-arg=anonymous-auth=false"
 
-# Préparer répertoire d'audit et permissions
 prepare_audit_dir() {
   local adir="/var/log/k3s"
   if [[ ! -d "$adir" ]]; then
@@ -91,83 +160,92 @@ prepare_audit_dir() {
   chown root:root "$adir"
 }
 
-# Installer k3s si absent
-if is_k3s_installed; then
-  echo "k3s déjà installé — installation de k3s sautée."
-else
-  echo "=> Préparation du durcissement: création répertoire audit..."
-  prepare_audit_dir
+# --- Install k3s if listed ---
+if [[ "$INSTALL_K3S" == true ]]; then
+  if is_k3s_installed; then
+    echo "k3s déjà installé — installation de k3s sautée."
+  else
+    echo "=> Préparation: création répertoire d'audit pour k3s..."
+    prepare_audit_dir
 
-  echo "=> Installation k3s (server) via get.k3s.io avec flags sécurisés..."
-  # Exporter pour l'installateur officiel (ou bien le passer en argument)
-  export INSTALL_K3S_EXEC="${K3S_EXEC_FLAGS}"
-  curl -fsSL https://get.k3s.io | sh -s - server
-  echo "=> k3s installé."
-fi
-
-# Post-install: restreindre kubeconfig et permettre usage non-root via groupe 'k3s'
-KCFG="/etc/rancher/k3s/k3s.yaml"
-if [[ -f "$KCFG" ]]; then
-  echo "=> Appliquer permissions sécurisées au kubeconfig..."
-  # créer groupe système 'k3s' si nécessaire
-  if ! getent group k3s >/dev/null 2>&1; then
-    groupadd --system k3s || true
-  fi
-  chown root:k3s "$KCFG" || true
-  chmod 0640 "$KCFG" || true
-  echo "Kubeconfig: $KCFG (root:k3s, mode 0640)"
-
-  # Si lancé via sudo, ajouter SUDO_USER au groupe k3s et copier kubeconfig dans son home
-  if [[ -n "${SUDO_USER:-}" && "$SUDO_USER" != "root" ]]; then
-    echo "=> Ajout de ${SUDO_USER} au groupe k3s pour accès kubeconfig..."
-    usermod -aG k3s "$SUDO_USER" || true
-    user_home="$(getent passwd "$SUDO_USER" | cut -d: -f6)"
-    if [[ -n "$user_home" ]]; then
-      mkdir -p "$user_home/.kube"
-      cp -f "$KCFG" "$user_home/.kube/config"
-      chown "$SUDO_USER":k3s "$user_home/.kube/config"
-      chmod 0640 "$user_home/.kube/config"
-      echo "Kubeconfig copié vers $user_home/.kube/config (owner ${SUDO_USER}:k3s, 0640)"
+    # build flags: start from base, append disable/extra_args if provided in YAML
+    K3S_EXEC_FLAGS="$K3S_EXEC_FLAGS_BASE"
+    if [[ -n "${comp_props["k3s.disable"]:-}" && "${comp_props["k3s.disable"]}" != "none" ]]; then
+      K3S_EXEC_FLAGS+=" --disable=${comp_props["k3s.disable"]}"
     fi
+    if [[ -n "${comp_props["k3s.extra_args"]:-}" ]]; then
+      K3S_EXEC_FLAGS+=" ${comp_props["k3s.extra_args"]}"
+    fi
+
+    echo "=> Installation k3s (server) via get.k3s.io avec flags:"
+    echo "   ${K3S_EXEC_FLAGS}"
+    export INSTALL_K3S_EXEC="${K3S_EXEC_FLAGS}"
+    curl -fsSL https://get.k3s.io | sh -s - server
+    echo "=> k3s installé."
   fi
-else
-  echo "ATTENTION: kubeconfig non trouvé à $KCFG — vérifie l'installation de k3s."
+
+  # post-install: restrict kubeconfig and allow non-root use via 'k3s' group
+  KCFG="/etc/rancher/k3s/k3s.yaml"
+  if [[ -f "$KCFG" ]]; then
+    echo "=> Appliquer permissions sécurisées au kubeconfig..."
+    if ! getent group k3s >/dev/null 2>&1; then
+      groupadd --system k3s || true
+    fi
+    chown root:k3s "$KCFG" || true
+    chmod 0640 "$KCFG" || true
+
+    if [[ -n "${SUDO_USER:-}" && "$SUDO_USER" != "root" ]]; then
+      usermod -aG k3s "$SUDO_USER" || true
+      user_home="$(getent passwd "$SUDO_USER" | cut -d: -f6)"
+      if [[ -n "$user_home" ]]; then
+        mkdir -p "$user_home/.kube"
+        cp -f "$KCFG" "$user_home/.kube/config"
+        chown "$SUDO_USER":k3s "$user_home/.kube/config"
+        chmod 0640 "$user_home/.kube/config"
+      fi
+    fi
+  else
+    echo "ATTENTION: kubeconfig non trouvé à $KCFG — vérifie l'installation de k3s."
+  fi
 fi
 
-# Recommendations de post-configuration (imprimées pour l'admin)
-echo
-echo "Recommandations post-install (à appliquer manuellement si nécessaire) :"
-echo "- Restreindre l'accès réseau aux ports k3s (ex: autoriser 6443 uniquement depuis IPs de confiance)."
-echo "- Activer et configurer un pare-feu (ufw/iptables) pour n'exposer que les ports nécessaires."
-echo "- Envisager l'utilisation d'un store externe pour etcd/HA plutôt que la base embarquée si production."
-echo "- Mettre en place admission controllers (ex: OPA Gatekeeper) et appliquer des PodSecurityPolicies / Pod Security Standards."
-echo "- Configurer une rotation des certificats et un mécanisme d'audit centralisé pour les logs d'audit."
-echo
+# --- Install Terraform if listed ---
+if [[ "$INSTALL_TF" == true ]]; then
+  if is_terraform_installed; then
+    echo "Terraform déjà installé — installation de Terraform sautée."
+  else
+    ensure_packages curl unzip
 
-# Installer Terraform si absent
-if is_terraform_installed; then
-  echo "Terraform déjà installé — installation de Terraform sautée."
-else
-  ensure_packages curl unzip
-
-  if [[ -z "$TF_VERSION" ]]; then
-    TF_VERSION="$(curl -fsS https://releases.hashicorp.com/terraform/ | grep -oP '/terraform/\K[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)"
+    # TF version resolution order:
+    # 1) TF_VERSION env var
+    # 2) terraform.version in component mapping
+    # 3) autodetect latest
+    TF_VERSION="${TF_VERSION_ENV:-}"
     if [[ -z "$TF_VERSION" ]]; then
-      echo "ERREUR: impossible de déterminer la version Terraform automatiquement. Fournis TF_VERSION=... en variable d'environnement." >&2
+      TF_VERSION="${comp_props["terraform.version"]:-}"
+    fi
+    if [[ -z "$TF_VERSION" ]]; then
+      TF_VERSION="
+      $(curl -fsS https://releases.hashicorp.com/terraform/ | grep -Eo '/terraform/[0-9]+[0m.[0m[0-9]+[0m.[0m[0-9]+' | head -1 | sed 's#/terraform/##' || true)"
+    fi
+    if [[ -z "$TF_VERSION" ]]; then
+      err "Impossible de déterminer la version Terraform. Fournis TF_VERSION env ou terraform.version in YAML."
       exit 5
     fi
+
+    echo "=> Installation Terraform ${TF_VERSION} pour linux_${ARCH}..."
+    TF_ZIP="/tmp/terraform_${TF_VERSION}_linux_${ARCH}.zip"
+    TF_URL="https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_${ARCH}.zip"
+
+    curl -fsSL -o "${TF_ZIP}" "${TF_URL}"
+    unzip -o "${TF_ZIP}" -d /usr/local/bin
+    chmod +x /usr/local/bin/terraform
+    rm -f "${TF_ZIP}"
+    echo "=> Terraform ${TF_VERSION} installé dans /usr/local/bin/terraform"
   fi
-
-  echo "=> Installation Terraform ${TF_VERSION} pour linux_${ARCH}..."
-  TF_ZIP="/tmp/terraform_${TF_VERSION}_linux_${ARCH}.zip"
-  TF_URL="https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_${ARCH}.zip"
-
-  curl -fsSL -o "${TF_ZIP}" "${TF_URL}"
-  unzip -o "${TF_ZIP}" -d /usr/local/bin
-  chmod +x /usr/local/bin/terraform
-  rm -f "${TF_ZIP}"
-  echo "=> Terraform ${TF_VERSION} installé dans /usr/local/bin/terraform"
 fi
 
 echo "Terminé."
-echo "kubeconfig: /etc/rancher/k3s/k3s.yaml (root:k3s, 0640). Si tu veux utiliser kubectl en non-root, connecte-toi avec l'utilisateur ajouté au groupe 'k3s' ou copie ~/.kube/config depuis /etc/rancher/k3s/k3s.yaml."
+if [[ "$INSTALL_K3S" == true ]]; then
+  echo "kubeconfig: /etc/rancher/k3s/k3s.yaml (root:k3s, 0640)"
+fi
