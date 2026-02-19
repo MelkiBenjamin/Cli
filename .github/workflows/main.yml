@@ -26,10 +26,10 @@ jobs:
         run: echo Hello, world!
 
       - name: log
-        run: ls -alh
+        run: ls -alh & pwd
 
       - name: log2
-        run: cp install-k3s.sh /home
+        run: sudo cp install-k3s.sh /home
 
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
