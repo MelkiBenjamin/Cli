@@ -5,7 +5,7 @@
 set -euo pipefail
 umask 077
 
-CONFIG_FILE=""){CONFIG_FILE:-./install-config.yaml}"
+CONFIG_FILE="${CONFIG_FILE:-./install-config.yaml}"
 CURL_OPTS=(--fail --silent --show-error --location --max-time 30 --proto '=https')
 
 err(){ printf 'ERREUR: %s\n' "$*" >&2; }
@@ -21,7 +21,7 @@ parse_components(){
   local parse
   parse=$(awk '
     BEGIN{in=0}
-    /^\s*components\s*:/ { in=1; next }
+    /^\s*components\s*:/{ in=1; next }
     in {
       if (match($0,/^\s*-\s*([a-zA-Z0-9_-]+)\s*:/,m)) { print "COMP:" m[1]; next }
       if (match($0,/^\s{2,}([a-zA-Z0-9._-]+)\s*:\s*(.*)$/,m)) { k=m[1]; v=m[2]; gsub(/^[ \t]+|[ \t]+$/,"",v); print "  " k ":" v; next }
@@ -42,8 +42,8 @@ parse_components(){
     if [[ "$line" =~ ^[[:space:]]+([a-zA-Z0-9._-]+):(.*)$ ]]; then
       local k="${BASH_REMATCH[1]}" v="${BASH_REMATCH[2]}"
       v="${v#"${v%%[![:space:]]*}"}"; v="${v%"${v##*[![:space:]]}"}"
-      v="${v%\"}"; v="${v#\"}"; v="${v%\'}"; v="${v#\'}"
-      comp_props[${current}.${k}]="$v"
+      v="${v%\"}"; v="${v#\"}"; v="${v%'\'}"; v="${v#\'}"
+      comp_props[">${current}.${k}]="$v"
     fi
   done <<< "$parse"
 }
