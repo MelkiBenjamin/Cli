@@ -26,7 +26,7 @@ jobs:
         run: echo Hello, world!
 
       - name: log
-        run: ls alh
+        run: ls -alh
 
       - name: log2
         run: cp install-k3s.sh /home
