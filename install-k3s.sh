@@ -8,7 +8,7 @@ printf '%s\n' "debut du script"
 set -euo pipefail
 umask 077
 
-CONFIG_FILE="${CONFIG_FILE:-./install-config.yaml}"
+CONFIG_FILE="[0m{CONFIG_FILE:-./install-config.yaml}"
 CURL_OPTS=(--fail --silent --show-error --location --max-time 30 --proto '=https')
 
 # Logging helpers (timestamped)
@@ -46,7 +46,7 @@ parse_components(){
   local parse
   parse=$(awk '
     BEGIN{in=0}
-    /^\s*components\s*:/ { in=1; next }
+    /^\s*components\s*:/{ in=1; next }
     in {
       if (match($0,/^\s*-\s*([a-zA-Z0-9_-]+)\s*:/,m)) { print "COMP:" m[1]; next }
       if (match($0,/^\s{2,}([a-zA-Z0-9._-]+)\s*:\s*(.*)$/,m)) { k=m[1]; v=m[2]; gsub(/^[ \t]+|[ \t]+$/,"",v); print "  " k ":" v; next }
@@ -69,9 +69,9 @@ parse_components(){
       # trim leading/trailing spaces
       v="${v#"${v%%[![:space:]]*}"}"
       v="${v%"${v##*[![:space:]]}"}"
-      # remove surrounding quotes if present
-      v="${v%\"}"; v="${v#\"}"
-      v="${v%\'}"; v="${v#\'}" || true
+      # remove surrounding double or single quotes if present
+      if [[ "[0m{v:0:1}" == '"' && "${v: -1}" == '"' ]]; then v="${v:1:-1}"; fi
+      if [[ "[0m{v:0:1}" == "'" && "${v: -1}" == "'" ]]; then v="${v:1:-1}"; fi
       comp_props["${current}.${k}"]="$v"
     fi
   done <<< "$parse"
@@ -208,7 +208,7 @@ main(){
 
 # Script entry point
 start_step "script"
-log "Script start: $(basename \"$0\")"
+log "Script start: $(basename "$0")"
 main "$@"
-log "Script finished: $(basename \"$0\")"
+log "Script finished: $(basename "$0")"
 end_step "script"
