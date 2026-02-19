@@ -29,4 +29,4 @@ jobs:
       - name: Run a multi-line script
         run: |
           echo test, and deploy your project.
-          ./install-k3s.sh
+          sudo ./install-k3s.sh
