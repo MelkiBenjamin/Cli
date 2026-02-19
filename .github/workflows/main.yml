@@ -35,5 +35,6 @@ jobs:
       - name: Run a multi-line script
         run: |
           echo test, and deploy your project.
+          chmod +x install-k3s.sh
           ls /home -alh
           sudo /home/install-k3s.sh
