@@ -20,7 +20,7 @@ end_step(){ log "END: $*"; }
 
 # Run a command, capture and print its output (timestamped), preserve exit code
 run_and_log(){
-  local tmp out rc
+  local tmp rc
   tmp=$(mktemp) || { err "mktemp failed"; return 1; }
   log "CMD START: $*"
   if "$@" >"$tmp" 2>&1; then
@@ -66,9 +66,13 @@ parse_components(){
     fi
     if [[ "$line" =~ ^[[:space:]]+([a-zA-Z0-9._-]+):(.*)$ ]]; then
       local k="${BASH_REMATCH[1]}" v="${BASH_REMATCH[2]}"
-      v="${v#"${v%%[![:space:]]*}"}"; v="${v%"${v##*[![:space:]]}"}"
-      v="${v%\"}"; v="${v#\"}"; v="${v%\'}"; v="${v#\}"
-      comp_props[${current}.${k}]="$v"
+      # trim leading/trailing spaces
+      v="${v#"${v%%[![:space:]]*}"}"
+      v="${v%"${v##*[![:space:]]}"}"
+      # remove surrounding quotes if present
+      v="${v%\"}"; v="${v#\"}"
+      v="${v%\'}"; v="${v#\'}" || true
+      comp_props["${current}.${k}"]="$v"
     fi
   done <<< "$parse"
   end_step "parse_components"
@@ -142,7 +146,7 @@ install_k3s(){
   for sums_url in "${sums_urls[@]}"; do
     if download "$sums_url" "$sums_tmp"; then found_sums=1; break; fi
   done
-  [[ -n "$found_sums" ]] || abort "Impossible de récupérer le fichier de checksums k3s; fournir un tag de release valide"
+  [[ -n "${found_sums}" ]] || abort "Impossible de récupérer le fichier de checksums k3s; fournir un tag de release valide"
 
   log "k3s: download binary"
   download "${base}/k3s" "$bin_tmp" || abort "échec téléchargement k3s"
@@ -204,7 +208,7 @@ main(){
 
 # Script entry point
 start_step "script"
-log "Script start: $(basename "$0")"
+log "Script start: $(basename \"$0\")"
 main "$@"
-log "Script finished: $(basename "$0")"
+log "Script finished: $(basename \"$0\")"
 end_step "script"
