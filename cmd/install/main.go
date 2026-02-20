@@ -13,7 +13,11 @@ import (
 )
 
 // Minimal Go installer: download a binary and its sums file, verify sha256 and install.
-// Usage: sudo go run ./cmd/install -bin <url> -name k3s -install /usr/local/bin/k3s
+// If no flags are passed, defaults are used (safe test install into /tmp).
+// Usage:
+//  - real run with flags:
+//      sudo go run ./cmd/install -bin "<BINARY_URL>" -name k3s -install /usr/local/bin/k3s
+//  - quick test (no flags): installs k3s to /tmp/k3s
 
 func fatalf(format string, a ...interface{}) {
 	fmt.Fprintf(os.Stderr, format+"\n", a...)
@@ -86,8 +90,27 @@ func main() {
 	installPath := flag.String("install", "", "install destination, e.g. /usr/local/bin/k3s")
 	flag.Parse()
 
-	if *binURL == "" || *name == "" || *installPath == "" {
-		fatalf("usage: -bin <url> -name <filename> -install <path>")
+	// If flags are missing, use safe defaults for a real test run (installs to /tmp).
+	defaults := false
+	if *binURL == "" {
+		// example stable k3s release (change if you want another version)
+		*binURL = "https://github.com/k3s-io/k3s/releases/download/v1.28.0+k3s1/k3s"
+		defaults = true
+	}
+	if *name == "" {
+		*name = "k3s"
+		defaults = true
+	}
+	if *installPath == "" {
+		*installPath = "/tmp/k3s"
+		defaults = true
+	}
+	if defaults {
+		fmt.Println("No flags provided — using test defaults:")
+		fmt.Println("  - bin   =", *binURL)
+		fmt.Println("  - name  =", *name)
+		fmt.Println("  - install =", *installPath)
+		fmt.Println("This will perform a real download & install into the path above (no dry-run).")
 	}
 
 	tmpBin := filepath.Join(os.TempDir(), "tmp-"+*name)
@@ -97,6 +120,7 @@ func main() {
 		fatalf("download binary: %v", err)
 	}
 
+	// Try common sums filename next to binary
 	sumsURL := filepath.Dir(*binURL) + "/sha256sum-amd64.txt"
 	if err := downloadTo(tmpSums, sumsURL); err != nil {
 		os.Remove(tmpBin)
