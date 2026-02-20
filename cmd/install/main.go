@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 )
 
@@ -16,7 +18,7 @@ import (
 // If no flags are passed, defaults are used (test install into /tmp).
 // Usage:
 //  - real run with flags:
-//	  sudo go run ./cmd/install -bin "<BINARY_URL>" -name k3s -install /usr/local/bin/k3s
+//      sudo go run ./cmd/install -bin "<BINARY_URL>" -name k3s -install /usr/local/bin/k3s
 //  - quick test (no flags): installs k3s to /tmp/k3s
 
 func fatalf(format string, a ...interface{}) {
@@ -120,8 +122,15 @@ func main() {
 		fatalf("download binary: %v", err)
 	}
 
-	// Try common sums filename next to binary
-	sumsURL := filepath.Dir(*binURL) + "/sha256sum-amd64.txt"
+	// Correctly build sums URL from the binary URL using net/url + path
+	u, err := url.Parse(*binURL)
+	if err != nil {
+		os.Remove(tmpBin)
+		fatalf("parse bin url: %v", err)
+	}
+	sumsPath := path.Join(path.Dir(u.Path), "sha256sum-amd64.txt")
+	sumsURL := fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, sumsPath)
+
 	if err := downloadTo(tmpSums, sumsURL); err != nil {
 		os.Remove(tmpBin)
 		fatalf("download sums: %v (tried %s)", err, sumsURL)
