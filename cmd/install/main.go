@@ -13,10 +13,10 @@ import (
 )
 
 // Minimal Go installer: download a binary and its sums file, verify sha256 and install.
-// If no flags are passed, defaults are used (safe test install into /tmp).
+// If no flags are passed, defaults are used (test install into /tmp).
 // Usage:
 //  - real run with flags:
-//      sudo go run ./cmd/install -bin "<BINARY_URL>" -name k3s -install /usr/local/bin/k3s
+//	  sudo go run ./cmd/install -bin "<BINARY_URL>" -name k3s -install /usr/local/bin/k3s
 //  - quick test (no flags): installs k3s to /tmp/k3s
 
 func fatalf(format string, a ...interface{}) {
@@ -90,11 +90,11 @@ func main() {
 	installPath := flag.String("install", "", "install destination, e.g. /usr/local/bin/k3s")
 	flag.Parse()
 
-	// If flags are missing, use safe defaults for a real test run (installs to /tmp).
+	// If flags are missing, use defaults for a test run (installs to /tmp).
 	defaults := false
 	if *binURL == "" {
-		// example stable k3s release (change if you want another version)
-		*binURL = "https://github.com/k3s-io/k3s/releases/download/v1.28.0+k3s1/k3s"
+		// use the release URL provided by user (v1.35.1+k3s1)
+		*binURL = "https://github.com/k3s-io/k3s/releases/download/v1.35.1%2Bk3s1/k3s"
 		defaults = true
 	}
 	if *name == "" {
