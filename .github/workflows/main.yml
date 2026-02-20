@@ -26,6 +26,8 @@ jobs:
         run: echo Hello, world!
 
       - run: go run ./'cmd/install'/main.go
+      - name: test exécution
+        run: sudo /tmp/k3s
 
       - name: log
         run: ls -alh & pwd
@@ -39,4 +41,4 @@ jobs:
           echo test, and deploy your project.
           sudo chmod +x /home/install-k3s.sh
           ls /home -alh
-          sudo /home/install-k3s.sh
+   ##       sudo /home/install-k3s.sh
