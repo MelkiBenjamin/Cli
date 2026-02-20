@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Minimal installer for Terraform and k3s (clean, no logs)
+# Displays immediately "debut du script"
 
 printf '%s\n' "debut du script"
 set -euo pipefail
@@ -21,8 +22,8 @@ parse_components(){
     BEGIN{in=0}
     /^\s*components\s*:/ { in=1; next }
     in {
-      if (match($0,/^\s*-\s*([a-zA-Z0-9_-]+)\s*:$/,m)) { print "COMP:" m[1]; next }
-      if (match($0,/^\s{2,}([a-zA-Z0-9._-]+)\s*:\s*(.*)$/,m)) { k=m[1]; v=m[2]; gsub(/^[ \t]+|[ \t]+$/,"",v); print "  " k ":" v; next }
+      if (match($0,/^\s*-\s*([a-zA-Z0-9_-]+)\s*:/,m)) { print "COMP:" m[1]; next }
+      if (match($0,/^\s{2,}([a-zA-Z0-9._-]+)\s*:\s*(.*)$/,m)) { k=m[1]; v=m[2]; gsub(/^\s*[\t]+|[\t]+$/,"",v); print "  " k ":" v; next }
       if (in && match($0,/^[^[:space:]]/) ) exit
     }
   ' "$CONFIG_FILE")
@@ -39,10 +40,6 @@ parse_components(){
     fi
     if [[ "$line" =~ ^[[:space:]]+([a-zA-Z0-9._-]+):(.*)$ ]]; then
       local k="${BASH_REMATCH[1]}" v="${BASH_REMATCH[2]}"
-      # trim leading/trailing spaces
+      # trim
       v="${v#"${v%%[![:space:]]*}"}"
       v="${v%"${v##*[![:space:]]}"}
-      comp_props["$current,$k"]="$v"
-    fi
-  done <<< "$parse"
-}
