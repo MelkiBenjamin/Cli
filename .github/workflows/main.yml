@@ -26,6 +26,7 @@ jobs:
         run: echo Hello, world!
 
       - run: |
+          cd cmd/install 
           go mod tidy 
           go run ./'cmd/install'/main.go
       - name: test exécution
