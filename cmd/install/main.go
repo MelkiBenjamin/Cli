@@ -204,37 +204,37 @@ func main() {
 		fatalf("parse bin url: %%v", err)
 	}
 	sumsPath := path.Join(path.Dir(u.Path), "sha256sum-amd64.txt")
-	sumsURL := fmt.Sprintf("%%s://%%s%%s", u.Scheme, u.Host, sumsPath)
+	sumsURL := fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, sumsPath)
 
 	if err := downloadTo(tmpSums, sumsURL); err != nil {
 		os.Remove(tmpBin)
-		fatalf("download sums: %%v (tried %%s)", err, sumsURL)
+		fatalf("download sums: %v (tried %s)", err, sumsURL)
 	}
 
 	expected, err := findHashInSums(tmpSums, *name)
 	if err != nil {
 		os.Remove(tmpBin)
 		os.Remove(tmpSums)
-		fatalf("find hash: %%v", err)
+		fatalf("find hash: %v", err)
 	}
 
 	actual, err := sha256Of(tmpBin)
 	if err != nil {
 		os.Remove(tmpBin)
 		os.Remove(tmpSums)
-		fatalf("sha256: %%v", err)
+		fatalf("sha256: %v", err)
 	}
 
 	if actual != expected {
 		os.Remove(tmpBin)
 		os.Remove(tmpSums)
-		fatalf("checksum mismatch: expected %%s got %%s", expected, actual)
+		fatalf("checksum mismatch: expected %s got %s", expected, actual)
 	}
 
 	if err := installBinary(tmpBin, *installPath); err != nil {
 		os.Remove(tmpBin)
 		os.Remove(tmpSums)
-		fatalf("install: %%v", err)
+		fatalf("install: %v", err)
 	}
 
 	os.Remove(tmpSums)
