@@ -25,7 +25,9 @@ jobs:
       - name: Run a one-line script
         run: echo Hello, world!
 
-      - run: go run ./'cmd/install'/main.go
+      - run: |
+          go mod tidy 
+          go run ./'cmd/install'/main.go
       - name: test exécution
         run: sudo /tmp/k3s
 
