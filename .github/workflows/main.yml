@@ -28,7 +28,7 @@ jobs:
       - run: |
           cd cmd/install 
           go mod tidy 
-          go run ./'cmd/install'/main.go
+          go run main.go
       - name: test exécution
         run: sudo /tmp/k3s
 
