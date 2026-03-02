@@ -30,7 +30,7 @@ jobs:
           go mod tidy 
           go run main.go
       - run: |
-          go run cmd/install/install.go
+          go run ./cmd/install/install.go
       - name: test exécution
         run: sudo k3s
 
