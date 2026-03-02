@@ -29,6 +29,9 @@ jobs:
           cd cmd/install 
           go mod tidy 
           go run main.go
+      - run: |
+          cd cmd/install
+          go run install.go
       - name: test exécution
         run: sudo k3s
 
