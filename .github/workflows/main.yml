@@ -25,6 +25,9 @@ jobs:
       - name: Run a one-line script
         run: echo Hello, world!
 
+      - run: ls -alh /home
+      - run: echo $PATH
+
       - run: |
           cd cmd/install 
           go mod tidy
