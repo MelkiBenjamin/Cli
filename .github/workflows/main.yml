@@ -26,7 +26,9 @@ jobs:
         run: echo Hello, world!
 
       - run: ls -alh /home
+      - run: ls -alh /home/runner 
       - run: echo $PATH
+      
 
       - run: |
           cd cmd/install 
@@ -37,6 +39,8 @@ jobs:
           sudo go run Install.go
       - name: test exécution
         run: sudo k3s
+
+      - run: terraform version
 
       - name: log
         run: ls -alh & pwd
