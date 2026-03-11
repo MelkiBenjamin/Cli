@@ -37,6 +37,8 @@ jobs:
           echo suite
           ls -alh
           sudo go run Install.go
+          echo v2
+          go run install-v2.go
       - name: test exécution
         run: sudo k3s
 
