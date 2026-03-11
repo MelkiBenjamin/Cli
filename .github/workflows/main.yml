@@ -29,22 +29,20 @@ jobs:
       - run: ls -alh /home/runner 
       - run: echo $PATH
       
-
       - run: |
           cd cmd/install 
           go mod tidy
           go run main.go
           
       - run: |
-          echo suite
+          echo v2
           cd cmd/install
-          ls -alh
           go run Install-v2.go
-          ls -alh /home/runner/.local/bin
           k3s -v
           terraform version
       - run: |
-          echo version1:
+          cd cmd/install
+          echo v1
           sudo go run Install.go
       - name: test exécution
         run: sudo k3s
