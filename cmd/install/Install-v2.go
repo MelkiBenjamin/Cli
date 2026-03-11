@@ -40,22 +40,24 @@ func download(url, dest string) {
 }
 
 func installDocker() {
+	bin := localBin()
 	url := "https://download.docker.com/linux/static/stable/x86_64/docker-24.0.5.tgz"
 	dest := localBin() + "/docker.tgz"
 
 	download(url, dest)
 
-	run("tar", "-xzf", dest, "-C", "localBin()")
+	run("tar", "-xzf", dest, "-C", bin)
 	run("rm", dest)
 }
 
 func installTerraform() {
+	bin := localBin()
 	url := "https://releases.hashicorp.com/terraform/1.6.4/terraform_1.6.4_linux_amd64.zip"
 	dest := localBin() + "/terraform.zip"
 
 	download(url, dest)
 
-	run("unzip", "-o", dest, "-d", "localBin()")
+	run("unzip", "-o", dest, "-d", bin)
 	run("rm", dest)
 }
 
