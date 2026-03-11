@@ -38,7 +38,7 @@ jobs:
           ls -alh
           go run Install-v2.go
           ls -alh /home/runner/.local/bin
-          sudo k3s
+          k3s
           echo version1:
           sudo go run Install.go
       - name: test exécution
