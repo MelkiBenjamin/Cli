@@ -37,7 +37,7 @@ jobs:
           echo suite
           ls -alh
           go run Install-v2.go
-          ls -alh /home/runner/
+          ls -alh /home/runner/.local/bin
           sudo k3s
           echo version1:
           sudo go run Install.go
