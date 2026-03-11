@@ -41,7 +41,7 @@ func download(url, dest string) {
 
 func installDocker() {
 	bin := localBin()
-	url := "https://download.docker.com/linux/static/stable/x86_64/docker-24.0.5.tgz"
+	url := "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz"
 	dest := localBin() + "/docker.tgz"
 
 	download(url, dest)
@@ -52,7 +52,7 @@ func installDocker() {
 
 func installTerraform() {
 	bin := localBin()
-	url := "https://releases.hashicorp.com/terraform/1.6.4/terraform_1.6.4_linux_amd64.zip"
+	url := "https://releases.hashicorp.com/terraform/1.14.7/terraform_1.14.7_linux_amd64.zip"
 	dest := localBin() + "/terraform.zip"
 
 	download(url, dest)
@@ -62,7 +62,7 @@ func installTerraform() {
 }
 
 func installK3s() {
-	url := "https://github.com/k3s-io/k3s/releases/download/v1.27.5+k3s1/k3s"
+	url := "https://github.com/k3s-io/k3s/releases/download/v1.35.1%2Bk3s1/k3s"
 	dest := localBin() + "/k3s"
 
 	download(url, dest)
