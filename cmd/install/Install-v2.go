@@ -45,7 +45,7 @@ func installDocker() {
 
 	download(url, dest)
 
-	run("tar", "-xzf", dest)
+	run("tar", "-xzf", dest, "-C", "localBin()")
 	run("rm", dest)
 }
 
@@ -55,7 +55,7 @@ func installTerraform() {
 
 	download(url, dest)
 
-	run("unzip", "-o", dest)
+	run("unzip", "-o", dest, "-d", "localBin()")
 	run("rm", dest)
 }
 
