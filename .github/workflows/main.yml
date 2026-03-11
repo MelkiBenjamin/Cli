@@ -40,10 +40,12 @@ jobs:
           go run Install-v2.go
           k3s -v
           terraform version
+          docker --version
       - run: |
           cd cmd/install
           echo v1
           sudo go run Install.go
+      - run: ls -alh /home/runner/.local/bin
       - name: test exécution
         run: sudo k3s
 
