@@ -8,8 +8,10 @@ import (
 	"os/exec"
 )
 
-func localBin() {
-	os.MkdirAll("/home/runner/.local/bin", 0755)
+func localBin() string {
+	dir := os.Getenv("HOME") + "/.local/bin"
+	os.MkdirAll(dir, 0755)
+	return dir
 }
 
 func run(cmd string, args ...string) {
