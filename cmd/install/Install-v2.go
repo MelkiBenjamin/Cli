@@ -9,7 +9,7 @@ import (
 )
 
 func localBin() {
-	os.MkdirAll(/home/runner/.local/bin, 0755)
+	os.MkdirAll("/home/runner/.local/bin", 0755)
 }
 
 func run(cmd string, args ...string) {
