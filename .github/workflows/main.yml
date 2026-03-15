@@ -40,6 +40,7 @@ jobs:
           go run Install-if-v2.go
           terraform version
           docker --version
+      - run: ls -alh /home/runner/.local/bin
       - run: |
           cd cmd/install
           echo v1
