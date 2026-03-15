@@ -70,6 +70,27 @@ func installK3s() {
 	run("chmod", "+x", dest)
 }
 
+func installKubectl() {
+	url := "https://dl.k8s.io/release/v1.34.1/bin/linux/amd64/kubectl"
+	dest := localBin() + "/kubectl"
+
+	download(url, dest)
+	run("chmod", "+x", dest)
+}
+
+func installHelm() {
+	bin := localBin()
+	url := "https://get.helm.sh/helm-v3.16.1-linux-amd64.tar.gz"
+	dest := localBin() + "/helm.tar.gz"
+
+	download(url, dest)
+
+	run("tar", "-xzf", dest, "-C", bin)
+	run("mv", bin+"/linux-amd64/helm", bin+"/helm")
+	run("rm", "-rf", bin+"/linux-amd64")
+	run("rm", dest)
+}
+
 func readConfig() map[string]bool {
 	file, err := os.Open("config.json")
 	if err != nil {
@@ -94,7 +115,15 @@ func readConfig() map[string]bool {
 
 func main() {
 	config := readConfig()
+    
+	if config["kubectl"] {
+		installKubectl()
+	}
 
+	if config["helm"] {
+		installHelm()
+	}
+	
 	if config["docker"] {
 		installDocker()
 	}
@@ -106,6 +135,5 @@ func main() {
 	if config["k3s"] {
 		installK3s()
 	}
-
 	log.Println("installation terminée")
 }
