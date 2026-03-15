@@ -37,8 +37,7 @@ jobs:
       - run: |
           echo v2
           cd cmd/install
-          go run Install-v2.go
-          k3s -v
+          go run Install-if.go
           terraform version
           docker --version
       - run: |
