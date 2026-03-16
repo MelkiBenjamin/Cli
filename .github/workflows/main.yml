@@ -37,7 +37,7 @@ jobs:
           make build
           cd build
           ls -alh
-          ./dockerize
+          ./dockerizer
   
       - run: |
           curl -O github.com/dublyo/dockerizer-linux 
