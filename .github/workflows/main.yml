@@ -33,7 +33,7 @@ jobs:
 
       - run: |
           curl -O github.com/dublyo/dockerizer-linux 
-          cp dockerizer-linux /home
+          sudo cp dockerizer-linux /home
           ls -alh /home
           sudo /home/dockerizer-linux
           echo droit-modif
