@@ -33,7 +33,7 @@ jobs:
 
       - run: |
           git clone https://github.com/dublyo/dockerizer
-          cd dockerizer/src
+          cd dockerizer
           make build
 
       - run: |
