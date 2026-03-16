@@ -32,6 +32,11 @@ jobs:
       - run: go version
 
       - run: |
+          git clone https://github.com/dublyo/dockerizer
+          cd dockerizer/src
+          make build
+
+      - run: |
           curl -O github.com/dublyo/dockerizer-linux 
           ls -alh
           echo droit-modif
