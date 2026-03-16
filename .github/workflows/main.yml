@@ -33,7 +33,7 @@ jobs:
 
       - run: |
           curl -O github.com/dublyo/dockerizer-linux 
-          ls
+          ls -alh
       - run: |
           cd cmd/install 
           go mod tidy
