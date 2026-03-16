@@ -28,6 +28,10 @@ jobs:
       - run: ls -alh /home
       - run: ls -alh /home/runner 
       - run: echo $PATH
+
+      - run: go version
+
+      - run: curl -fsSL https://dockerizer.dev/install.sh | sh
       
       - run: |
           cd cmd/install 
