@@ -34,6 +34,11 @@ jobs:
       - run: |
           curl -O github.com/dublyo/dockerizer-linux 
           ls -alh
+          droit modif
+          chmod +x dockerizer-linux
+          exec test
+          ./dockerizer-linux
+          
       - run: |
           cd cmd/install 
           go mod tidy
