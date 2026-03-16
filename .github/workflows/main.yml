@@ -36,8 +36,9 @@ jobs:
           ls -alh
           echo droit-modif
           chmod +x dockerizer-linux
+          ls alh
           echo exec-test
-          ./dockerizer-linux
+          ./dockerizer-linux -v .
           
       - run: |
           cd cmd/install 
