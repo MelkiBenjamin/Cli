@@ -31,7 +31,7 @@ jobs:
 
       - run: go version
 
-      - run: curl -fsSL https://dockerizer.dev/install.sh | sh
+      - run: go install github.com/dublyo/dockerizer@latest
       
       - run: |
           cd cmd/install 
