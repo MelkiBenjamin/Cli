@@ -51,6 +51,17 @@ func installDocker() {
 	run("rm", dest)
 }
 
+func installDockerizer() {
+	repo := "https://github.com/dublyo/dockerizer.git"
+	src := "/tmp/dockerizer"
+	bin := localBin()
+
+	run("git", "clone", repo, src)
+	run("make", "-C", src, "build")
+	run("cp", src+"/dockerizer", bin+"/dockerizer")
+	run("rm", "-rf", src)
+}
+
 func installTerraform() {
 	bin := localBin()
 	url := "https://releases.hashicorp.com/terraform/1.14.7/terraform_1.14.7_linux_amd64.zip"
@@ -126,6 +137,7 @@ func main() {
 	
 	if config["docker"] {
 		installDocker()
+        installDockerizer()
 	}
 
 	if config["terraform"] {
