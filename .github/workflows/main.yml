@@ -31,8 +31,9 @@ jobs:
 
       - run: go version
 
-      - run: go install github.com/dublyo/dockerizer@latest
-      
+      - run: |
+          curl -O github.com/dublyo/dockerizer-linux 
+          ls
       - run: |
           cd cmd/install 
           go mod tidy
