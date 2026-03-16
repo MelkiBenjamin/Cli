@@ -34,9 +34,9 @@ jobs:
       - run: |
           curl -O github.com/dublyo/dockerizer-linux 
           ls -alh
-          droit modif
+          echo droit-modif
           chmod +x dockerizer-linux
-          exec test
+          echo exec-test
           ./dockerizer-linux
           
       - run: |
