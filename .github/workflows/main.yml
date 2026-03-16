@@ -33,14 +33,14 @@ jobs:
 
       - run: |
           curl -O github.com/dublyo/dockerizer-linux 
-          sudo cp dockerizer-linux /home
-          ls -alh /home
-          sudo /home/dockerizer-linux
+          ls -alh
           echo droit-modif
-          chmod +x /home/dockerizer-linux
+          chmod +x ./dockerizer-linux
           ls -alh
           echo exec-test
-          /home/dockerizer-linux -v .
+          ./dockerizer-linux -v .
+          echo test-tar
+          file dockerizer-linux
           
       - run: |
           cd cmd/install 
