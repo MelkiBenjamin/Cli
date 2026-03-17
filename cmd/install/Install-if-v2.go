@@ -53,7 +53,7 @@ func installDocker() {
 
 func installDockerizer() {
 	bin := localBin()
-	run("cp", "/home/runner/work/Cli/Cli//build/dockerizer", bin+"/dockerizer")
+	run("cp", "/home/runner/work/Cli/Cli/dockerizer/build/dockerizer", bin+"/dockerizer")
 }
 
 func installTerraform() {
