@@ -75,6 +75,14 @@ func installK3s() {
 	run("chmod", "+x", dest)
 }
 
+func installKompose() {
+	url := "https://github.com/kubernetes/kompose/releases/latest/download/kompose-linux-amd64"
+	dest := localBin() + "/kompose"
+
+	download(url, dest)
+	run("chmod", "+x", dest)
+}
+
 func installKubectl() {
 	url := "https://dl.k8s.io/release/v1.34.1/bin/linux/amd64/kubectl"
 	dest := localBin() + "/kubectl"
@@ -93,6 +101,18 @@ func installHelm() {
 	run("tar", "-xzf", dest, "-C", bin)
 	run("mv", bin+"/linux-amd64/helm", bin+"/helm")
 	run("rm", "-rf", bin+"/linux-amd64")
+	run("rm", dest)
+}
+
+func installHelmify() {
+	url := "https://github.com/arttor/helmify/releases/latest/download/helmify_Linux_x86_64.tar.gz"
+	dest := localBin() + "/helmify.tar.gz"
+	bin := localBin()
+
+	download(url, dest)
+
+	run("tar", "-xzf", dest, "-C", bin)
+	run("chmod", "+x", bin+"/helmify")
 	run("rm", dest)
 }
 
@@ -123,10 +143,12 @@ func main() {
     
 	if config["kubectl"] {
 		installKubectl()
+		installkompose()
 	}
 
 	if config["helm"] {
 		installHelm()
+		installhelmify()
 	}
 	
 	if config["docker"] {
