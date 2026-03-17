@@ -28,7 +28,7 @@ jobs:
       - run: ls -alh /home
       - run: ls -alh /home/runner 
       - run: echo $PATH
-
+      - run: pwd
       - run: go version
 
       - run: |
