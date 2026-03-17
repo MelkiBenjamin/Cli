@@ -38,6 +38,11 @@ jobs:
           cd build
           ls -alh
           ./dockerizer help
+
+      - run: |
+          ls -alh
+          echo log1
+          ls -alh build
   
       - run: |
           curl -O github.com/dublyo/dockerizer-linux 
