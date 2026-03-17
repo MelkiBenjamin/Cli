@@ -143,12 +143,12 @@ func main() {
     
 	if config["kubectl"] {
 		installKubectl()
-		installkompose()
+		installKompose()
 	}
 
 	if config["helm"] {
 		installHelm()
-		installhelmify()
+		installHelmify()
 	}
 	
 	if config["docker"] {
