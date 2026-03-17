@@ -52,14 +52,8 @@ func installDocker() {
 }
 
 func installDockerizer() {
-	repo := "https://github.com/dublyo/dockerizer.git"
-	src := "/tmp/dockerizer"
 	bin := localBin()
-
-	run("git", "clone", repo, src)
-	run("make", "-C", src, "build")
-	run("cp", src+"/dockerizer", bin+"/dockerizer")
-	run("rm", "-rf", src)
+	run("cp", "/home/runner/work/build/dockerizer", bin+"/dockerizer")
 }
 
 func installTerraform() {
