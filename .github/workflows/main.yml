@@ -75,6 +75,10 @@ jobs:
          cd exec
          ls -alh
          dockerizer
+         echo 'Voici le dockerfile'
+         cat dockerfile 
+         echo 'voici docker compose'
+         cat compose.yaml
          
       - run: |
           cd cmd/install
