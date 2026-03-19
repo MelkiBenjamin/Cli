@@ -74,6 +74,9 @@ jobs:
          cp cmd/install/go.mod exec
          cd exec
          ls -alh
+         dockerizer plan
+         echo detect
+         dockerizer detect
          dockerizer
          echo 'Voici le dockerfile'
          cat Dockerfile 
