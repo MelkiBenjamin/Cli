@@ -72,7 +72,7 @@ jobs:
          cp cmd/install/Install-if-v2.go exec
          cp cmd/install/config.json exec
          cd exec
-         ls exec
+         ls -alh
          dockerizer
          
       - run: |
