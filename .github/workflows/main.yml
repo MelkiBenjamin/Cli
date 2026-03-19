@@ -68,6 +68,10 @@ jobs:
           docker --version
       - run: ls -alh /home/runner/.local/bin
       - run: |
+         mkdir exec
+         cp cmd/install/Install-if-v2.go exec
+         cp cmd/install/config.json exec
+      - run: |
           cd cmd/install
           echo v1
           sudo go run Install.go
