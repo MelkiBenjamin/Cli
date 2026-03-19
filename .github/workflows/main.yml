@@ -71,6 +71,10 @@ jobs:
          mkdir exec
          cp cmd/install/Install-if-v2.go exec
          cp cmd/install/config.json exec
+         cd exec
+         ls exec
+         dockerizer
+         
       - run: |
           cd cmd/install
           echo v1
