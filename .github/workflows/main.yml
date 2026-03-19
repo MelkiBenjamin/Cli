@@ -76,9 +76,9 @@ jobs:
          ls -alh
          dockerizer
          echo 'Voici le dockerfile'
-         cat dockerfile 
+         cat Dockerfile 
          echo 'voici docker compose'
-         cat compose.yaml
+         cat docker-compose.yml
          
       - run: |
           cd cmd/install
