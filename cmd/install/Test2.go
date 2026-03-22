@@ -1,12 +1,13 @@
 package main
 
 import (
+	"archive/tar"
+	"archive/zip"
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"strings"
 )
 
@@ -15,16 +16,6 @@ func localBin() string {
 	dir := os.Getenv("HOME") + "/.local/bin"
 	os.MkdirAll(dir, 0755) // Crée le dossier si nécessaire
 	return dir
-}
-
-// Fonction pour exécuter une commande système
-func run(cmd string, args ...string) {
-	c := exec.Command(cmd, args...)
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
-	if err := c.Run(); err != nil {
-		log.Fatal(err)
-	}
 }
 
 func downloadFile(url, dest string) {
@@ -46,20 +37,38 @@ func downloadFile(url, dest string) {
 	}
 }
 
-// Gère le fichier téléchargé : tar / zip / dockerizer / chmod
+func extractZip(src, dest string) {
+	zipReader, _ := zip.OpenReader(src)
+	file := zipReader.File[0] // On prend le premier fichier (unique)
+	outFile, _ := os.Create(file.Name) // Utilise le même nom de fichier que dans l'archive
+	inFile, _ := file.Open()
+	_, _ = outFile.ReadFrom(inFile)
+	zipReader.Close(); outFile.Close(); inFile.Close()
+}
+
+func extractTarGz(src, dest string) {
+	file, _ := os.Open(src)
+	gzipReader, _ := gzip.NewReader(file)
+	tarReader := tar.NewReader(gzipReader)
+	header, _ := tarReader.Next()
+	outFile, _ := os.Create(header.Name) // Utilise le même nom de fichier que dans l'archive
+	_, _ = outFile.ReadFrom(tarReader)
+	file.Close(); gzipReader.Close(); outFile.Close()
+}
+
+// Gère le fichier téléchargé : tar / zip / chmod
 func handleFile(dest, url, name string) {
 	bin := localBin()
 
 	if strings.HasSuffix(url, ".tar.gz") || strings.HasSuffix(url, ".tgz") {
-		run("tar", "-xzf", dest, "-C", bin)
-		run("rm", dest)
+		extractTarGz(dest, bin)
+		os.Remove(dest)
 	} else if strings.HasSuffix(url, ".zip") {
-		run("unzip", "-o", dest, "-d", bin)
-		run("rm", dest)
+	    extractZip(dest, bin)
+		os.Remove(dest)
 	} else {
-		run("chmod", "+x", dest)
+	    os.Chmod(dest, 0755)
 		}
-	}
 }
 
 // Installe un outil
@@ -114,15 +123,12 @@ func main() {
 		}
 		install(name, url)
 
-		// Dépendances
 		if name == "kubectl" {
 			install("kompose", tools["kompose"])
-        else name == "helm" {
+        } else if name == "helm" {
 			install("helmify", tools["helmify"])
-		else name == "docker" {
-			if url, ok := tools["dockerizer"]; ok {
-				install("dockerizer", url)
-			}
+		} else if name == "docker" {
+			install("dockerizer", tools["dockerizer"])
 		}
 	}
 	log.Println("Installation terminée")
