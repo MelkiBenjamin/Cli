@@ -57,11 +57,7 @@ func handleFile(dest, url, name string) {
 		run("unzip", "-o", dest, "-d", bin)
 		run("rm", dest)
 	} else {
-		src := "/home/runner/work/Cli/Cli/dockerizer/build/dockerizer"
-		if _, err := os.Stat(src); err == nil {
-			run("cp", src, bin+"/dockerizer")
-		} else {
-			run("chmod", "+x", dest)
+		run("chmod", "+x", dest)
 		}
 	}
 }
@@ -104,7 +100,8 @@ var tools = map[string]string{
 	"helmify":   "https://github.com/arttor/helmify/releases/latest/download/helmify_Linux_x86_64.tar.gz",
 	"terraform": "https://releases.hashicorp.com/terraform/1.14.7/terraform_1.14.7_linux_amd64.zip",
 	"k3s":       "https://github.com/k3s-io/k3s/releases/download/v1.35.1%2Bk3s1/k3s",
-	"docker":    "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz"
+	"docker":    "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz",
+	"dockerizer":"https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip"
 }
 
 func main() {
