@@ -53,7 +53,7 @@ func installDocker() {
 
 func installDockerizer() {
 	bin := localBin()
-	url := "https://github.com/MelkiBenjamin/Cli/blob/main/my-artifact.zip"
+	url := "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip"
 	dest := localBin() + "/my-artifact.zip"
 
 	download(url, dest)
