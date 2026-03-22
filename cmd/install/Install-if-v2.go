@@ -53,7 +53,13 @@ func installDocker() {
 
 func installDockerizer() {
 	bin := localBin()
-	run("cp", "/home/runner/work/Cli/Cli/dockerizer/build/dockerizer", bin+"/dockerizer")
+	url := "https://github.com/MelkiBenjamin/Cli/blob/main/my-artifact.zip"
+	dest := localBin() + "/my-artifact.zip"
+
+	download(url, dest)
+
+	run("unzip", "-o", dest, "-d", bin)
+	run("rm", dest)
 }
 
 func installTerraform() {
