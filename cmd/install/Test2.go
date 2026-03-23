@@ -79,8 +79,8 @@ func extractTarGz(src, dest string) {
 		log.Fatalf("Erreur tar lors de la lecture du 1er fichier  %s : %v", src, err)
 	}
 	bin := localBin()
-    dest := bin + "/" + header.Name // Concaténation avec le nom du fichier extrait
-	outFile, err := os.Create(dest) // Utilise le même nom de fichier que dans l'archive
+    destpath := bin + "/" + header.Name // Concaténation avec le nom du fichier extrait
+	outFile, err := os.Create(destpath) // Utilise le même nom de fichier que dans l'archive
 	if err != nil {
 		log.Fatalf("Erreur de create tar soit %s : %v", src, err)
 	}
