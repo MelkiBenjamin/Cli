@@ -3,6 +3,7 @@ package main
 import (
 	"archive/tar"
 	"archive/zip"
+	"compress/gzip"
 	"encoding/json"
 	"io"
 	"log"
