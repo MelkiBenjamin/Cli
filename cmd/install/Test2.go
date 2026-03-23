@@ -111,7 +111,7 @@ var tools = map[string]string{
 	"terraform": "https://releases.hashicorp.com/terraform/1.14.7/terraform_1.14.7_linux_amd64.zip",
 	"k3s":       "https://github.com/k3s-io/k3s/releases/download/v1.35.1%2Bk3s1/k3s",
 	"docker":    "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz",
-	"dockerizer": "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip"
+	"dockerizer": "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip",
 }
 
 func main() {
