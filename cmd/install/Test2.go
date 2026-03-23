@@ -20,6 +20,7 @@ func localBin() string {
 }
 
 func downloadFile(url, dest string) {
+	log.Printf("⬇ Downloading: %s → %s\n", url, dest)
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
