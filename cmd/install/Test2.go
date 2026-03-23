@@ -53,12 +53,27 @@ func extractZip(src, dest string) {
 
 func extractTarGz(src, dest string) {
 	log.Printf("extrait-tar")
-	file, _ := os.Open(src)
-	gzipReader, _ := gzip.NewReader(file)
+	file, err := os.Open(src)
+	if err != nil {
+		log.Fatalf("Erreur traitement du fichier %s : %v", src, err)
+	}
+	gzipReader, err := gzip.NewReader(file)
+	if err != nil {
+		log.Fatalf("Erreur de la creation gzip %s : %v", src, err)
+	}
 	tarReader := tar.NewReader(gzipReader)
-	header, _ := tarReader.Next()
-	outFile, _ := os.Create(header.Name) // Utilise le même nom de fichier que dans l'archive
-	_, _ = outFile.ReadFrom(tarReader)
+	header, err := tarReader.Next()
+	if err != nil {
+		log.Fatalf("Erreur lors de la lecture du 1er fichier  %s : %v", src, err)
+	}
+	outFile, err := os.Create(header.Name) // Utilise le même nom de fichier que dans l'archive
+	if err != nil {
+		log.Fatalf("Erreur de create soit %s : %v", src, err)
+	}
+	_, err = outFile.ReadFrom(tarReader)
+	if err != nil {
+		log.Fatalf("Erreur final %s : %v", src, err)
+	}
 	file.Close(); gzipReader.Close(); outFile.Close()
 	log.Printf("extrait-tar-fait")
 }
@@ -80,7 +95,7 @@ func handleFile(dest, url, name string) {
 	} else {
 	    os.Chmod(dest, 0755)
 	}
-	if err != nil {
+    if err != nil {
 		log.Fatalf("Erreur traitement du fichier %s : %v", name, err)
 	}
 }
