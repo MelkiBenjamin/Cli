@@ -40,6 +40,7 @@ func downloadFile(url, dest string) {
 }
 
 func extractZip(src, dest string) {
+	log.Printf("extrait-zip")
 	zipReader, _ := zip.OpenReader(src)
 	file := zipReader.File[0] // On prend le premier fichier (unique)
 	outFile, _ := os.Create(file.Name) // Utilise le même nom de fichier que dans l'archive
