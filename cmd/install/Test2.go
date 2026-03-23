@@ -15,7 +15,7 @@ import (
 func must[T any](val T, err error, context string) T {
 	if err != nil {
 		_, file, line, _ := runtime.Caller(1)
-		log.Fatalf("❌ %s\n📍 %s:%d\n➡️ %v", context, file, line, err)
+		log.Fatalf("❌ %s\n📍 %s:%d\n➡️ %v", context, line, err)
 	}
 	return val
 }
