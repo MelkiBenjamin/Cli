@@ -37,6 +37,7 @@ func downloadFile(url, dest string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Printf("telechargement-fait")
 }
 
 func extractZip(src, dest string) {
@@ -47,9 +48,11 @@ func extractZip(src, dest string) {
 	inFile, _ := file.Open()
 	_, _ = outFile.ReadFrom(inFile)
 	zipReader.Close(); outFile.Close(); inFile.Close()
+	log.Printf("extrait-zip-fait")
 }
 
 func extractTarGz(src, dest string) {
+	log.Printf("extrait-tar")
 	file, _ := os.Open(src)
 	gzipReader, _ := gzip.NewReader(file)
 	tarReader := tar.NewReader(gzipReader)
@@ -57,16 +60,20 @@ func extractTarGz(src, dest string) {
 	outFile, _ := os.Create(header.Name) // Utilise le même nom de fichier que dans l'archive
 	_, _ = outFile.ReadFrom(tarReader)
 	file.Close(); gzipReader.Close(); outFile.Close()
+	log.Printf("extrait-tar-fait")
 }
 
 // Gère le fichier téléchargé : tar / zip / chmod
 func handleFile(dest, url, name string) {
+	log.Printf("extraction")
 	bin := localBin()
 
 	if strings.HasSuffix(url, ".tar.gz") || strings.HasSuffix(url, ".tgz") {
+		log.Printf("tar")
 		extractTarGz(dest, bin)
 		os.Remove(dest)
 	} else if strings.HasSuffix(url, ".zip") {
+		log.Printf("zip")
 	    extractZip(dest, bin)
 		os.Remove(dest)
 	} else {
