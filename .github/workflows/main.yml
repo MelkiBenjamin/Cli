@@ -74,7 +74,7 @@ jobs:
       - run: ls -alh /home/runner/.local/bin
       - run: |
          mkdir exec
-         cp cmd/install/Install-if-v2.go exec/main.go
+         cp cmd/install/test2.go exec/main.go
          cp cmd/install/config.json exec
          cp cmd/install/go.mod exec
          cd exec
