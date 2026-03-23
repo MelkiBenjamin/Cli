@@ -67,7 +67,8 @@ func extractTarGz(src, dest string) {
 func handleFile(dest, url, name string) {
 	log.Printf("extraction")
 	bin := localBin()
-
+	
+    var err error
 	if strings.HasSuffix(url, ".tar.gz") || strings.HasSuffix(url, ".tgz") {
 		log.Printf("tar")
 		extractTarGz(dest, bin)
@@ -78,7 +79,10 @@ func handleFile(dest, url, name string) {
 		os.Remove(dest)
 	} else {
 	    os.Chmod(dest, 0755)
-		}
+	}
+	if err != nil {
+		log.Fatalf("Erreur traitement du fichier %s : %v", name, err)
+	}
 }
 
 // Installe un outil
