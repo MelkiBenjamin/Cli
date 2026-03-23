@@ -68,13 +68,13 @@ jobs:
       - run: |
           echo v2
           cd cmd/install
-          go run Install-if-v2.go
+          go run Test2.go
           terraform version
           docker --version
       - run: ls -alh /home/runner/.local/bin
       - run: |
          mkdir exec
-         cp cmd/install/test2.go exec/main.go
+         cp cmd/install/Test2.go exec/main.go
          cp cmd/install/config.json exec
          cp cmd/install/go.mod exec
          cd exec
