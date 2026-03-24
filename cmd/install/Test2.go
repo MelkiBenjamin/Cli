@@ -88,16 +88,18 @@ func extractTarGz(src, dest string) {
 	for {
     	header, err := tarReader.Next()
 		if err == io.EOF {
-	      log.Fatalf("Aucun fichier trouvé dans l'archive %s", src)
-        }
+	      log.Println("Fin de l'archive.")
+		  break     
+		}
 		if err != nil {
 		  log.Fatalf("Erreur tar lors de la lecture du 1er fichier  %s : %v", src, err)
 		}
 		// Assurez-vous que l'en-tête n'est pas nil
 		if header == nil {
-		  continue // ignore les entrées qui sont nil (comme les dossiers)
+		  log.Println("Ignorer une entrée qui est probablement un dossier ou un lien symbolique.")
+		  continue
 		}
-	    if header.Typeflag == tar.TypeReg {
+	    if header.Typeflag == tar.TypeDir {
 		  break
 	    }
 	}
