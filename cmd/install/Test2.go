@@ -83,6 +83,7 @@ func extractTarGz(src, dest string) {
 		log.Fatalf("Erreur tar de la creation gzip %s : %v", src, err)
 	}
 	tarReader := tar.NewReader(gzipReader)
+	var header *tar.Header
 	for {
     	header, err := tarReader.Next()
 	    if err != nil {
