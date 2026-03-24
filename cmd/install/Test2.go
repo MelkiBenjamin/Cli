@@ -104,7 +104,7 @@ func extractTarGz(src, dest string) {
 		}
 		log.Printf("suite 3 for")
 	    if header.Typeflag == tar.TypeDir {
-		  break
+		  continue
 	    }
 		log.Printf("suite 4 for")
 	}
