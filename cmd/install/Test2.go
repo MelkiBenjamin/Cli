@@ -115,7 +115,7 @@ func extractTarGz(src, dest string) {
 
 		// Créer les répertoires manquants
 		if err := os.MkdirAll(bin, 0755); err != nil {
-			log.Fatalf("Erreur lors de la création des répertoires %s : %v", destpath, err)
+			log.Fatalf("Erreur lors de la création des répertoires %s : %v", bin, err)
 		}
     
 		log.Printf("suite avant outfile create")
