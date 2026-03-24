@@ -118,13 +118,14 @@ func extractTarGz(src, dest string) {
     	if err != nil {
 	    	log.Fatalf("Erreur de create tar soit %s : %v", src, err)
     	}
+	
+    	_, err = outFile.ReadFrom(tarReader)
+    	if err != nil {
+	    	log.Fatalf("Erreur final %s : %v", src, err)
+	    }
+    	file.Close(); gzipReader.Close(); outFile.Close()
 	}
- 	_, err = outFile.ReadFrom(tarReader)
-	if err != nil {
-		log.Fatalf("Erreur final %s : %v", src, err)
-	}
-	file.Close(); gzipReader.Close(); outFile.Close()
-	log.Printf("extrait-tar-fait")
+    log.Printf("extrait-tar-fait")
 }
 
 // Gère le fichier téléchargé : tar / zip / chmod
