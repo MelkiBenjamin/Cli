@@ -86,12 +86,12 @@ func extractTarGz(src, dest string) {
 	var header *tar.Header
 	for {
     	header, err := tarReader.Next()
-	    if err != nil {
-		  log.Fatalf("Erreur tar lors de la lecture du 1er fichier  %s : %v", src, err)
-		}
 		if err == io.EOF {
 	    log.Fatalf("Aucun fichier trouvé dans l'archive %s", src)
         }
+		if err != nil {
+		  log.Fatalf("Erreur tar lors de la lecture du 1er fichier  %s : %v", src, err)
+		}
 	    if header.Typeflag == tar.TypeReg {
 		  break
 	    }
