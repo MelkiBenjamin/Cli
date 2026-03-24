@@ -84,6 +84,7 @@ func extractTarGz(src, dest string) {
 	}
 	tarReader := tar.NewReader(gzipReader)
 	var header *tar.Header
+	log.Printf("log de test")
 	for {
     	header, err := tarReader.Next()
 		if err == io.EOF {
@@ -91,6 +92,10 @@ func extractTarGz(src, dest string) {
         }
 		if err != nil {
 		  log.Fatalf("Erreur tar lors de la lecture du 1er fichier  %s : %v", src, err)
+		}
+		// Assurez-vous que l'en-tête n'est pas nil
+		if header == nil {
+		  continue // ignore les entrées qui sont nil (comme les dossiers)
 		}
 	    if header.Typeflag == tar.TypeReg {
 		  break
