@@ -108,7 +108,6 @@ func extractTarGz(src, dest string) {
 	    }
 		log.Printf("suite 4 for")
 
-	    bin := localBin()
      	log.Printf("suite avant création destpath")
 		bin := localBin()
         destpath := bin + "/" + header.Name // Concaténation avec le nom du fichier extrait
