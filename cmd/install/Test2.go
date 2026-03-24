@@ -83,9 +83,14 @@ func extractTarGz(src, dest string) {
 		log.Fatalf("Erreur tar de la creation gzip %s : %v", src, err)
 	}
 	tarReader := tar.NewReader(gzipReader)
-	header, err := tarReader.Next()
-	if err != nil {
-		log.Fatalf("Erreur tar lors de la lecture du 1er fichier  %s : %v", src, err)
+	for {
+    	header, err := tarReader.Next()
+	    if err != nil {
+		  log.Fatalf("Erreur tar lors de la lecture du 1er fichier  %s : %v", src, err)
+		// Ignorer les dossiers
+	    if header.Typeflag == tar.TypeReg {
+		  break
+	    }
 	}
 	bin := localBin()
     destpath := bin + "/" + header.Name // Concaténation avec le nom du fichier extrait
