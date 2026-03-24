@@ -87,6 +87,7 @@ func extractTarGz(src, dest string) {
     	header, err := tarReader.Next()
 	    if err != nil {
 		  log.Fatalf("Erreur tar lors de la lecture du 1er fichier  %s : %v", src, err)
+		}
 		// Ignorer les dossiers
 	    if header.Typeflag == tar.TypeReg {
 		  break
