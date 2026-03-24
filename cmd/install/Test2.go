@@ -110,11 +110,12 @@ func extractTarGz(src, dest string) {
 
 	    bin := localBin()
      	log.Printf("suite avant création destpath")
+		bin := localBin()
         destpath := bin + "/" + header.Name // Concaténation avec le nom du fichier extrait
-	//	dirpath := dest + "/" + path.Dir(header.Name) // Répertoire de l'extrait
+	    // dirpath := dest + "/" + path.Dir(header.Name) // Répertoire de l'extrait
 
 		// Créer les répertoires manquants
-		if err := os.MkdirAll(destpath, 0755); err != nil {
+		if err := os.MkdirAll(bin, 0755); err != nil {
 			log.Fatalf("Erreur lors de la création des répertoires %s : %v", destpath, err)
 		}
     
