@@ -86,22 +86,27 @@ func extractTarGz(src, dest string) {
 	var header *tar.Header
 	log.Printf("log de test")
 	for {
+		log.Printf("debut for")
     	header, err := tarReader.Next()
 		if err == io.EOF {
 	      log.Println("Fin de l'archive.")
 		  break     
 		}
+		log.Printf("suite 1 for")
 		if err != nil {
 		  log.Fatalf("Erreur tar lors de la lecture du 1er fichier  %s : %v", src, err)
 		}
+		log.Printf("suite 2 for")
 		// Assurez-vous que l'en-tête n'est pas nil
 		if header == nil {
 		  log.Println("Ignorer une entrée qui est probablement un dossier ou un lien symbolique.")
 		  continue
 		}
+		log.Printf("suite 3 for")
 	    if header.Typeflag == tar.TypeDir {
 		  break
 	    }
+		log.Printf("suite 4 for")
 	}
 	bin := localBin()
     destpath := bin + "/" + header.Name // Concaténation avec le nom du fichier extrait
