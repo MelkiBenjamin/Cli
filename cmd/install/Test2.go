@@ -109,7 +109,9 @@ func extractTarGz(src, dest string) {
 		log.Printf("suite 4 for")
 	}
 	bin := localBin()
+	log.Printf("suite avant création destpath")
     destpath := bin + "/" + header.Name // Concaténation avec le nom du fichier extrait
+    log.Printf("suite avant outfile create")
 	outFile, err := os.Create(destpath) // Utilise le même nom de fichier que dans l'archive
 	if err != nil {
 		log.Fatalf("Erreur de create tar soit %s : %v", src, err)
