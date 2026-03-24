@@ -12,13 +12,13 @@ import (
 	"strings"
 )
 
-func must[T any](val T, err error, context string) T {
-	if err != nil {
-		_, file, line, _ := runtime.Caller(1)
-		log.Fatalf("❌ %s\n📍 %s:%d\n➡️ %v", context, line, err)
-	}
-	return val
-}
+//func must[T any](val T, err error, context string) T {
+//	if err != nil {
+	//	_, file, line, _ := runtime.Caller(1)
+	//	log.Fatalf("❌ %s\n📍 %s:%d\n➡️ %v", context, line, err)
+	//}
+	//return val
+//}
 
 // Fonction pour récupérer le dossier ~/.local/bin
 func localBin() string {
@@ -73,8 +73,11 @@ func extractZip(src, dest string) {
 
 func extractTarGz(src, dest string) {
 	log.Printf("extrait-tar")
-	file := must(os.Open(src), "Erreur tar traitement du fichier")
-	
+	//file := must(os.Open(src), "Erreur tar traitement du fichier")
+	file, err := os.Open(src)
+    if err != nil {
+		Erreur tar traitement du fichier  %s : %v", src, err)
+    }
 	gzipReader, err := gzip.NewReader(file)
 	if err != nil {
 		log.Fatalf("Erreur tar de la creation gzip %s : %v", src, err)
