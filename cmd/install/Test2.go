@@ -83,7 +83,7 @@ func extractTarGz(src, dest string) {
 		log.Fatalf("Erreur tar de la creation gzip %s : %v", src, err)
 	}
 	tarReader := tar.NewReader(gzipReader)
-	var header *tar.Header
+//	var header *tar.Header
 	log.Printf("log de test")
 	for {
 		log.Printf("debut for")
@@ -113,12 +113,13 @@ func extractTarGz(src, dest string) {
         destpath := bin + "/" + header.Name // Concaténation avec le nom du fichier extrait
     
 		log.Printf("suite avant outfile create")
+	
+    	outFile, err := os.Create(destpath) // Utilise le même nom de fichier que dans l'archive
+    	if err != nil {
+	    	log.Fatalf("Erreur de create tar soit %s : %v", src, err)
+    	}
 	}
-	outFile, err := os.Create(destpath) // Utilise le même nom de fichier que dans l'archive
-	if err != nil {
-		log.Fatalf("Erreur de create tar soit %s : %v", src, err)
-	}
-	_, err = outFile.ReadFrom(tarReader)
+ 	_, err = outFile.ReadFrom(tarReader)
 	if err != nil {
 		log.Fatalf("Erreur final %s : %v", src, err)
 	}
