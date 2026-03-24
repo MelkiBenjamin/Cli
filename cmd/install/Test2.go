@@ -76,7 +76,7 @@ func extractTarGz(src, dest string) {
 	//file := must(os.Open(src), "Erreur tar traitement du fichier")
 	file, err := os.Open(src)
     if err != nil {
-		Erreur tar traitement du fichier  %s : %v", src, err)
+		log.Fatalf("Erreur tar traitement du fichier  %s : %v", src, err)
     }
 	gzipReader, err := gzip.NewReader(file)
 	if err != nil {
