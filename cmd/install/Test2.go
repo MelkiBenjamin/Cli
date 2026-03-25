@@ -148,7 +148,7 @@ func extractTarGz(src, dest string) {
 	    	log.Fatalf("Erreur final %s : %v", destpath, err)
 	    }
     	outFile.Close()
-		log.Printf("Fichier extrait : %s", destPath)
+		log.Printf("Fichier extrait : %s", destpath)
 	}
 	
     log.Printf("extrait-tar-fait")
