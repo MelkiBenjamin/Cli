@@ -20,12 +20,12 @@ import (
 	//return val
 //}
 
-func fileNameFromURL(raw string, fallback string) string {
-	i := strings.LastIndex(raw, "/")
-	if i == -1 || i == len(raw)-1 {
+func fileNameFromURL(url string, fallback string) string {
+	i := strings.LastIndex(url, "/")
+	if i == -1 || i == len(url)-1 {
 		return fallback
 	}
-	return raw[i+1:]
+	return url[i+1:]
 }
 
 // Fonction pour récupérer le dossier ~/.local/bin
@@ -185,11 +185,11 @@ func handleFile(dest, url string) {
 
 // Installe un outil
 func install(name, url string) {
-	fileName := fileNameFromURL(rawurl, name)
+	fileName := fileNameFromURL(url, name)
 	dest := localBin() + "/" + fileName
 
-	downloadFile(rawurl, dest)
-	handleFile(dest, rawurl)
+	downloadFile(url, dest)
+	handleFile(dest, url)
 }
 
 // Lecture du config.json
