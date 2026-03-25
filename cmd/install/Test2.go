@@ -114,8 +114,10 @@ func extractTarGz(src, dest string) {
 		  log.Println("Ignorer une entrée qui est probablement un dossier ou un lien symbolique.")
 		  continue
 		}
+		log.Printf("Lecture de l'entrée : %s", header.Name)
 		log.Printf("suite 3 for")
 	    if header.Typeflag == tar.TypeDir {
+		  log.Printf("Répertoire ignoré : %s", header.Name)
 		  continue
 	    }
 		log.Printf("suite 4 for")
@@ -138,14 +140,15 @@ func extractTarGz(src, dest string) {
 	
     	outFile, err := os.Create(destpath) // Utilise le même nom de fichier que dans l'archive
     	if err != nil {
-	    	log.Fatalf("Erreur de create tar soit %s : %v", src, err)
+	    	log.Fatalf("Erreur de create tar soit %s : %v", destpath, err)
     	}
 	
     	_, err = io.Copy(outFile, tarReader)
     	if err != nil {
-	    	log.Fatalf("Erreur final %s : %v", src, err)
+	    	log.Fatalf("Erreur final %s : %v", destpath, err)
 	    }
     	outFile.Close()
+		log.Printf("Fichier extrait : %s", destPath)
 	}
 	
     log.Printf("extrait-tar-fait")
