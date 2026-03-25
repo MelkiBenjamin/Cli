@@ -81,17 +81,21 @@ func extractTarGz(src, dest string) {
     if err != nil {
 		log.Fatalf("Erreur tar traitement du fichier  %s : %v", src, err)
     }
+	
 	buf := make([]byte, 2)
     file.Read(buf)
     file.Seek(0, 0)
 
     log.Printf("Magic bytes: %x\n", buf)
+	defer file.Close() // ← on ferme uniquement à la fin
+	
 	gzipReader, err := gzip.NewReader(file)
 	if err != nil {
 		log.Fatalf("Erreur tar de la creation gzip %s : %v", src, err)
 	}
+	defer gzipReader.Close() // ← idem
 	tarReader := tar.NewReader(gzipReader)
-//	var header *tar.Header
+    //	var header *tar.Header
 	log.Printf("log de test")
 	for {
 		log.Printf("debut for")
@@ -143,8 +147,7 @@ func extractTarGz(src, dest string) {
 	    }
     	outFile.Close()
 	}
-	file.Close()
-    gzipReader.Close()
+	
     log.Printf("extrait-tar-fait")
 }
 
