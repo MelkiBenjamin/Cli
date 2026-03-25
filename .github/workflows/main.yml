@@ -69,8 +69,8 @@ jobs:
           echo v2
           cd cmd/install
           go run Test2.go
-          terraform version
-          docker --version
+        ## docker --version
+        ##  terraform version
       - run: ls -alh /home/runner/.local/bin
       - run: |
          mkdir exec
