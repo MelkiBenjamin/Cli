@@ -20,6 +20,14 @@ import (
 	//return val
 //}
 
+func fileNameFromURL(raw string, fallback string) string {
+	i := strings.LastIndex(raw, "/")
+	if i == -1 || i == len(raw)-1 {
+		return fallback
+	}
+	return raw[i+1:]
+}
+
 // Fonction pour récupérer le dossier ~/.local/bin
 func localBin() string {
 	dir := os.Getenv("HOME") + "/.local/bin"
@@ -158,7 +166,7 @@ func extractTarGz(src, dest string) {
 }
 
 // Gère le fichier téléchargé : tar / zip / chmod
-func handleFile(dest, url, name string) {
+func handleFile(dest, url string) {
 	log.Printf("extraction")
 	bin := localBin()
 	
@@ -177,9 +185,11 @@ func handleFile(dest, url, name string) {
 
 // Installe un outil
 func install(name, url string) {
-	dest := localBin() + "/" + name
-	downloadFile(url, dest)
-	handleFile(dest, url, name)
+	fileName := fileNameFromURL(rawurl, name)
+	dest := localBin() + "/" + fileName
+
+	downloadFile(rawurl, dest)
+	handleFile(dest, rawurl)
 }
 
 // Lecture du config.json
