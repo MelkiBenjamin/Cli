@@ -45,6 +45,9 @@ func downloadFile(url, dest string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// 👉 ICI
+    log.Println("Status:", resp.Status)
+    log.Println("Content-Type:", resp.Header.Get("Content-Type"))
 	log.Printf("telechargement-fait")
 }
 
