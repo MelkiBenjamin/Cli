@@ -81,6 +81,11 @@ func extractTarGz(src, dest string) {
     if err != nil {
 		log.Fatalf("Erreur tar traitement du fichier  %s : %v", src, err)
     }
+	buf := make([]byte, 2)
+    file.Read(buf)
+    file.Seek(0, 0)
+
+    log.Printf("Magic bytes: %x\n", buf)
 	gzipReader, err := gzip.NewReader(file)
 	if err != nil {
 		log.Fatalf("Erreur tar de la creation gzip %s : %v", src, err)
