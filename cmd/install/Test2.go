@@ -133,8 +133,10 @@ func extractTarGz(src, dest string) {
     	if err != nil {
 	    	log.Fatalf("Erreur final %s : %v", src, err)
 	    }
-    	file.Close(); gzipReader.Close(); outFile.Close()
+    	outFile.Close()
 	}
+	file.Close()
+    gzipReader.Close()
     log.Printf("extrait-tar-fait")
 }
 
