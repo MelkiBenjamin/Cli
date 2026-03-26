@@ -228,6 +228,9 @@ func extractTarGz(src, dest string) {
 	    	log.Fatalf("Erreur final %s : %v", destpath, err)
 	    }
     	outFile.Close()
+		if err := os.Chmod(destpath, 0755); err != nil {
+			log.Fatalf("Erreur chmod %s : %v", destpath, err)
+		}
 		log.Printf("Fichier extrait : %s", destpath)
 	}
 	
