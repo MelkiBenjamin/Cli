@@ -20,12 +20,20 @@ import (
 	//return val
 //}
 
-func fileNameFromURL(url string, fallback string) string {
-	i := strings.LastIndex(url, "/")
-	if i == -1 || i == len(url)-1 {
+func fileNameFromURL(rawURL, fallback string) string {
+	i := strings.LastIndex(URL, "/")
+	if i == -1 || i == len(URL)-1 {
 		return fallback
 	}
-	return url[i+1:]
+	return URL[i+1:]
+}
+
+func baseName(p string) string {
+	i := strings.LastIndex(p, "/")
+	if i == -1 {
+		return p
+	}
+	return p[i+1:]
 }
 
 // Fonction pour récupérer le dossier ~/.local/bin
@@ -43,7 +51,10 @@ func downloadFile(url, dest string) {
 	}
 	defer resp.Body.Close()
 
-	out, err := os.Create(dest)
+	//out, err := os.Create(dest)
+	outPath := dest + "/" + baseName(file.Name)
+    outFile, err := os.Create(outPath)
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -131,9 +142,11 @@ func extractTarGz(src, dest string) {
 		log.Printf("suite 4 for")
 
      	log.Printf("suite avant création destpath")
-		bin := localBin()
-        destpath := bin + "/" + header.Name // Concaténation avec le nom du fichier extrait
+		//bin := localBin()
+        //destpath := bin + "/" + header.Name // Concaténation avec le nom du fichier extrait
 	    // dirpath := dest + "/" + path.Dir(header.Name) // Répertoire de l'extrait
+		filename := baseName(header.Name)
+        destpath := dest + "/" + filename
 
         parts := strings.Split(destpath, "/")
         dir := strings.Join(parts[:len(parts)-1], "/")
@@ -178,9 +191,8 @@ func handleFile(dest, url string) {
 		log.Printf("zip")
 	    extractZip(dest, bin)
 		os.Remove(dest)
-	} else {
-	    os.Chmod(dest, 0755)
 	}
+	os.Chmod(dest, 0755)
 }
 
 // Installe un outil
