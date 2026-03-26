@@ -70,28 +70,96 @@ func downloadFile(url, dest string) {
 	log.Printf("telechargement-fait")
 }
 
-func extractZip(src, dest string) {
+//func extractZip(src, dest string) {
+//	log.Printf("extrait-zip")
+//	zipReader, err := zip.OpenReader(src)
+//	if err != nil {
+//		log.Fatalf("Erreur zip traitement du fichier %s : %v", src, err)
+//	}
+//	file := zipReader.File[0] // On prend le premier fichier (unique)
+//	outFile, err := os.Create(file.Name) // Utilise le même nom de fichier que dans l'archive
+//	if err != nil {
+//		log.Fatalf("Erreur zip de create %s : %v", src, err)
+//	}
+//	inFile, err := file.Open()
+//	if err != nil {
+//		log.Fatalf("Erreur zip de file-open %s : %v", src, err)
+//	}
+//	_, err = outFile.ReadFrom(inFile)
+//	if err != nil {
+//		log.Fatalf("Erreur zip final %s : %v", src, err)
+//	}
+//	zipReader.Close(); outFile.Close(); inFile.Close()
+//	log.Printf("extrait-zip-fait")
+//}
+
+func extractZip(src, dest, expectedName string) {
 	log.Printf("extrait-zip")
+
 	zipReader, err := zip.OpenReader(src)
 	if err != nil {
 		log.Fatalf("Erreur zip traitement du fichier %s : %v", src, err)
 	}
-	file := zipReader.File[0] // On prend le premier fichier (unique)
-	outFile, err := os.Create(file.Name) // Utilise le même nom de fichier que dans l'archive
-	if err != nil {
-		log.Fatalf("Erreur zip de create %s : %v", src, err)
+	defer zipReader.Close()
+
+	for _, file := range zipReader.File {
+		if file.FileInfo().IsDir() {
+			continue
+		}
+
+		filename := file.Name
+		if i := strings.LastIndex(filename, "/"); i != -1 {
+			filename = filename[i+1:]
+		}
+
+		if expectedName != "" && filename != expectedName {
+			continue
+		}
+
+		inFile, err := file.Open()
+		if err != nil {
+			log.Fatalf("Erreur zip de file-open %s : %v", src, err)
+		}
+
+		if err := os.MkdirAll(dest, 0755); err != nil {
+			inFile.Close()
+			log.Fatalf("Erreur lors de la création du dossier %s : %v", dest, err)
+		}
+
+		outPath := dest + "/" + filename
+		outFile, err := os.Create(outPath)
+		if err != nil {
+			inFile.Close()
+			log.Fatalf("Erreur zip de create %s : %v", outPath, err)
+		}
+
+		_, err = io.Copy(outFile, inFile)
+		if err != nil {
+			outFile.Close()
+			inFile.Close()
+			log.Fatalf("Erreur zip final %s : %v", outPath, err)
+		}
+
+		if err := outFile.Close(); err != nil {
+			inFile.Close()
+			log.Fatalf("Erreur fermeture fichier sortie %s : %v", outPath, err)
+		}
+		if err := inFile.Close(); err != nil {
+			log.Fatalf("Erreur fermeture fichier zip %s : %v", src, err)
+		}
+
+		if err := os.Chmod(outPath, 0755); err != nil {
+			log.Fatalf("Erreur chmod %s : %v", outPath, err)
+		}
+
+		log.Printf("Fichier extrait : %s", outPath)
+		return
 	}
-	inFile, err := file.Open()
-	if err != nil {
-		log.Fatalf("Erreur zip de file-open %s : %v", src, err)
-	}
-	_, err = outFile.ReadFrom(inFile)
-	if err != nil {
-		log.Fatalf("Erreur zip final %s : %v", src, err)
-	}
-	zipReader.Close(); outFile.Close(); inFile.Close()
+
+	log.Printf("Aucun fichier zip correspondant à %q trouvé dans %s", expectedName, src)
 	log.Printf("extrait-zip-fait")
 }
+
 
 func extractTarGz(src, dest string) {
 	log.Printf("extrait-tar")
