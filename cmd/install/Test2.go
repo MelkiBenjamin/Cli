@@ -112,6 +112,11 @@ func extractZip(src, dest string) {
 			filename = filename[i+1:]
 		}
 
+		upper := strings.ToUpper(filename)
+		if strings.Contains(upper, "LICENSE") || strings.Contains(upper, "README") {
+			continue
+		}
+
 		destpath := dest + "/" + filename
 
 		inFile, err := file.Open()
@@ -132,12 +137,15 @@ func extractZip(src, dest string) {
 			log.Fatalf("Erreur copy %s : %v", destpath, err)
 		}
 
-		// 🔥 rendre exécutable
-		os.Chmod(destpath, 0755)
+		if err := os.Chmod(destpath, 0755); err != nil {
+			log.Fatalf("Erreur chmod %s : %v", destpath, err)
+		}
 
 		log.Printf("Fichier extrait : %s", destpath)
 		return
 	}
+
+	log.Fatalf("Aucun binaire trouvé dans %s", src)
 }
 
 
