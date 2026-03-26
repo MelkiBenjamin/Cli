@@ -20,12 +20,12 @@ import (
 	//return val
 //}
 
-func fileNameFromURL(rawURL, fallback string) string {
-	i := strings.LastIndex(URL, "/")
-	if i == -1 || i == len(URL)-1 {
+func fileNameFromURL(url, fallback string) string {
+	i := strings.LastIndex(url, "/")
+	if i == -1 || i == len(url)-1 {
 		return fallback
 	}
-	return URL[i+1:]
+	return url[i+1:]
 }
 
 func baseName(p string) string {
