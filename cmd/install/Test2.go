@@ -51,9 +51,9 @@ func downloadFile(url, dest string) {
 	}
 	defer resp.Body.Close()
 
-	//out, err := os.Create(dest)
-	outPath := dest + "/" + baseName(file.Name)
-    outFile, err := os.Create(outPath)
+	out, err := os.Create(dest)
+	//outPath := dest + "/" + baseName(file.Name)
+    //outFile, err := os.Create(outPath)
 
 	if err != nil {
 		log.Fatal(err)
