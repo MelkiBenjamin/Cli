@@ -93,7 +93,7 @@ func downloadFile(url, dest string) {
 //	log.Printf("extrait-zip-fait")
 //}
 
-func extractZip(src, dest, expectedName string) {
+func extractZip(src, dest string) {
 	log.Printf("extrait-zip")
 
 	zipReader, err := zip.OpenReader(src)
