@@ -107,6 +107,12 @@ func extractZip(src, dest string) {
 			continue
 		}
 
+		if file.FileInfo().Mode()&0111 == 0 {
+	        continue
+        }
+
+		
+
 		filename := file.Name
 		if i := strings.LastIndex(filename, "/"); i != -1 {
 			filename = filename[i+1:]
