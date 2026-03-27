@@ -205,7 +205,7 @@ func extractTarGz(src, dest string) {
         destpath := dest + "/" + filename
 
         parts := strings.Split(destpath, "/")
-        dir := strings.Join(parts[:len(parts)-1], "/")
+        //dir := strings.Join(parts[:len(parts)-1], "/")
 
 		if destpath == src {
         	log.Fatalf("collision source/destination : %s", destpath)
