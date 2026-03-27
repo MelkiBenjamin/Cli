@@ -204,7 +204,7 @@ func extractTarGz(src, dest string) {
 		filename := baseName(header.Name)
         destpath := dest + "/" + filename
 
-        parts := strings.Split(destpath, "/")
+       // parts := strings.Split(destpath, "/")
         //dir := strings.Join(parts[:len(parts)-1], "/")
 
 		if destpath == src {
