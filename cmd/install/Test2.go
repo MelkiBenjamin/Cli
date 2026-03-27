@@ -196,6 +196,13 @@ func extractTarGz(src, dest string) {
 		  continue
 	    }
 		log.Printf("suite 4 for")
+		if header.Typeflag != tar.TypeReg {
+			continue
+		}
+
+		if header.FileInfo().Mode()&0111 == 0 {
+			continue
+		}
 
      	log.Printf("suite avant création destpath")
 		//bin := localBin()
