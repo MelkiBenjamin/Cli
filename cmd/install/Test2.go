@@ -111,8 +111,6 @@ func extractZip(src, dest string) {
 	        continue
         }
 
-		
-
 		filename := file.Name
 		if i := strings.LastIndex(filename, "/"); i != -1 {
 			filename = filename[i+1:]
@@ -209,10 +207,13 @@ func extractTarGz(src, dest string) {
 		//bin := localBin()
         //destpath := bin + "/" + header.Name // Concaténation avec le nom du fichier extrait
 	    // dirpath := dest + "/" + path.Dir(header.Name) // Répertoire de l'extrait
-		filename := baseName(header.Name)
+		filename := header.Name
+        if i := strings.LastIndex(filename, "/"); i != -1 {
+	      filename = filename[i+1:]
+        }
         destpath := dest + "/" + filename
 
-       // parts := strings.Split(destpath, "/")
+        // parts := strings.Split(destpath, "/")
         //dir := strings.Join(parts[:len(parts)-1], "/")
 
 		if destpath == src {
