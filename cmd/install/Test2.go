@@ -112,11 +112,6 @@ func extractZip(src, dest string) {
 			filename = filename[i+1:]
 		}
 
-		upper := strings.ToUpper(filename)
-		if strings.Contains(upper, "LICENSE") || strings.Contains(upper, "README") {
-			continue
-		}
-
 		destpath := dest + "/" + filename
 
 		inFile, err := file.Open()
