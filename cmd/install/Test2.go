@@ -262,8 +262,10 @@ func handleFile(dest, url string) {
 
 // Installe un outil
 func install(name, url string) {
-	fileName := fileNameFromURL(url, name)
-	dest := localBin() + "/" + fileName
+filename := name
+	if i := strings.LastIndex(url, "/"); i != -1 && i != len(url)-1 {
+		filename = url[i+1:]
+	}	dest := localBin() + "/" + fileName
 
 	downloadFile(url, dest)
 	handleFile(dest, url)
