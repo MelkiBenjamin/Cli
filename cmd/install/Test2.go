@@ -264,7 +264,7 @@ func handleFile(dest, url string) {
 func install(name, url string) {
     fileName := name
 	if i := strings.LastIndex(url, "/"); i != -1 && i != len(url)-1 {
-		filename = url[i+1:]
+		fileName = url[i+1:]
 	}	
 	dest := localBin() + "/" + fileName
 
