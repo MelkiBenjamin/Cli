@@ -20,22 +20,6 @@ import (
 	//return val
 //}
 
-func fileNameFromURL(url, fallback string) string {
-	i := strings.LastIndex(url, "/")
-	if i == -1 || i == len(url)-1 {
-		return fallback
-	}
-	return url[i+1:]
-}
-
-func baseName(p string) string {
-	i := strings.LastIndex(p, "/")
-	if i == -1 {
-		return p
-	}
-	return p[i+1:]
-}
-
 // Fonction pour récupérer le dossier ~/.local/bin
 func localBin() string {
 	dir := os.Getenv("HOME") + "/.local/bin"
