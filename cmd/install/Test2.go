@@ -262,7 +262,7 @@ func handleFile(dest, url string) {
 
 // Installe un outil
 func install(name, url string) {
-    filename := name
+    fileName := name
 	if i := strings.LastIndex(url, "/"); i != -1 && i != len(url)-1 {
 		filename = url[i+1:]
 	}	
