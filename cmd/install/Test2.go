@@ -265,7 +265,8 @@ func install(name, url string) {
 filename := name
 	if i := strings.LastIndex(url, "/"); i != -1 && i != len(url)-1 {
 		filename = url[i+1:]
-	}	dest := localBin() + "/" + fileName
+	}	
+	dest := localBin() + "/" + fileName
 
 	downloadFile(url, dest)
 	handleFile(dest, url)
