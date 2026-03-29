@@ -1,4 +1,4 @@
-package main
+apackage main
 
 import (
 	"archive/tar"
@@ -53,29 +53,6 @@ func downloadFile(url, dest string) {
     log.Println("Content-Type:", resp.Header.Get("Content-Type"))
 	log.Printf("telechargement-fait")
 }
-
-//func extractZip(src, dest string) {
-//	log.Printf("extrait-zip")
-//	zipReader, err := zip.OpenReader(src)
-//	if err != nil {
-//		log.Fatalf("Erreur zip traitement du fichier %s : %v", src, err)
-//	}
-//	file := zipReader.File[0] // On prend le premier fichier (unique)
-//	outFile, err := os.Create(file.Name) // Utilise le même nom de fichier que dans l'archive
-//	if err != nil {
-//		log.Fatalf("Erreur zip de create %s : %v", src, err)
-//	}
-//	inFile, err := file.Open()
-//	if err != nil {
-//		log.Fatalf("Erreur zip de file-open %s : %v", src, err)
-//	}
-//	_, err = outFile.ReadFrom(inFile)
-//	if err != nil {
-//		log.Fatalf("Erreur zip final %s : %v", src, err)
-//	}
-//	zipReader.Close(); outFile.Close(); inFile.Close()
-//	log.Printf("extrait-zip-fait")
-//}
 
 func extractZip(src, dest string) {
 	log.Printf("extrait-zip")
