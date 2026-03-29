@@ -98,7 +98,6 @@ func extractZip(src, dest string) {
 		log.Printf("Fichier extrait : %s", destpath)
 		return
 	}
-
 	log.Fatalf("Aucun binaire trouvé dans %s", src)
 }
 
@@ -111,11 +110,6 @@ func extractTarGz(src, dest string) {
 		log.Fatalf("Erreur tar traitement du fichier  %s : %v", src, err)
     }
 	
-	buf := make([]byte, 2)
-    file.Read(buf)
-    file.Seek(0, 0)
-
-    log.Printf("Magic bytes: %x\n", buf)
 	defer file.Close() // ← on ferme uniquement à la fin
 	
 	gzipReader, err := gzip.NewReader(file)
@@ -164,12 +158,6 @@ func extractTarGz(src, dest string) {
 	      filename = filename[i+1:]
         }
         destpath := dest + "/" + filename
-
-		if destpath == src {
-        	log.Fatalf("collision source/destination : %s", destpath)
-        }
-
-		// Créer les répertoires manquants
     
 		log.Printf("suite avant outfile create")
 	
@@ -188,7 +176,6 @@ func extractTarGz(src, dest string) {
 		}
 		log.Printf("Fichier extrait : %s", destpath)
 	}
-	
     log.Printf("extrait-tar-fait")
 }
 
