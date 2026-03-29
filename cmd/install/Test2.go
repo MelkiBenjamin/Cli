@@ -1,4 +1,4 @@
-apackage main
+package main
 
 import (
 	"archive/tar"
@@ -36,9 +36,7 @@ func downloadFile(url, dest string) {
 	defer resp.Body.Close()
 
 	out, err := os.Create(dest)
-	//outPath := dest + "/" + baseName(file.Name)
-    //outFile, err := os.Create(outPath)
-
+	
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,10 +46,6 @@ func downloadFile(url, dest string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// 👉 ICI
-    log.Println("Status:", resp.Status)
-    log.Println("Content-Type:", resp.Header.Get("Content-Type"))
-	log.Printf("telechargement-fait")
 }
 
 func extractZip(src, dest string) {
@@ -165,17 +159,11 @@ func extractTarGz(src, dest string) {
 		}
 
      	log.Printf("suite avant création destpath")
-		//bin := localBin()
-        //destpath := bin + "/" + header.Name // Concaténation avec le nom du fichier extrait
-	    // dirpath := dest + "/" + path.Dir(header.Name) // Répertoire de l'extrait
 		filename := header.Name
         if i := strings.LastIndex(filename, "/"); i != -1 {
 	      filename = filename[i+1:]
         }
         destpath := dest + "/" + filename
-
-        // parts := strings.Split(destpath, "/")
-        //dir := strings.Join(parts[:len(parts)-1], "/")
 
 		if destpath == src {
         	log.Fatalf("collision source/destination : %s", destpath)
