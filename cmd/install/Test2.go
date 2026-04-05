@@ -50,7 +50,6 @@ func downloadFile(url, dest string) {
 
 // extractFile : Logique commune sans dépendance à filepath
 func extractFile(name string, mode os.FileMode, isDir bool, r io.Reader, destDir string) {
-	// 1. Filtre : pas de dossiers, et seulement les exécutables (ton critère 0111)
 	if isDir || mode&0111 == 0 {
 		return
 	}
@@ -67,10 +66,8 @@ func extractFile(name string, mode os.FileMode, isDir bool, r io.Reader, destDir
 	}
 
 	// 3. Construction du chemin de destination
-	// On s'assure d'avoir un séparateur propre
 	destPath := strings.TrimSuffix(destDir, "/") + "/" + filename
 
-	// 4. Création et copie
 	outFile, err := os.OpenFile(destPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
 	if err != nil {
 		log.Fatalf("Erreur création %s : %v", destPath, err)
