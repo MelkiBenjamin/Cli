@@ -48,9 +48,44 @@ func downloadFile(url, dest string) {
 	}
 }
 
+// extractFile : Logique commune sans dépendance à filepath
+func extractFile(name string, mode os.FileMode, isDir bool, r io.Reader, destDir string) {
+	// 1. Filtre : pas de dossiers, et seulement les exécutables (ton critère 0111)
+	if isDir || mode&0111 == 0 {
+		return
+	}
+
+	// 2. Extraction du nom de fichier (équivalent de filepath.Base)
+	filename := name
+	if i := strings.LastIndex(filename, "/"); i != -1 {
+		filename = filename[i+1:]
+	}
+	
+	// Si après nettoyage le nom est vide, on ignore
+	if filename == "" {
+		return
+	}
+
+	// 3. Construction du chemin de destination
+	// On s'assure d'avoir un séparateur propre
+	destPath := strings.TrimSuffix(destDir, "/") + "/" + filename
+
+	// 4. Création et copie
+	outFile, err := os.OpenFile(destPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
+	if err != nil {
+		log.Fatalf("Erreur création %s : %v", destPath, err)
+	}
+	defer outFile.Close()
+
+	if _, err = io.Copy(outFile, r); err != nil {
+		log.Fatalf("Erreur copie vers %s : %v", destPath, err)
+	}
+
+	log.Printf("Fichier extrait : %s", destPath)
+}
+
 func extractZip(src, dest string) {
 	log.Printf("extrait-zip")
-
 	zipReader, err := zip.OpenReader(src)
 	if err != nil {
 		log.Fatalf("Erreur zip %s : %v", src, err)
@@ -58,125 +93,45 @@ func extractZip(src, dest string) {
 	defer zipReader.Close()
 
 	for _, file := range zipReader.File {
-		if file.FileInfo().IsDir() {
-			continue
-		}
-
-		if file.FileInfo().Mode()&0111 == 0 {
-	        continue
-        }
-
-		filename := file.Name
-		if i := strings.LastIndex(filename, "/"); i != -1 {
-			filename = filename[i+1:]
-		}
-
-		destpath := dest + "/" + filename
-
-		inFile, err := file.Open()
+		f, err := file.Open()
 		if err != nil {
-			log.Fatalf("Erreur open zip %s : %v", src, err)
+			log.Fatalf("Erreur open zip : %v", err)
 		}
-
-		outFile, err := os.Create(destpath)
-		if err != nil {
-			inFile.Close()
-			log.Fatalf("Erreur create %s : %v", destpath, err)
-		}
-
-		_, err = io.Copy(outFile, inFile)
-		outFile.Close()
-		inFile.Close()
-		if err != nil {
-			log.Fatalf("Erreur copy %s : %v", destpath, err)
-		}
-
-		if err := os.Chmod(destpath, 0755); err != nil {
-			log.Fatalf("Erreur chmod %s : %v", destpath, err)
-		}
-
-		log.Printf("Fichier extrait : %s", destpath)
-		return
+		
+		extractFile(file.Name, file.FileInfo().Mode(), file.FileInfo().IsDir(), f, dest)
+		f.Close()
 	}
-	log.Fatalf("Aucun binaire trouvé dans %s", src)
 }
-
 
 func extractTarGz(src, dest string) {
 	log.Printf("extrait-tar")
-	//file := must(os.Open(src), "Erreur tar traitement du fichier")
 	file, err := os.Open(src)
-    if err != nil {
-		log.Fatalf("Erreur tar traitement du fichier  %s : %v", src, err)
-    }
-	
-	defer file.Close() // ← on ferme uniquement à la fin
-	
+	if err != nil {
+		log.Fatalf("Erreur tar open %s : %v", src, err)
+	}
+	defer file.Close()
+
 	gzipReader, err := gzip.NewReader(file)
 	if err != nil {
-		log.Fatalf("Erreur tar de la creation gzip %s : %v", src, err)
+		log.Fatalf("Erreur gzip %s : %v", src, err)
 	}
-	defer gzipReader.Close() // ← idem
+	defer gzipReader.Close()
+
 	tarReader := tar.NewReader(gzipReader)
-    //	var header *tar.Header
-	log.Printf("log de test")
+
 	for {
-		log.Printf("debut for")
-    	header, err := tarReader.Next()
+		header, err := tarReader.Next()
 		if err == io.EOF {
-	      log.Println("Fin de l'archive.")
-		  break     
+			break
 		}
-		log.Printf("suite 1 for")
 		if err != nil {
-		  log.Fatalf("Erreur tar lors de la lecture du 1er fichier  %s : %v", src, err)
-		}
-		log.Printf("suite 2 for")
-		// Assurez-vous que l'en-tête n'est pas nil
-		if header == nil {
-		  log.Println("Ignorer une entrée qui est probablement un dossier ou un lien symbolique.")
-		  continue
-		}
-		log.Printf("Lecture de l'entrée : %s", header.Name)
-		log.Printf("suite 3 for")
-	    if header.Typeflag == tar.TypeDir {
-		  log.Printf("Répertoire ignoré : %s", header.Name)
-		  continue
-	    }
-		log.Printf("suite 4 for")
-		if header.Typeflag != tar.TypeReg {
-			continue
+			log.Fatalf("Erreur lecture tar : %v", err)
 		}
 
-		if header.FileInfo().Mode()&0111 == 0 {
-			continue
-		}
-
-     	log.Printf("suite avant création destpath")
-		filename := header.Name
-        if i := strings.LastIndex(filename, "/"); i != -1 {
-	      filename = filename[i+1:]
-        }
-        destpath := dest + "/" + filename
-    
-		log.Printf("suite avant outfile create")
-	
-    	outFile, err := os.Create(destpath) // Utilise le même nom de fichier que dans l'archive
-    	if err != nil {
-	    	log.Fatalf("Erreur de create tar soit %s : %v", destpath, err)
-    	}
-	
-    	_, err = io.Copy(outFile, tarReader)
-    	if err != nil {
-	    	log.Fatalf("Erreur final %s : %v", destpath, err)
-	    }
-    	outFile.Close()
-		if err := os.Chmod(destpath, 0755); err != nil {
-			log.Fatalf("Erreur chmod %s : %v", destpath, err)
-		}
-		log.Printf("Fichier extrait : %s", destpath)
+		isDir := header.Typeflag == tar.TypeDir
+		extractFile(header.Name, header.FileInfo().Mode(), isDir, tarReader, dest)
 	}
-    log.Printf("extrait-tar-fait")
+	log.Printf("extrait-tar-fait")
 }
 
 // Gère le fichier téléchargé : tar / zip / chmod
