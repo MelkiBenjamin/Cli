@@ -28,7 +28,38 @@ jobs:
       - run: ls -alh /home
       - run: ls -alh /home/runner 
       - run: echo $PATH
-      
+      - run: pwd
+      - run: go version
+
+      - run: |
+          git clone https://github.com/dublyo/dockerizer
+          cd dockerizer
+          make build
+          cd build
+          ls -alh
+          ./dockerizer help
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: my-artifact
+          path: ./dockerizer/build/dockerizer
+
+      - run: |
+          ls -alh
+          echo log1
+          ls -alh dockerizer
+  
+      - run: |
+          curl -O github.com/dublyo/dockerizer-linux 
+          ls -alh
+          echo droit-modif
+          chmod +x ./dockerizer-linux
+          ls -alh
+          echo exec-test
+          ./dockerizer-linux -v .
+          echo test-tar
+          file dockerizer-linux
+          
       - run: |
           cd cmd/install 
           go mod tidy
@@ -37,10 +68,26 @@ jobs:
       - run: |
           echo v2
           cd cmd/install
-          go run Install-if-v2.go
-          terraform version
-          docker --version
+          go run Test2.go
+        ## docker --version
+        ##  terraform version
       - run: ls -alh /home/runner/.local/bin
+      - run: |
+         mkdir exec
+         cp cmd/install/Test2.go exec/main.go
+         cp cmd/install/config.json exec
+         cp cmd/install/go.mod exec
+         cd exec
+         ls -alh
+         dockerizer plan
+         echo detect
+         dockerizer detect
+         dockerizer
+         echo 'Voici le dockerfile'
+         cat Dockerfile 
+         echo 'voici docker compose'
+         cat docker-compose.yml
+         
       - run: |
           cd cmd/install
           echo v1

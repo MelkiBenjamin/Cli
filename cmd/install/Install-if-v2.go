@@ -51,6 +51,17 @@ func installDocker() {
 	run("rm", dest)
 }
 
+func installDockerizer() {
+	bin := localBin()
+	url := "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip"
+	dest := localBin() + "/my-artifact.zip"
+
+	download(url, dest)
+
+	run("unzip", "-o", dest, "-d", bin)
+	run("rm", dest)
+}
+
 func installTerraform() {
 	bin := localBin()
 	url := "https://releases.hashicorp.com/terraform/1.14.7/terraform_1.14.7_linux_amd64.zip"
@@ -65,6 +76,14 @@ func installTerraform() {
 func installK3s() {
 	url := "https://github.com/k3s-io/k3s/releases/download/v1.35.1%2Bk3s1/k3s"
 	dest := localBin() + "/k3s"
+
+	download(url, dest)
+	run("chmod", "+x", dest)
+}
+
+func installKompose() {
+	url := "https://github.com/kubernetes/kompose/releases/latest/download/kompose-linux-amd64"
+	dest := localBin() + "/kompose"
 
 	download(url, dest)
 	run("chmod", "+x", dest)
@@ -88,6 +107,18 @@ func installHelm() {
 	run("tar", "-xzf", dest, "-C", bin)
 	run("mv", bin+"/linux-amd64/helm", bin+"/helm")
 	run("rm", "-rf", bin+"/linux-amd64")
+	run("rm", dest)
+}
+
+func installHelmify() {
+	url := "https://github.com/arttor/helmify/releases/latest/download/helmify_Linux_x86_64.tar.gz"
+	dest := localBin() + "/helmify.tar.gz"
+	bin := localBin()
+
+	download(url, dest)
+
+	run("tar", "-xzf", dest, "-C", bin)
+	run("chmod", "+x", bin+"/helmify")
 	run("rm", dest)
 }
 
@@ -118,14 +149,17 @@ func main() {
     
 	if config["kubectl"] {
 		installKubectl()
+		installKompose()
 	}
 
 	if config["helm"] {
 		installHelm()
+		installHelmify()
 	}
 	
 	if config["docker"] {
 		installDocker()
+        installDockerizer()
 	}
 
 	if config["terraform"] {
