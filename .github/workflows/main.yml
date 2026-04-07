@@ -66,7 +66,7 @@ jobs:
           go run main.go
 
       - name: test mise
-        run: ./install_mise.go
+        run: go run install_mise.go
         
       - run: |
           echo v2
