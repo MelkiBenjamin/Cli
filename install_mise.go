@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -36,7 +35,7 @@ func main() {
 	}
 
 	dir := localBon()
-	archive := filepath.Join(dir, "mise.tar.gz")
+	archive := dir + "/mise.tar.gz"
 	url := fmt.Sprintf("https://github.com/jdx/mise/releases/download/%s/mise-%s-linux-x64.tar.gz", tag, tag)
 
 	resp, _ := http.Get(url)
@@ -59,10 +58,11 @@ func main() {
 			break
 		}
 		must(err)
-		if h.Typeflag != tar.TypeReg || filepath.Base(h.Name) != "mise" {
+		parts := strings.Split(h.Name, "/")
+		if h.Typeflag != tar.TypeReg || parts[len(parts)-1] != "mise" {
 			continue
 		}
-		bin, err := os.OpenFile(filepath.Join(dir, "mise"), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
+		bin, err := os.OpenFile(dir+"/mise", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
 		must(err)
 		_, _ = io.Copy(bin, tr)
 		_ = bin.Close()
@@ -70,5 +70,5 @@ func main() {
 	}
 
 	_ = os.Remove(archive)
-	fmt.Println("mise installé dans", filepath.Join(dir, "mise"))
+	fmt.Println("mise installé dans", dir+"/mise")
 }
