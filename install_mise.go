@@ -10,8 +10,8 @@ import (
 	"strings"
 )
 
-func localBon() string {
-	dir := os.Getenv("HOME") + "/.local/bon"
+func localBin() string {
+	dir := os.Getenv("HOME") + "/.local/bin"
 	_ = os.MkdirAll(dir, 0o755)
 	return dir
 }
@@ -29,16 +29,21 @@ func main() {
 	}
 	if tag == "latest" {
 		resp, _ := http.Get("https://github.com/jdx/mise/releases/latest")
-		_ = resp.Body.Close()
-		u := resp.Request.URL.String()
-		tag = u[strings.LastIndex(u, "/tag/")+5:]
+		if resp != nil {
+			_ = resp.Body.Close()
+			u := resp.Request.URL.String()
+			tag = u[strings.LastIndex(u, "/tag/")+5:]
+		}
 	}
 
-	dir := localBon()
+	dir := localBin()
 	archive := dir + "/mise.tar.gz"
 	url := fmt.Sprintf("https://github.com/jdx/mise/releases/download/%s/mise-%s-linux-x64.tar.gz", tag, tag)
 
 	resp, _ := http.Get(url)
+	if resp == nil {
+		panic("download impossible")
+	}
 	defer resp.Body.Close()
 	out, _ := os.Create(archive)
 	_, _ = io.Copy(out, resp.Body)
