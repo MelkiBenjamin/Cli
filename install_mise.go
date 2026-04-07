@@ -34,7 +34,7 @@ func extractMiseFromURL(url, dir string) {
 
 	buffered := bufio.NewReaderSize(resp.Body, 10*1024)
 	gz, err := gzip.NewReader(buffered)
-	must(err)
+//	must(err)
 	defer gz.Close()
 
 	tr := tar.NewReader(gz)
