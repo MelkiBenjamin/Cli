@@ -28,7 +28,7 @@ func resolveTag() string {
 	if len(os.Args) > 1 && os.Args[1] != "" {
 		return os.Args[1]
 	}
-	resp, err := http.Get("https://github.com/jdx/mise/releases/latest")
+	resp, err := http.Head("https://github.com/jdx/mise/releases/latest")
 	must(err)
 	defer resp.Body.Close()
 	u := resp.Request.URL.String()
