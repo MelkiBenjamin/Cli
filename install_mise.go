@@ -10,68 +10,57 @@ import (
 	"strings"
 )
 
-func localBin() string {
-	if custom := os.Getenv("MISE_INSTALL_DIR"); custom != "" {
-		_ = os.MkdirAll(custom, 0o755)
-		return custom
-	}
-
-	home, err := os.UserHomeDir()
-	if err == nil && home != "" {
-		dir := home + "/.local/bin"
-		if os.MkdirAll(dir, 0o755) == nil {
-			return dir
-		}
-	}
-
-	fallback := "./.local/bin"
-	_ = os.MkdirAll(fallback, 0o755)
-	return fallback
-}
-
 func must(err error) {
 	if err != nil {
 		panic(err)
 	}
 }
 
-func main() {
-	tag := "latest"
-	if len(os.Args) > 1 {
-		tag = os.Args[1]
-	}
-	if tag == "latest" {
-		resp, _ := http.Get("https://github.com/jdx/mise/releases/latest")
-		if resp != nil {
-			_ = resp.Body.Close()
-			u := resp.Request.URL.String()
-			tag = u[strings.LastIndex(u, "/tag/")+5:]
-		}
-	}
+func localBin() string {
+	home, err := os.UserHomeDir()
+	must(err)
+	dir := home + "/.local/bin"
+	must(os.MkdirAll(dir, 0o755))
+	return dir
+}
 
-	dir := localBin()
+func resolveTag() string {
+	if len(os.Args) > 1 && os.Args[1] != "" {
+		return os.Args[1]
+	}
+	resp, err := http.Get("https://github.com/jdx/mise/releases/latest")
+	must(err)
+	defer resp.Body.Close()
+	u := resp.Request.URL.String()
+	return u[strings.LastIndex(u, "/tag/")+5:]
+}
+
+func downloadArchive(tag, dir string) string {
 	archive := dir + "/mise.tar.gz"
 	url := fmt.Sprintf("https://github.com/jdx/mise/releases/download/%s/mise-%s-linux-x64.tar.gz", tag, tag)
 
-	resp, _ := http.Get(url)
-	if resp == nil {
-		panic("download impossible")
-	}
+	resp, err := http.Get(url)
+	must(err)
 	defer resp.Body.Close()
+
 	out, err := os.Create(archive)
 	must(err)
+	defer out.Close()
 	_, err = io.Copy(out, resp.Body)
 	must(err)
-	_ = out.Close()
+	return archive
+}
 
+func extractMise(archive, dir string) {
 	f, err := os.Open(archive)
 	must(err)
 	defer f.Close()
+
 	gz, err := gzip.NewReader(f)
 	must(err)
 	defer gz.Close()
-	tr := tar.NewReader(gz)
 
+	tr := tar.NewReader(gz)
 	for {
 		h, err := tr.Next()
 		if err == io.EOF {
@@ -87,9 +76,20 @@ func main() {
 		_, err = io.Copy(bin, tr)
 		must(err)
 		_ = bin.Close()
-		break
+		return
 	}
+	panic("binaire mise introuvable")
+}
 
-	_ = os.Remove(archive)
-	fmt.Println("mise installé dans", dir+"/mise", "(sans sudo)")
+func cleanup(path string) {
+	_ = os.Remove(path)
+}
+
+func main() {
+	tag := resolveTag()
+	dir := localBin()
+	archive := downloadArchive(tag, dir)
+	extractMise(archive, dir)
+	cleanup(archive)
+	fmt.Println("mise installé dans", dir+"/mise")
 }
