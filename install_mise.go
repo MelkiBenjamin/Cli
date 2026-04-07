@@ -2,6 +2,10 @@ package main
 
 import (
 	"archive/tar"
+<<<<<<< codex/create-go-script-for-installation
+	"bufio"
+=======
+>>>>>>> MelkiBenjamin-patch-1
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -10,6 +14,11 @@ import (
 	"strings"
 )
 
+<<<<<<< codex/create-go-script-for-installation
+const latestURL = "https://github.com/jdx/mise/releases/latest/download/mise-linux-x64.tar.gz"
+
+=======
+>>>>>>> MelkiBenjamin-patch-1
 func must(err error) {
 	if err != nil {
 		panic(err)
@@ -24,6 +33,8 @@ func localBin() string {
 	return dir
 }
 
+<<<<<<< codex/create-go-script-for-installation
+=======
 func resolveTag() string {
 	if len(os.Args) > 1 && os.Args[1] != "" {
 		return os.Args[1]
@@ -39,12 +50,18 @@ func downloadURL(tag string) string {
 	return fmt.Sprintf("https://github.com/jdx/mise/releases/download/%s/mise-%s-linux-x64.tar.gz", tag, tag)
 }
 
+>>>>>>> MelkiBenjamin-patch-1
 func extractMiseFromURL(url, dir string) {
 	resp, err := http.Get(url)
 	must(err)
 	defer resp.Body.Close()
 
+<<<<<<< codex/create-go-script-for-installation
+	buffered := bufio.NewReaderSize(resp.Body, 256*1024)
+	gz, err := gzip.NewReader(buffered)
+=======
 	gz, err := gzip.NewReader(resp.Body)
+>>>>>>> MelkiBenjamin-patch-1
 	must(err)
 	defer gz.Close()
 
@@ -70,8 +87,13 @@ func extractMiseFromURL(url, dir string) {
 }
 
 func main() {
+<<<<<<< codex/create-go-script-for-installation
+	dir := localBin()
+	extractMiseFromURL(latestURL, dir)
+=======
 	tag := resolveTag()
 	dir := localBin()
 	extractMiseFromURL(downloadURL(tag), dir)
+>>>>>>> MelkiBenjamin-patch-1
 	fmt.Println("mise installé dans", dir+"/mise")
 }
