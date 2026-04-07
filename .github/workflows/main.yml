@@ -67,6 +67,7 @@ jobs:
 
       - name: test mise
         run: ./install_mise.go
+        
       - run: |
           echo v2
           cd cmd/install
