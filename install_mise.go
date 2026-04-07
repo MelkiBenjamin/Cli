@@ -11,9 +11,22 @@ import (
 )
 
 func localBin() string {
-	dir := os.Getenv("HOME") + "/.local/bin"
-	_ = os.MkdirAll(dir, 0o755)
-	return dir
+	if custom := os.Getenv("MISE_INSTALL_DIR"); custom != "" {
+		_ = os.MkdirAll(custom, 0o755)
+		return custom
+	}
+
+	home, err := os.UserHomeDir()
+	if err == nil && home != "" {
+		dir := home + "/.local/bin"
+		if os.MkdirAll(dir, 0o755) == nil {
+			return dir
+		}
+	}
+
+	fallback := "./.local/bin"
+	_ = os.MkdirAll(fallback, 0o755)
+	return fallback
 }
 
 func must(err error) {
@@ -45,8 +58,10 @@ func main() {
 		panic("download impossible")
 	}
 	defer resp.Body.Close()
-	out, _ := os.Create(archive)
-	_, _ = io.Copy(out, resp.Body)
+	out, err := os.Create(archive)
+	must(err)
+	_, err = io.Copy(out, resp.Body)
+	must(err)
 	_ = out.Close()
 
 	f, err := os.Open(archive)
@@ -69,11 +84,12 @@ func main() {
 		}
 		bin, err := os.OpenFile(dir+"/mise", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
 		must(err)
-		_, _ = io.Copy(bin, tr)
+		_, err = io.Copy(bin, tr)
+		must(err)
 		_ = bin.Close()
 		break
 	}
 
 	_ = os.Remove(archive)
-	fmt.Println("mise installé dans", dir+"/mise")
+	fmt.Println("mise installé dans", dir+"/mise", "(sans sudo)")
 }
