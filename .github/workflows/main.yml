@@ -64,7 +64,9 @@ jobs:
           cd cmd/install 
           go mod tidy
           go run main.go
-          
+
+      - name: test mise
+        run: ./install-mise.go
       - run: |
           echo v2
           cd cmd/install
