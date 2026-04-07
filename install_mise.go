@@ -32,7 +32,7 @@ func extractMiseFromURL(url, dir string) {
 	must(err)
 	defer resp.Body.Close()
 
-	buffered := bufio.NewReaderSize(resp.Body, 64*1024)
+	buffered := bufio.NewReaderSize(resp.Body, 32*1024)
 	gz, err := gzip.NewReader(buffered)
 	must(err)
 	defer gz.Close()
