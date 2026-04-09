@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const latestURL = "https://github.com/jdx/mise/releases/latest/download/mise-linux-x64.tar.gz"
+const latestURL = "https://github.com/jdx/mise/releases/download/v2026.4.6/mise-v2026.4.6-linux-x64.tar.gz"
 
 func must(err error) {
 	if err != nil {
