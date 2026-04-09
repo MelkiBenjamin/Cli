@@ -2,7 +2,7 @@ package main
 
 import (
 	"archive/tar"
-//	"bufio"
+	"bufio"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -32,8 +32,8 @@ func extractMiseFromURL(url, dir string) {
 	must(err)
 	defer resp.Body.Close()
 
-//	buffered := bufio.NewReaderSize(resp.Body, 10*1024)
-	gz, err := gzip.NewReader(resp.Body)
+	buffered := bufio.NewReaderSize(resp.Body, 64*1024)
+	gz, err := gzip.NewReader(buffered)
 	must(err)
 	defer gz.Close()
 
