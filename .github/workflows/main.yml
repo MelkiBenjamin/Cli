@@ -67,6 +67,7 @@ jobs:
 
       - name: test mise
         run: go run install_mise.go
+      - run: ls -alh /home/runner/.local/bin
         
       - run: |
           echo v2
