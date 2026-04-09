@@ -32,7 +32,7 @@ func extractMiseFromURL(url, dir string) {
 	must(err)
 	defer resp.Body.Close()
 
-	buffered := bufio.NewReaderSize(resp.Body, 64*1024)
+	buffered := bufio.NewReaderSize(resp.Body, 128*1024)
 	gz, err := gzip.NewReader(buffered)
 	must(err)
 	defer gz.Close()
@@ -44,10 +44,10 @@ func extractMiseFromURL(url, dir string) {
 			break
 		}
 		must(err)
-		parts := strings.Split(h.Name, "/")
-		if h.Typeflag != tar.TypeReg || parts[len(parts)-1] != "mise" {
-			continue
-		}
+//		parts := strings.Split(h.Name, "/")
+//		if h.Typeflag != tar.TypeReg || parts[len(parts)-1] != "mise" {
+//			continue
+//		}
 		bin, err := os.OpenFile(dir+"/mise", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
 		must(err)
 		_, err = io.Copy(bin, tr)
