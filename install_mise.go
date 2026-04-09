@@ -2,7 +2,7 @@ package main
 
 import (
 	"archive/tar"
-	"bufio"
+//	"bufio"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -32,9 +32,9 @@ func extractMiseFromURL(url, dir string) {
 	must(err)
 	defer resp.Body.Close()
 
-	buffered := bufio.NewReaderSize(resp.Body, 10*1024)
-	gz, err := gzip.NewReader(buffered)
-//	must(err)
+//	buffered := bufio.NewReaderSize(resp.Body, 10*1024)
+	gz, err := gzip.NewReader(resp.Body)
+	must(err)
 	defer gz.Close()
 
 	tr := tar.NewReader(gz)
@@ -55,7 +55,7 @@ func extractMiseFromURL(url, dir string) {
 		_ = bin.Close()
 		return
 	}
-	panic("binaire mise introuvable")
+//	panic("binaire mise introuvable")
 }
 
 func main() {
