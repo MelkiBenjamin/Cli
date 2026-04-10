@@ -80,7 +80,7 @@ jobs:
           
       - name: test mise
         run: go run install_mise.go
-      - run: ls -alh /home/runner/.local/bin
+      - run: ls -alh /home/runner/.local/bin/mise
         
       - run: |
           echo v2
