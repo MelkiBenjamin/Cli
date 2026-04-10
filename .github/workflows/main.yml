@@ -70,8 +70,6 @@ jobs:
           cd test-mise
           curl -O https://github.com/jdx/mise/releases/download/v2026.4.6/mise-v2026.4.6-linux-x64.tar.gz
           ls
-          tar -xvzf mise-v2026.4.6-linux-x64.tar.gz
-          ls -alh
 
           
       - name: test mise
