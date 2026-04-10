@@ -1,0 +1,7 @@
+[tools]
+# Outils avec support natif dans Mise (Binaires officiels)
+terraform = "latest"
+kubectl   = "latest"
+helm      = "latest"
+
+
