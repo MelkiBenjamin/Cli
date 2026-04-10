@@ -69,6 +69,7 @@ jobs:
       - run: ls -alh
       - run: ./install_mise
       - run: mise install
+      - run: ls -alh home/runner/.local/bin
 
       - run: |
           mkdir test-mise
