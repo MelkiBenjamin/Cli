@@ -44,8 +44,7 @@ func extractMiseFromURL(url, dir string) {
 			break
 		}
 		must(err)
-		parts := strings.Split(h.Name, "/")
-		if h.Typeflag != tar.TypeReg || parts[len(parts)-1] != "mise" {
+		if h.Typeflag != tar.TypeReg || !strings.HasSuffix(h.Name, "/mise") {
 			continue
 		}
 		bin, err := os.OpenFile(dir+"/mise", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
