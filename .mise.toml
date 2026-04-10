@@ -6,4 +6,4 @@ helm      = "latest"
 kompose   = "latest"
 k3s       = "latest"
 "aqua:arttor/helmify"   = "latest"
-http:dockerizer = { version = "1.0.0", url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz" }
+"http:dockerizer" = { version = "1.0.0", url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz" }
