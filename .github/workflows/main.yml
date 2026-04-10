@@ -65,6 +65,9 @@ jobs:
           go mod tidy
           go run main.go
 
+      - run: go build install_mise.go 
+      - run: ls -alh
+
       - run: |
           mkdir test-mise
           cd test-mise
