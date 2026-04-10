@@ -3,5 +3,5 @@
 terraform = "latest"
 kubectl   = "latest"
 helm      = "latest"
-
-
+kompose   = "latest"
+k3s       = "latest"
