@@ -70,6 +70,16 @@ jobs:
       - run: ./install_mise
       - run: mise install
       - run: ls -alh /home/runner/.local/share/mise/installs
+      - run: |
+          ls -alh /home/runner/.local/share/mise/installs/terraform 
+          echo verif
+          ls -alh /home/runner/.local/share/mise/installs/k3s
+          echo verif2
+          ls -alh /home/runner/.local/share/mise/installs/aqua-arttor-helmify
+          echo verif3 
+          ls -alh /home/runner/.local/share/mise/installs/http-dockerizer
+          echo start
+          terraform version
 
 
       - run: |
