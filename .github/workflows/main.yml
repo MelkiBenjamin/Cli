@@ -78,7 +78,7 @@ jobs:
           ls -alh /home/runner/.local/share/mise/installs/aqua-arttor-helmify
           echo verif3 
           ls -alh /home/runner/.local/share/mise/installs/http-dockerizer
-      -run: |
+      - run: |
           echo start
           eval "$(mise activate bash)"
           terraform version
