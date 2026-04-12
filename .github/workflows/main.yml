@@ -69,7 +69,8 @@ jobs:
       - run: ls -alh
       - run: ./install_mise
       - run: mise install
-      - run: ls -alh /home/runner/.local/bin
+      - run: ls -alh /home/runner/.local/share/mise/installs
+
 
       - run: |
           mkdir test-mise
@@ -80,7 +81,7 @@ jobs:
           
       - name: test mise
         run: go run install_mise.go
-      - run: ls -alh ./.local/share/mise/installs
+      - run: ls -alh 
  
         
       - run: |
