@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"encoding/json"
+	"os/exec"
 )
 
 const latestURL = "https://github.com/jdx/mise/releases/download/v2026.4.6/mise-v2026.4.6-linux-x64.tar.gz"
