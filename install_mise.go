@@ -57,8 +57,36 @@ func extractMiseFromURL(url, dir string) {
 //	panic("binaire mise introuvable")
 }
 
+func installTools(misePath string, jsonFile string) {
+	file, err := os.Open(jsonFile)
+	must(err)
+	defer file.Close()
+
+	var tools []string
+	err = json.NewDecoder(file).Decode(&tools)
+	must(err)
+
+	fmt.Println("--- Installation des outils via Mise ---")
+
+	for _, tool := range tools {
+		fmt.Printf("Installation de %s...\n", tool)
+
+		// On utilise "mise use --global <tool>@latest"
+		// Tu peux ajuster la commande selon tes besoins (ex: "mise install")
+		cmd := exec.Command(misePath, "use", "--global", tool+"@latest")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		err := cmd.Run()
+		if err != nil {
+			fmt.Printf("Erreur lors de l'installation de %s: %v\n", tool, err)
+		}
+	}
+}
+
 func main() {
 	dir := localBin()
 	extractMiseFromURL(latestURL, dir)
 	fmt.Println("mise installé dans", dir+"/mise")
+	installTools("mise", "Install.json")
 }
