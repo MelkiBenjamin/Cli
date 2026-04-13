@@ -68,15 +68,16 @@ func installTools(misePath string, jsonFile string) {
 	err = json.NewDecoder(file).Decode(&tools)
 	must(err)
 
-	for _, tool := range tools {
-		// Tu peux ajuster la commande selon tes besoins (ex: "mise install")
-		cmd := exec.Command(misePath, "install", tool+"@latest")
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+	// Tu peux ajuster la commande selon tes besoins (ex: "mise install")
+	args := append([]string{"install"}, tool+"@latest"...)
+	cmd := exec.Command(misePath, args...)
+	//cmd := exec.Command(misePath, "install", tool+"@latest")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
-		err := cmd.Run()
-		must(err)
-	}
+	err := cmd.Run()
+	must(err)
+	
 }
 
 func main() {
