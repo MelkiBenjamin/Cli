@@ -76,7 +76,6 @@ func installTools(misePath string, jsonFile string) {
 
 		err := cmd.Run()
 		must(err)
-		}
 	}
 }
 
