@@ -1,24 +1,21 @@
-
 [tools]
-# --- 1. Définition des binaires réels ---
-# On utilise des noms spécifiques pour ne pas entrer en conflit
-docker-bin = { version = "29.3.0", url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz" }
-dockerizer = { version = "1.0.0", url = "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip" }
+# --- Outils de base (Sources) ---
+# On utilise des noms internes pour les binaires
+docker-core = { url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz", version = "29.3.0" }
+dockerizer  = { url = "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip", version = "1.0.0" }
 
-helm-bin = "latest"
+helm-core = "latest"
 "aqua:arttor/helmify" = "latest"
 
-kubectl-bin = "latest"
-kompose     = "latest"
+kubectl-core = "latest"
+kompose      = "latest"
 
-# --- 2. Définition des Bundles (tes points d'entrée JSON) ---
-# Ces outils sont des "méta-paquets". 
-# Ils s'installent en même temps que leurs composants.
+# --- Bundles (Noms pour ton JSON) ---
+# En utilisant depends_on, mise installera les composants.
+# IMPORTANT : Pour le parallèle, on utilise 'mise install --jobs 4' dans ton Go
+docker  = { virtual = true, depends_on = ["docker-core", "dockerizer"] }
+helm    = { virtual = true, depends_on = ["helm-core", "aqua:arttor/helmify"] }
+kubectl = { virtual = true, depends_on = ["kubectl-core", "kompose"] }
 
-docker = { virtual = true, wait_for = ["docker-bin", "dockerizer"] }
-helm   = { virtual = true, wait_for = ["helm-bin", "aqua:arttor/helmify"] }
-kubectl = { virtual = true, wait_for = ["kubectl-bin", "kompose"] }
-
-# Outils seuls
 terraform = "latest"
 k3s       = "latest"
