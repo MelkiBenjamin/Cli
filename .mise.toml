@@ -1,10 +1,19 @@
 [tools]
-# Outils avec support natif dans Mise (Binaires officiels)
+# --- Définitions individuelles ---
+# On utilise des noms courts et propres pour tes outils personnalisés
+docker = { version = "29.3.0", url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz" }
+dockerizer = { version = "1.0.0", url = "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip" }
+
+helm = "latest"
+"aqua:arttor/helmify" = "latest"
+
+kubectl = "latest"
+kompose = "latest"
 terraform = "latest"
-kubectl   = "latest"
-helm      = "latest"
-kompose   = "latest"
-k3s       = "latest"
-"aqua:arttor/helmify"   = "latest"
-"http:dockerizer" = { version = "1.0.0", url = "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip" }
-"http:docker" = { version = "29.3.0", url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz" }
+
+[aliases]
+# --- Définition des Bundles ---
+# Quand tu appelles la clé à gauche, mise installe tout ce qui est dans la liste à droite
+docker = ["docker", "dockerizer"]
+helm   = ["helm", "aqua:arttor/helmify"]
+k8s    = ["kubectl", "kompose"]
