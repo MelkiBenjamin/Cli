@@ -1,22 +1,22 @@
 [tools]
-# --- 1. Les Binaires Réels ---
-# On utilise des noms internes pour les sources
-docker-core = { url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz", version = "29.3.0" }
+# --- 1. LES BINAIRES (SOURCES) ---
+# On utilise des noms uniques pour les sources réelles
+docker-bin = { url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz", version = "29.3.0" }
 dockerizer  = { url = "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip", version = "1.0.0" }
 
-helm-core = "latest"
+helm-bin = "latest"
 "aqua:arttor/helmify" = "latest"
 
-kubectl-core = "latest"
-kompose      = "latest"
+kubectl-bin = "latest"
+kompose     = "latest"
 
-# --- 2. Les Bundles (Tes points d'entrée JSON) ---
-# On ajoute une version factice "1" pour valider le TOML.
-# On utilise 'depends_on' pour lier les outils.
-docker  = { version = "1", depends_on = ["docker-core", "dockerizer"] }
-helm    = { version = "1", depends_on = ["helm-core", "aqua:arttor/helmify"] }
-kubectl = { version = "1", depends_on = ["kubectl-core", "kompose"] }
+# --- 2. LES BUNDLES (TES POINTS D'ENTRÉE JSON) ---
+# On leur donne 'latest' pour qu'ils soient valides. 
+# Ils installeront leurs dépendances en parallèle si tu as mis --jobs dans ton Go.
+docker  = { version = "latest", depends_on = ["docker-bin", "dockerizer"] }
+helm    = { version = "latest", depends_on = ["helm-bin", "aqua:arttor/helmify"] }
+kubectl = { version = "latest", depends_on = ["kubectl-bin", "kompose"] }
 
-# Outils seuls
+# --- 3. AUTRES OUTILS ---
 terraform = "latest"
 k3s       = "latest"
