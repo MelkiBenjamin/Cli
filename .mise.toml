@@ -6,7 +6,7 @@ docker = { url = "https://download.docker.com/linux/static/stable/x86_64/docker-
 
 # --- BUNDLE HELM ---
 # Si tu mets "helm" dans le JSON -> installe helm + helmify
-helm = { version = "latest", depends_on = ["aqua:arttor/helmify"] }
+helm = { version = "latest", depends = "aqua:arttor/helmify" }
 "aqua:arttor/helmify" = "latest"
 # --- BUNDLE KUBERNETES ---
 # Si tu mets "kubectl" dans le JSON -> installe kubectl + kompose
@@ -16,13 +16,6 @@ kompose = "latest"
 # --- AUTRES ---
 terraform = "latest"
 k3s       = "latest"
-[tasks.install_helm]
-# Indispensable : c'est ce qui force l'installation des deux
-depends = ["helm", "aqua:arttor/helmify"]
-
-
-
-
 
 
 
