@@ -1,17 +1,12 @@
 [tools]
-# --- BUNDLE DOCKER ---
-# On définit 'docker' directement. 'dockerizer' en dépend.
-docker = { url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz", version = "29.3.0" }
-dockerizer = { url = "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip", version = "1.0.0", depends_on = ["docker"] }
+# On définit les binaires avec des noms clairs
+"http:dockerizer" = { url = "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip", version = "1.0.0" }
+"aqua:arttor/helmify" = "latest"
+kompose = "latest"
 
-# --- BUNDLE HELM ---
-helm = "latest"
-"aqua:arttor/helmify" = { version = "latest", depends_on = ["helm"] }
-
-# --- BUNDLE KUBERNETES ---
-kubectl = "latest"
-kompose = { version = "latest", depends_on = ["kubectl"] }
-
-# --- AUTRES ---
+# On utilise les noms simples comme 'déclencheurs'
+docker = { url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz", version = "29.3.0", depends_on = ["http:dockerizer"] }
+helm = { version = "latest", depends_on = ["aqua:arttor/helmify"] }
+kubectl = { version = "latest", depends_on = ["kompose"] }
 terraform = "latest"
 k3s       = "latest"
