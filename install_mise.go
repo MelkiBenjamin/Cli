@@ -69,7 +69,7 @@ func installTools(misePath string, jsonFile string) {
 	must(err)
 
 	// Tu peux ajuster la commande selon tes besoins (ex: "mise install")
-	args := append([]string{"run"}, tools...)
+	args := append([]string{"install"}, tools...)
 	cmd := exec.Command(misePath, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
