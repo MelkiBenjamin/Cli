@@ -1,12 +1,19 @@
 [tools]
-# On définit les binaires avec des noms clairs
-"http:dockerizer" = { url = "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip", version = "1.0.0" }
+# --- BUNDLE DOCKER ---
+# Si tu mets "docker" dans le JSON -> installe docker + dockerizer
+docker = { url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz", version = "29.3.0", depends_on = ["dockerizer"] }
+dockerizer = { url = "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip", version = "1.0.0" }
+
+# --- BUNDLE HELM ---
+# Si tu mets "helm" dans le JSON -> installe helm + helmify
+helm = { version = "latest", depends_on = ["aqua:arttor/helmify"] }
 "aqua:arttor/helmify" = "latest"
+
+# --- BUNDLE KUBERNETES ---
+# Si tu mets "kubectl" dans le JSON -> installe kubectl + kompose
+kubectl = { version = "latest", depends_on = ["kompose"] }
 kompose = "latest"
 
-# On utilise les noms simples comme 'déclencheurs'
-docker = { url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz", version = "29.3.0", depends_on = ["http:dockerizer"] }
-helm = { version = "latest", depends_on = ["aqua:arttor/helmify"] }
-kubectl = { version = "latest", depends_on = ["kompose"] }
+# --- AUTRES ---
 terraform = "latest"
 k3s       = "latest"
