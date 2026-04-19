@@ -1,6 +1,6 @@
 [tools]
-# --- Outils de base (Sources) ---
-# On utilise des noms internes pour les binaires
+# --- 1. Les Binaires Réels ---
+# On utilise des noms internes pour les sources
 docker-core = { url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz", version = "29.3.0" }
 dockerizer  = { url = "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip", version = "1.0.0" }
 
@@ -10,12 +10,13 @@ helm-core = "latest"
 kubectl-core = "latest"
 kompose      = "latest"
 
-# --- Bundles (Noms pour ton JSON) ---
-# En utilisant depends_on, mise installera les composants.
-# IMPORTANT : Pour le parallèle, on utilise 'mise install --jobs 4' dans ton Go
-docker  = { virtual = true, depends_on = ["docker-core", "dockerizer"] }
-helm    = { virtual = true, depends_on = ["helm-core", "aqua:arttor/helmify"] }
-kubectl = { virtual = true, depends_on = ["kubectl-core", "kompose"] }
+# --- 2. Les Bundles (Tes points d'entrée JSON) ---
+# On ajoute une version factice "1" pour valider le TOML.
+# On utilise 'depends_on' pour lier les outils.
+docker  = { version = "1", depends_on = ["docker-core", "dockerizer"] }
+helm    = { version = "1", depends_on = ["helm-core", "aqua:arttor/helmify"] }
+kubectl = { version = "1", depends_on = ["kubectl-core", "kompose"] }
 
+# Outils seuls
 terraform = "latest"
 k3s       = "latest"
