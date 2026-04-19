@@ -1,4 +1,4 @@
-# This is a basic workflow to help you get started with Actions
+a# This is a basic workflow to help you get started with Actions
 
 name: CI
 
@@ -68,7 +68,7 @@ jobs:
       - run: go build install_mise.go 
       - run: ls -alh
       - run: ./install_mise
-      - run: mise install
+     ## - run: mise install
       - run: ls -alh /home/runner/.local/share/mise/installs
       - run: |
           ls -alh /home/runner/.local/share/mise/installs/terraform 
