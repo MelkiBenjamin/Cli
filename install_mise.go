@@ -125,15 +125,28 @@ func expand(tools []string) []Tool {
 
 func runMiseUse(misePath string, tools []Tool) {
 	for _, t := range tools {
+		var normalTools []string
 
-		args := []string{
-			"use",
-			t.Name + "@" + t.Version,
+		if t.URL == "" {
+			normalTools = append(normalTools, t.Name+"@"+t.Version)
+			continue
 		}
 
-		if t.URL != "" {
-			args = append(args, "--url", t.URL)
-		}	
+		// tools avec URL → 1 par 1
+		args := []string{"use", t.Name + "@" + t.Version, "--url", t.URL}
+		fmt.Println("Running:", args)
+
+		cmd := exec.Command(misePath, args...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		must(cmd.Run())
+	}
+
+	// exécution groupée (rapide)
+	if len(normalTools) > 0 {
+		args := append([]string{"use"}, normalTools...)
+		fmt.Println("Running:", args)
+
 	    cmd := exec.Command(misePath, args...)
 	    cmd.Stdout = os.Stdout
 	    cmd.Stderr = os.Stderr
