@@ -126,7 +126,7 @@ func expand(tools []string) []Tool {
 func runMiseUse(misePath string, tools []Tool) {
 	for _, t := range tools {
 
-		args := append[]string{
+		args := []string{
 			"use",
 			t.Name + "@" + t.Version,
 		}
@@ -134,7 +134,6 @@ func runMiseUse(misePath string, tools []Tool) {
 		if t.URL != "" {
 			args = append(args, "--url", t.URL)
 		}	
-	    args := append([]string{"use"}, tools...)
 	    cmd := exec.Command(misePath, args...)
 	    cmd.Stdout = os.Stdout
 	    cmd.Stderr = os.Stderr
