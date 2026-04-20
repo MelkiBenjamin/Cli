@@ -32,7 +32,6 @@ func must(err error) {
 func localBin() string {
 	home, err := os.UserHomeDir()
 	must(err)
-
 	dir := filepath.Join(home, ".local", "bin")
 	must(os.MkdirAll(dir, 0o755))
 	return dir
@@ -42,10 +41,6 @@ func extractMiseFromURL(url, dir string) string {
 	resp, err := http.Get(url)
 	must(err)
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		panic(fmt.Sprintf("download mise failed: %s", resp.Status))
-	}
 
 	buffered := bufio.NewReaderSize(resp.Body, 128*1024)
 	gz, err := gzip.NewReader(buffered)
@@ -75,7 +70,6 @@ func extractMiseFromURL(url, dir string) string {
 
 		return misePath
 	}
-
 	panic("binaire mise introuvable")
 }
 
@@ -105,8 +99,10 @@ var bundles = map[string][]string{
 	"k3s": {
 		"k3s",
 	},
-	// "docker" custom URL => mieux en mode génération de TOML
-}
+    "docker": {
+		"http:docker",
+		"http:dockerizer"
+	}
 
 func expandTools(tools []string) []string {
 	seen := make(map[string]bool)
@@ -115,7 +111,6 @@ func expandTools(tools []string) []string {
 	for _, t := range tools {
 		bundle, ok := bundles[t]
 		if !ok {
-			fmt.Println("Tool ignoré en mode direct:", t)
 			continue
 		}
 
@@ -126,16 +121,10 @@ func expandTools(tools []string) []string {
 			}
 		}
 	}
-
 	return expanded
 }
 
 func runMiseUse(misePath string, tools []string) {
-	if len(tools) == 0 {
-		fmt.Println("Aucun tool à traiter")
-		return
-	}
-
 	args := append([]string{"use"}, tools...)
 	cmd := exec.Command(misePath, args...)
 	cmd.Stdout = os.Stdout
@@ -145,11 +134,6 @@ func runMiseUse(misePath string, tools []string) {
 }
 
 func runMiseInstall(misePath string, tools []string) {
-	if len(tools) == 0 {
-		fmt.Println("Aucun tool à traiter")
-		return
-	}
-
 	args := append([]string{"install"}, tools...)
 	cmd := exec.Command(misePath, args...)
 	cmd.Stdout = os.Stdout
@@ -165,7 +149,6 @@ func main() {
 	}
 
 	if mode != ModeUse && mode != ModeInstall {
-		fmt.Fprintln(os.Stderr, "usage: go run . [use|install]")
 		os.Exit(1)
 	}
 
@@ -175,8 +158,6 @@ func main() {
 
 	tools := readTools("Install.json")
 	expanded := expandTools(tools)
-
-	fmt.Println("tools expansion:", expanded)
 
 	switch mode {
 	case ModeUse:
