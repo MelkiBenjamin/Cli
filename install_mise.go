@@ -124,8 +124,8 @@ func expand(tools []string) []Tool {
 }
 
 func runMiseUse(misePath string, tools []Tool) {
+	var normalTools []string
 	for _, t := range tools {
-		var normalTools []string
 
 		if t.URL == "" {
 			normalTools = append(normalTools, t.Name+"@"+t.Version)
