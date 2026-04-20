@@ -1,19 +1,27 @@
-package main
+	package main
 
 import (
 	"archive/tar"
 	"bufio"
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"strings"
-	"encoding/json"
 	"os/exec"
+	"path/filepath"
+	"strings"
 )
 
 const latestURL = "https://github.com/jdx/mise/releases/download/v2026.4.6/mise-v2026.4.6-linux-x64.tar.gz"
+
+type Mode string
+
+const (
+	ModeUse     Mode = "use"
+	ModeInstall Mode = "install"
+)
 
 func must(err error) {
 	if err != nil {
@@ -24,63 +32,156 @@ func must(err error) {
 func localBin() string {
 	home, err := os.UserHomeDir()
 	must(err)
-	dir := home + "/.local/bin"
+
+	dir := filepath.Join(home, ".local", "bin")
 	must(os.MkdirAll(dir, 0o755))
 	return dir
 }
 
-func extractMiseFromURL(url, dir string) {
+func extractMiseFromURL(url, dir string) string {
 	resp, err := http.Get(url)
 	must(err)
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		panic(fmt.Sprintf("download mise failed: %s", resp.Status))
+	}
 
 	buffered := bufio.NewReaderSize(resp.Body, 128*1024)
 	gz, err := gzip.NewReader(buffered)
 	must(err)
 	defer gz.Close()
 
+	misePath := filepath.Join(dir, "mise")
 	tr := tar.NewReader(gz)
+
 	for {
 		h, err := tr.Next()
 		if err == io.EOF {
 			break
 		}
 		must(err)
+
 		if h.Typeflag != tar.TypeReg || !strings.HasSuffix(h.Name, "/mise") {
 			continue
 		}
-		bin, err := os.OpenFile(dir+"/mise", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
+
+		bin, err := os.OpenFile(misePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
 		must(err)
+
 		_, err = io.Copy(bin, tr)
 		must(err)
-		_ = bin.Close()
-		return
+		must(bin.Close())
+
+		return misePath
 	}
-//	panic("binaire mise introuvable")
+
+	panic("binaire mise introuvable")
 }
 
-func installTools(misePath string, jsonFile string) {
+func readTools(jsonFile string) []string {
 	file, err := os.Open(jsonFile)
 	must(err)
 	defer file.Close()
 
 	var tools []string
-	err = json.NewDecoder(file).Decode(&tools)
-	must(err)
+	must(json.NewDecoder(file).Decode(&tools))
 
-	// Tu peux ajuster la commande selon tes besoins (ex: "mise install")
+	return tools
+}
+
+var bundles = map[string][]string{
+	"helm": {
+		"aqua:helm/helm",
+		"aqua:arttor/helmify",
+	},
+	"kubectl": {
+		"aqua:kubernetes/kubectl",
+		"aqua:kubernetes/kompose",
+	},
+	"terraform": {
+		"terraform",
+	},
+	"k3s": {
+		"k3s",
+	},
+	// "docker" custom URL => mieux en mode génération de TOML
+}
+
+func expandTools(tools []string) []string {
+	seen := make(map[string]bool)
+	expanded := make([]string, 0)
+
+	for _, t := range tools {
+		bundle, ok := bundles[t]
+		if !ok {
+			fmt.Println("Tool ignoré en mode direct:", t)
+			continue
+		}
+
+		for _, tool := range bundle {
+			if !seen[tool] {
+				seen[tool] = true
+				expanded = append(expanded, tool)
+			}
+		}
+	}
+
+	return expanded
+}
+
+func runMiseUse(misePath string, tools []string) {
+	if len(tools) == 0 {
+		fmt.Println("Aucun tool à traiter")
+		return
+	}
+
+	args := append([]string{"use"}, tools...)
+	cmd := exec.Command(misePath, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	must(cmd.Run())
+}
+
+func runMiseInstall(misePath string, tools []string) {
+	if len(tools) == 0 {
+		fmt.Println("Aucun tool à traiter")
+		return
+	}
+
 	args := append([]string{"install"}, tools...)
 	cmd := exec.Command(misePath, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-    err = cmd.Run()
-	must(err)
+	must(cmd.Run())
 }
 
 func main() {
+	mode := ModeUse
+	if len(os.Args) > 1 {
+		mode = Mode(strings.ToLower(os.Args[1]))
+	}
+
+	if mode != ModeUse && mode != ModeInstall {
+		fmt.Fprintln(os.Stderr, "usage: go run . [use|install]")
+		os.Exit(1)
+	}
+
 	dir := localBin()
-	extractMiseFromURL(latestURL, dir)
-	fmt.Println("mise installé dans", dir+"/mise")
-	installTools("mise", "Install.json")
+	misePath := extractMiseFromURL(latestURL, dir)
+	fmt.Println("mise installé dans", misePath)
+
+	tools := readTools("Install.json")
+	expanded := expandTools(tools)
+
+	fmt.Println("tools expansion:", expanded)
+
+	switch mode {
+	case ModeUse:
+		runMiseUse(misePath, expanded)
+	case ModeInstall:
+		runMiseInstall(misePath, expanded)
+	}
 }
