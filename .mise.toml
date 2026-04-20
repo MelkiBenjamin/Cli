@@ -6,8 +6,12 @@ docker = { url = "https://download.docker.com/linux/static/stable/x86_64/docker-
 
 # --- BUNDLE HELM ---
 # Si tu mets "helm" dans le JSON -> installe helm + helmify
-"aqua:arttor/helmify" = "latest"
-helm = { version = "latest", depends = ["helmify"] }
+[alias] # On crée un alias global pour simplifier la vie de mise helmify = "aqua:arttor/helmify"
+helmify = "aqua:arttor/helmify
+
+[tools]
+helmify = "latest"
+helm = { helmify = "latest" = "latest", depends = ["helmify"] }
 # --- BUNDLE KUBERNETES ---
 # Si tu mets "kubectl" dans le JSON -> installe kubectl + kompose
 kubectl = { version = "latest", depends_on = ["kompose"] }
