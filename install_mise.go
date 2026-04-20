@@ -1,4 +1,4 @@
-	package main
+package main
 
 import (
 	"archive/tar"
@@ -103,6 +103,7 @@ var bundles = map[string][]string{
 		"http:docker",
 		"http:dockerizer"
 	}
+}
 
 func expandTools(tools []string) []string {
 	seen := make(map[string]bool)
