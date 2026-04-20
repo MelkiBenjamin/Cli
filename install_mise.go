@@ -16,13 +16,6 @@ import (
 
 const latestURL = "https://github.com/jdx/mise/releases/download/v2026.4.6/mise-v2026.4.6-linux-x64.tar.gz"
 
-type Mode string
-
-const (
-	ModeUse     Mode = "use"
-	ModeInstall Mode = "install"
-)
-
 func must(err error) {
 	if err != nil {
 		panic(err)
@@ -84,86 +77,77 @@ func readTools(jsonFile string) []string {
 	return tools
 }
 
-var bundles = map[string][]string{
+type Tool struct {
+	Name    string
+	Version string
+	URL     string
+}
+
+var bundles = map[string][]Tool{
 	"helm": {
-		"aqua:helm/helm",
-		"aqua:arttor/helmify",
+		{Name: "aqua:helm/helm", Version: "3.14.0"},
+		{Name: "aqua:arttor/helmify", Version: "0.4.0"},
 	},
 	"kubectl": {
-		"aqua:kubernetes/kubectl",
-		"aqua:kubernetes/kompose",
+		{Name: "aqua:kubernetes/kubectl", Version: "1.29.0"},
+		{Name: "aqua:kubernetes/kompose", Version: "1.31.0"},
 	},
 	"terraform": {
-		"terraform",
+		{Name: "terraform", Version: "1.8.5"},
 	},
 	"k3s": {
-		"k3s",
+		{Name: "k3s", Version: "1.29.3+k3s1"},
 	},
-    "docker": {
-		"http:docker",
-		"http:dockerizer",
+	"docker": {
+		{
+			Name:    "docker",
+			Version: "29.3.0",
+			URL:     "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz",
+		},
+		{
+			Name:    "dockerizer.dev",
+			Version: "1.0.0",
+			URL:     "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip",
+		},
 	},
 }
-
-func expandTools(tools []string) []string {
-	seen := make(map[string]bool)
-	expanded := make([]string, 0)
+	
+func expand(tools []string) []Tool {
+	var result []Tool
 
 	for _, t := range tools {
-		bundle, ok := bundles[t]
-		if !ok {
-			continue
-		}
-
-		for _, tool := range bundle {
-			if !seen[tool] {
-				seen[tool] = true
-				expanded = append(expanded, tool)
-			}
+		if bundle, ok := bundles[t]; ok {
+			result = append(result, bundle...)
 		}
 	}
-	return expanded
+	return result
 }
 
-func runMiseUse(misePath string, tools []string) {
-	args := append([]string{"use"}, tools...)
-	cmd := exec.Command(misePath, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+func runMiseUse(misePath string, tools []Tool) {
+	for _, t := range tools {
 
-	must(cmd.Run())
-}
+		args := []string{
+			"use",
+			t.Name + "@" + t.Version,
+		}
 
-func runMiseInstall(misePath string, tools []string) {
-	args := append([]string{"install"}, tools...)
-	cmd := exec.Command(misePath, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+		if t.URL != "" {
+			args = append(args, "--url", t.URL)
+		}	
+	    args := append([]string{"use"}, tools...)
+	    cmd := exec.Command(misePath, args...)
+	    cmd.Stdout = os.Stdout
+	    cmd.Stderr = os.Stderr
 
-	must(cmd.Run())
+	    must(cmd.Run())
 }
 
 func main() {
-	mode := ModeUse
-	if len(os.Args) > 1 {
-		mode = Mode(strings.ToLower(os.Args[1]))
-	}
-
-	if mode != ModeUse && mode != ModeInstall {
-		os.Exit(1)
-	}
-
 	dir := localBin()
 	misePath := extractMiseFromURL(latestURL, dir)
 	fmt.Println("mise installé dans", misePath)
 
 	tools := readTools("Install.json")
 	expanded := expandTools(tools)
-
-	switch mode {
-	case ModeUse:
-		runMiseUse(misePath, expanded)
-	case ModeInstall:
-		runMiseInstall(misePath, expanded)
 	}
 }
