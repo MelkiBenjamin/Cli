@@ -149,5 +149,4 @@ func main() {
 
 	tools := readTools("Install.json")
 	expanded := expandTools(tools)
-	}
 }
