@@ -1,19 +1,13 @@
 [tools]
 # --- BUNDLE DOCKER ---
-# Si tu mets "docker" dans le JSON -> installe docker + dockerizer
 docker = { url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz", version = "29.3.0", depends_on = ["dockerizer"] }
 #dockerizer = { url = "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip", version = "1.0.0" }
 
 # --- BUNDLE HELM ---
-# Si tu mets "helm" dans le JSON -> installe helm + helmify
-[alias] # On crée un alias global pour simplifier la vie de mise helmify = "aqua:arttor/helmify"
-helmify = "aqua:arttor/helmify
+"aqua:arttor/helmify" = "latest"
+helm = { version = "latest", depends = ["aqua:arttor/helmify"] }
 
-[tools]
-helmify = "latest"
-helm = { helmify = "latest" = "latest", depends = ["helmify"] }
 # --- BUNDLE KUBERNETES ---
-# Si tu mets "kubectl" dans le JSON -> installe kubectl + kompose
 kubectl = { version = "latest", depends_on = ["kompose"] }
 kompose = "latest"
 
