@@ -126,7 +126,7 @@ func expand(tools []string) []Tool {
 func runMiseUse(misePath string, tools []Tool) {
 	for _, t := range tools {
 
-		args := []string{
+		args := append[]string{
 			"use",
 			t.Name + "@" + t.Version,
 		}
@@ -140,6 +140,7 @@ func runMiseUse(misePath string, tools []Tool) {
 	    cmd.Stderr = os.Stderr
 
 	    must(cmd.Run())
+	}
 }
 
 func main() {
@@ -148,5 +149,7 @@ func main() {
 	fmt.Println("mise installé dans", misePath)
 
 	tools := readTools("Install.json")
-	expanded := expandTools(tools)
+	expanded := expand(tools)
+	runMiseUse(misePath, expanded)
+
 }
