@@ -101,8 +101,8 @@ var bundles = map[string][]string{
 	},
     "docker": {
 		"http:docker",
-		"http:dockerizer"
-	}
+		"http:dockerizer",
+	},
 }
 
 func expandTools(tools []string) []string {
