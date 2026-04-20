@@ -5,7 +5,7 @@ docker = { url = "https://download.docker.com/linux/static/stable/x86_64/docker-
 
 # --- BUNDLE HELM ---
 "aqua:arttor/helmify" = "latest"
-helm = { version = "latest", depends = ["aqua:arttor/helmify"] }
+"aqua:helm/helm" = { version = "latest", depends = ["aqua:arttor/helmify"] }
 
 # --- BUNDLE KUBERNETES ---
 kubectl = { version = "latest", depends_on = ["kompose"] }
