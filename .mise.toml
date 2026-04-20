@@ -7,7 +7,7 @@ docker = { url = "https://download.docker.com/linux/static/stable/x86_64/docker-
 # --- BUNDLE HELM ---
 # Si tu mets "helm" dans le JSON -> installe helm + helmify
 "aqua:arttor/helmify" = "latest"
-helm = { version = "latest", depends = "aqua:arttor/helmify" }
+"aqua:helm/helm" = { version = "latest", depends = "aqua:arttor/helmify" }
 # --- BUNDLE KUBERNETES ---
 # Si tu mets "kubectl" dans le JSON -> installe kubectl + kompose
 kubectl = { version = "latest", depends_on = ["kompose"] }
