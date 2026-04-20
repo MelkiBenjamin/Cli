@@ -67,7 +67,7 @@ jobs:
 
       - run: go build install_mise.go 
       - run: ls -alh
-      - run: ./install_mise
+      - run: ./install_mise install
      ## - run: mise install
       - run: ls -alh /home/runner/.local/share/mise/installs
       - run: |
