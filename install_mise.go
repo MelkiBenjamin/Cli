@@ -142,7 +142,6 @@ func runMiseUse(misePath string, tools []Tool) {
 	cmd.Stderr = os.Stderr
 
 	must(cmd.Run())
-	}
 }
 
 func main() {
