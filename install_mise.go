@@ -85,18 +85,18 @@ type Tool struct {
 
 var bundles = map[string][]Tool{
 	"helm": {
-		{Name: "aqua:helm/helm", Version: "3.14.0"},
-		{Name: "aqua:arttor/helmify", Version: "0.4.0"},
+		{Name: "helm", Version: "3.14.0"},
+		{Name: "aqua:arttor/helmify", Version: "0.4.19"},
 	},
 	"kubectl": {
-		{Name: "aqua:kubernetes/kubectl", Version: "1.29.0"},
-		{Name: "aqua:kubernetes/kompose", Version: "1.31.0"},
+		{Name: "kubectl", Version: "1.29.0"},
+		{Name: "kompose", Version: "1.38.0"},
 	},
 	"terraform": {
 		{Name: "terraform", Version: "1.8.5"},
 	},
 	"k3s": {
-		{Name: "k3s", Version: "1.29.3+k3s1"},
+		{Name: "k3s", Version: "1.35.3+k3s1"},
 	},
 	"docker": {
 		{
