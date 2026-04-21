@@ -133,7 +133,7 @@ func runMiseUse(misePath string, tools []Tool) {
 		}
 
 		// tools avec URL → 1 par 1
-		args := []string{"use", t.Name + "@" + t.Version, "--url", t.URL}
+		args := []string{"use", "http:" + t.Name + "[url=" + t.URL + "]@" + t.Version}
 		fmt.Println("Running:", args)
 
 		cmd := exec.Command(misePath, args...)
