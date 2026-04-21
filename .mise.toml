@@ -1,5 +1,5 @@
 [tools]
-"http:dockerizer" = { version = "1.0.0", url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz" }
+"http:dockerizer" = { version = "1.0.0", url = "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip" }
 "http:docker" = { version = "29.3.0", url = "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz" }
 
 "aqua:arttor/helmify" = "latest"
