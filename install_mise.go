@@ -125,7 +125,7 @@ func expand(tools []string) []Tool {
 
 func runMiseUse(misePath string, tools []Tool) {
 	var args []string
-	args = append(args, "use")
+	args = append(args, "install")
 	for _, t := range tools {
 		if t.URL == "" {
 			args = append(args, t.Name+"@"+t.Version)
