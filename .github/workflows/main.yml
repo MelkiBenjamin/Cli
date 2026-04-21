@@ -81,9 +81,9 @@ jobs:
       - run: |
           echo start
           terraform version
+          echo dockerizer-start
           dockerizer version
   ##        eval "$(mise activate bash)"
-          terraform version
 
 
       - run: |
