@@ -125,33 +125,23 @@ func expand(tools []string) []Tool {
 
 func runMiseUse(misePath string, tools []Tool) {
 	var normalTools []string
+	args = append(args, "use")
 	for _, t := range tools {
-
 		if t.URL == "" {
-			normalTools = append(normalTools, t.Name+"@"+t.Version)
-			continue
+			args = append(args, t.Name+"@"+t.Version)
+		} else {
+			args = append(args,
+				fmt.Sprintf("http:%s[url=%s]@%s", t.Name, t.URL, t.Version),
+			)
 		}
-
-		// tools avec URL → 1 par 1
-		args := []string{"use", "http:" + t.Name + "[url=" + t.URL + "]@" + t.Version}
-		fmt.Println("Running:", args)
-
-		cmd := exec.Command(misePath, args...)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		must(cmd.Run())
 	}
+	fmt.Println("Running:", args)
 
-	// exécution groupée (rapide)
-	if len(normalTools) > 0 {
-		args := append([]string{"use"}, normalTools...)
-		fmt.Println("Running:", args)
+	cmd := exec.Command(misePath, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
-	    cmd := exec.Command(misePath, args...)
-	    cmd.Stdout = os.Stdout
-	    cmd.Stderr = os.Stderr
-
-	    must(cmd.Run())
+	must(cmd.Run())
 	}
 }
 
@@ -163,5 +153,4 @@ func main() {
 	tools := readTools("Install.json")
 	expanded := expand(tools)
 	runMiseUse(misePath, expanded)
-
 }
