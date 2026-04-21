@@ -105,7 +105,7 @@ var bundles = map[string][]Tool{
 			URL:     "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz",
 		},
 		{
-			Name:    "dockerizer.dev",
+			Name:    "dockerizer",
 			Version: "1.0.0",
 			URL:     "https://github.com/MelkiBenjamin/Cli/raw/refs/heads/main/my-artifact.zip",
 		},
