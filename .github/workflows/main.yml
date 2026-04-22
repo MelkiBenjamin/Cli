@@ -64,7 +64,39 @@ jobs:
           cd cmd/install 
           go mod tidy
           go run main.go
+
+      - run: go build install_mise.go 
+      - run: ls -alh
+      - run: ./install_mise install
+     ## - run: mise install
+      - run: ls -alh /home/runner/.local/share/mise/installs
+      - run: |
+          ls -alh /home/runner/.local/share/mise/installs/terraform 
+          echo verif
+          ls -alh /home/runner/.local/share/mise/installs/k3s
+          echo verif2
+          ls -alh /home/runner/.local/share/mise/installs/aqua-arttor-helmify
+          echo verif3 
+          ls -alh /home/runner/.local/share/mise/installs/http-dockerizer
+      - run: |
+          echo start
+          eval "$(mise activate bash)"
+          terraform version
+          echo dockerizer-start
+          dockerizer version
+
+      - run: |
+          mkdir test-mise
+          cd test-mise
+          curl -O https://github.com/jdx/mise/releases/download/v2026.4.6/mise-v2026.4.6-linux-x64.tar.gz
+          ls
+
           
+      - name: test mise
+        run: go run install_mise.go
+      - run: ls -alh 
+ 
+        
       - run: |
           echo v2
           cd cmd/install
