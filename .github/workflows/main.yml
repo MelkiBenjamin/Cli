@@ -28,19 +28,98 @@ jobs:
       - run: ls -alh /home
       - run: ls -alh /home/runner 
       - run: echo $PATH
-      
+      - run: pwd
+      - run: go version
+
+      - run: |
+          git clone https://github.com/dublyo/dockerizer
+          cd dockerizer
+          make build
+          cd build
+          ls -alh
+          ./dockerizer help
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: my-artifact
+          path: ./dockerizer/build/dockerizer
+
+      - run: |
+          ls -alh
+          echo log1
+          ls -alh dockerizer
+  
+      - run: |
+          curl -O github.com/dublyo/dockerizer-linux 
+          ls -alh
+          echo droit-modif
+          chmod +x ./dockerizer-linux
+          ls -alh
+          echo exec-test
+          ./dockerizer-linux -v .
+          echo test-tar
+          file dockerizer-linux
+          
       - run: |
           cd cmd/install 
           go mod tidy
           go run main.go
+
+      - run: go build install_mise.go 
+      - run: ls -alh
+      - run: ./install_mise install
+     ## - run: mise install
+      - run: ls -alh /home/runner/.local/share/mise/installs
+      - run: |
+          ls -alh /home/runner/.local/share/mise/installs/terraform 
+          echo verif
+          ls -alh /home/runner/.local/share/mise/installs/k3s
+          echo verif2
+          ls -alh /home/runner/.local/share/mise/installs/aqua-arttor-helmify
+          echo verif3 
+          ls -alh /home/runner/.local/share/mise/installs/http-dockerizer
+      - run: |
+          echo start
+          eval "$(mise activate bash)"
+          terraform version
+          echo dockerizer-start
+          dockerizer version
+
+      - run: |
+          mkdir test-mise
+          cd test-mise
+          curl -O https://github.com/jdx/mise/releases/download/v2026.4.6/mise-v2026.4.6-linux-x64.tar.gz
+          ls
+
           
+      - name: test mise
+        run: go run install_mise.go
+      - run: ls -alh 
+ 
+        
       - run: |
           echo v2
           cd cmd/install
-          go run Install-if-v2.go
-          terraform version
-          docker --version
+          go run Test2.go
+        ## docker --version
+        ##  terraform version
       - run: ls -alh /home/runner/.local/bin
+      - run: |
+         mkdir exec
+         cp cmd/install/Test2.go exec/main.go
+         cp cmd/install/config.json exec
+         cp cmd/install/go.mod exec
+         cd exec
+         ls -alh
+         dockerizer plan
+         echo detect
+         dockerizer detect
+         dockerizer
+         echo 'Voici le dockerfile'
+         cat Dockerfile 
+         echo 'voici docker compose'
+         cat docker-compose.yml
+         
       - run: |
           cd cmd/install
           echo v1

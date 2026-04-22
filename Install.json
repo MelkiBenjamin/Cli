@@ -1,0 +1,7 @@
+[
+  "k3s",
+  "terraform",
+  "helm",
+  "kubectl",
+  "docker"
+]
