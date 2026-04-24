@@ -174,7 +174,7 @@ func runPostCommands(tools []Tool) {
 	}
 
 	if hasTool(tools, "helm") {
-		runShell("helmify -f ./")
+		runShell("kompose convert -c")
 	}
 
 	//if hasTool(tools, "k3s") {
