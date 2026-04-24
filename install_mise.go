@@ -111,7 +111,7 @@ var bundles = map[string][]Tool{
 		},
 	},
 }
-	
+
 func expand(tools []string) []Tool {
 	var result []Tool
 
@@ -144,6 +144,43 @@ func runMiseUse(misePath string, tools []Tool) {
 	must(cmd.Run())
 }
 
+func hasTool(tools []Tool, name string) bool {
+	for _, t := range tools {
+		if t.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
+func runShell(command string) {
+	fmt.Println("Avant commande:", command)
+	cmd := exec.Command("bash", "-lc", `export PATH="$HOME/.local/bin:$PATH" && eval "$(mise activate bash)" && `+command)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	must(cmd.Run())
+	fmt.Println("Après commande:", command)
+}
+
+func runPostCommands(tools []Tool) {
+	if hasTool(tools, "docker") {
+		runShell("dockerizer .")
+		runShell("docker build .")
+	}
+
+	if hasTool(tools, "kompose") {
+		runShell("kompose convert")
+	}
+
+	if hasTool(tools, "helm") {
+		runShell("helmify .")
+	}
+
+	if hasTool(tools, "k3s") {
+		runShell("k3s")
+	}
+}
+
 func main() {
 	dir := localBin()
 	misePath := extractMiseFromURL(latestURL, dir)
@@ -152,4 +189,5 @@ func main() {
 	tools := readTools("Install.json")
 	expanded := expand(tools)
 	runMiseUse(misePath, expanded)
+	runPostCommands(expanded)
 }
