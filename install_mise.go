@@ -169,6 +169,7 @@ func runPostCommands(tools []Tool) {
 	}
 
 	if hasTool(tools, "kompose") {
+		runShell("cp .env.example .env")
 		runShell("kompose convert")
 	}
 
