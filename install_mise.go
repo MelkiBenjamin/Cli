@@ -174,12 +174,12 @@ func runPostCommands(tools []Tool) {
 	}
 
 	if hasTool(tools, "helm") {
-		runShell("helmify .")
+		runShell("helmify -f ./")
 	}
 
-	if hasTool(tools, "k3s") {
-		runShell("k3s")
-	}
+	//if hasTool(tools, "k3s") {
+	//	runShell("k3s")
+	//}
 }
 
 func main() {
