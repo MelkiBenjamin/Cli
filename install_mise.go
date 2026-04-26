@@ -123,7 +123,7 @@ func expand(tools []string) []Tool {
 	return result
 }
 
-func runMiseUse(misePath string, tools []Tool) {
+func runMise(misePath string, tools []Tool) {
 	var args []string
 	args = append(args, "install")
 	for _, t := range tools {
@@ -165,7 +165,7 @@ func runShell(command string) {
 func runPostCommands(tools []Tool) {
 	if hasTool(tools, "docker") {
 		runShell("dockerizer .")
-		runShell("docker build .")
+//		runShell("docker build .")
 	}
 
 	if hasTool(tools, "kompose") {
@@ -184,13 +184,10 @@ func runPostCommands(tools []Tool) {
 
 func handleAutoMode(misePath string) {
 	fmt.Println("🤖 Aucun Install.json. Lancement du mode automatique (dockerizer)...")
-
 	// 1. Installation forcée de Docker & Dockerizer
-	runMiseUse(misePath, bundles["docker"])
-
+	runMise(misePath, bundles["docker"])
 	// 2. Génération automatique
 	runShell("dockerizer .")
-
 	// 3. Analyse du résultat pour décider si on passe sur K8s
 	data, err := os.ReadFile("docker-compose.yaml")
 	if err == nil {
@@ -198,11 +195,9 @@ func handleAutoMode(misePath string) {
 		// Si le compose contient plusieurs services, on considère que c'est du microservice
 		if strings.Count(content, "image:") > 1 {
 			fmt.Println("🏢 Architecture multiple détectée -> Migration vers Kubernetes/Helm")
-			
 			// Installation de Kompose (via bundle kubectl) et Helm
 			k8sTools := append(bundles["kubectl"], bundles["helm"]...)
-			runMiseUse(misePath, k8sTools)
-			
+			runMise(misePath, k8sTools)
 			// Conversion
 			runShell("kompose convert -c")
 		} else {
@@ -220,7 +215,7 @@ func main() {
 		// --- MODE 1 : EXPERT ---
 		tools := readTools("Install.json")
 		expanded := expand(tools)
-		runMiseUse(misePath, expanded)
+		runMise(misePath, expanded)
 		runPostCommands(expanded)
 	} else {
 		// --- MODE 2 : AUTOMATIQUE ---
