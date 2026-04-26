@@ -93,12 +93,10 @@ jobs:
           curl -O https://github.com/jdx/mise/releases/download/v2026.4.6/mise-v2026.4.6-linux-x64.tar.gz
           ls
 
-          
       - name: test mise
         run: go run install_mise.go
       - run: ls -alh 
  
-        
       - run: |
           echo v2
           cd cmd/install
@@ -122,10 +120,10 @@ jobs:
          echo 'voici docker compose'
          cat docker-compose.yml
          
-      - run: |
-          cd cmd/install
-          echo v1
-          sudo go run Install.go
+  #$    - run: |
+   ##      cd cmd/install
+   ##       echo v1
+   ##       sudo go run Install.go
       - run: ls -alh /home/runner/.local/bin
       - name: test exécution
         run: sudo k3s
