@@ -182,13 +182,48 @@ func runPostCommands(tools []Tool) {
 	//}
 }
 
+func handleAutoMode(misePath string) {
+	fmt.Println("🤖 Aucun Install.json. Lancement du mode automatique (dockerizer)...")
+
+	// 1. Installation forcée de Docker & Dockerizer
+	runMiseUse(misePath, bundles["docker"])
+
+	// 2. Génération automatique
+	runShell("dockerizer .")
+
+	// 3. Analyse du résultat pour décider si on passe sur K8s
+	data, err := os.ReadFile("docker-compose.yaml")
+	if err == nil {
+		content := string(data)
+		// Si le compose contient plusieurs services, on considère que c'est du microservice
+		if strings.Count(content, "image:") > 1 {
+			fmt.Println("🏢 Architecture multiple détectée -> Migration vers Kubernetes/Helm")
+			
+			// Installation de Kompose (via bundle kubectl) et Helm
+			k8sTools := append(bundles["kubectl"], bundles["helm"]...)
+			runMiseUse(misePath, k8sTools)
+			
+			// Conversion
+			runShell("kompose convert -c")
+		} else {
+			fmt.Println("📦 Monolithe détecté -> On reste sur Docker Compose.")
+		}
+	}
+}
+
 func main() {
 	dir := localBin()
 	misePath := extractMiseFromURL(latestURL, dir)
 	fmt.Println("mise installé dans", misePath)
 
-	tools := readTools("Install.json")
-	expanded := expand(tools)
-	runMiseUse(misePath, expanded)
-	runPostCommands(expanded)
+	if _, err := os.Stat("Install.json"); err == nil {
+		// --- MODE 1 : EXPERT ---
+		tools := readTools("Install.json")
+		expanded := expand(tools)
+		runMiseUse(misePath, expanded)
+		runPostCommands(expanded)
+	} else {
+		// --- MODE 2 : AUTOMATIQUE ---
+		handleAutoMode(misePath)
+	}
 }
