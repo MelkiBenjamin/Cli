@@ -129,7 +129,7 @@ jobs:
         run: |
           cd cmd/install
           go build Test2.go
-      - run: ./test2
+      - run: ./Test2
         
       - run: ls -alh /home/runner/.local/bin
       - run: |
@@ -147,5 +147,3 @@ jobs:
          cat Dockerfile 
          echo 'voici docker compose'
          cat docker-compose.yml
-
-
