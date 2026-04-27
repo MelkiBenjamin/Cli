@@ -129,7 +129,9 @@ jobs:
         run: |
           cd cmd/install
           go build Test2.go
-      - run: ./Test2
+      - run: |
+          cd cmd/install
+          ./Test2
         
       - run: ls -alh /home/runner/.local/bin
       - run: |
