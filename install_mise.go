@@ -189,7 +189,7 @@ func handleAutoMode(misePath string) {
 	// 2. Génération automatique
 	runShell("dockerizer .")
 	// 3. Analyse du résultat pour décider si on passe sur K8s
-	data, err := os.ReadFile("docker-compose.yaml")
+	data, err := os.ReadFile("docker-compose.yml")
 	if err == nil {
 		content := string(data)
 		// Si le compose contient plusieurs services, on considère que c'est du microservice
