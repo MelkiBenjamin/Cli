@@ -126,7 +126,7 @@ jobs:
    ##       sudo go run Install.go
       - run: ls -alh /home/runner/.local/bin
       - name: test exécution
-        run: sudo k3s
+        run: k3s --version
 
       - run: terraform version
 
