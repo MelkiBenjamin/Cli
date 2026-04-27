@@ -165,7 +165,7 @@ func runShell(command string) {
 func runPostCommands(tools []Tool) {
 	if hasTool(tools, "docker") {
 		runShell("dockerizer .")
-		runShell("sed -i '1,5' dockerfile")
+		runShell("sed -i '1,5' Dockerfile")
 		runShell("sed -i '1,3' docker-compose.yml")
 //		runShell("docker build .")
 	}
@@ -190,7 +190,7 @@ func handleAutoMode(misePath string) {
 	runMise(misePath, bundles["docker"])
 	// 2. Génération automatique
 	runShell("dockerizer .")
-	runShell("sed -i '1,5' dockerfile")
+	runShell("sed -i '1,5' Dockerfile")
 	runShell("sed -i '1,3' docker-compose.yml")
 	// 3. Analyse du résultat pour décider si on passe sur K8s
 	data, err := os.ReadFile("docker-compose.yml")
