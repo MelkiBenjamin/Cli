@@ -86,15 +86,15 @@ jobs:
           terraform version
           dockerizer version
 
-      - run: |
-          mkdir test-mise
-          cd test-mise
+  ##    - run: |
+  ##        mkdir test-mise
+  ##        cd test-mise
   ##        curl -O https://github.com/jdx/mise/releases/download/v2026.4.6/mise-v2026.4.6-linux-x64.tar.gz
- #$         ls
+ ##        ls
 
-      - name: test mise
-        run: go run install_mise.go
-      - run: ls -alh 
+   ##   - name: test mise
+    ##    run: go run install_mise.go
+  ##    - run: ls -alh 
  
       - run: |
           echo v2
@@ -132,13 +132,11 @@ jobs:
       - name: log
         run: ls -alh & pwd
 
-      - name: log2
-        run: sudo cp install-k3s.sh /home
+  ##    - name: log2
+  ##      run: sudo cp install-k3s.sh /home
 
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
         run: |
           echo test, and deploy your project.
-          sudo chmod +x /home/install-k3s.sh
-          ls /home -alh
-   ##       sudo /home/install-k3s.sh
+  ##        sudo chmod +x /home/install-k3s.sh
