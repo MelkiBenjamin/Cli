@@ -1,31 +1,18 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
 permissions:
   contents: read 
   pull-requests: write
-# Controls when the workflow will run
+  
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v6.0.2
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
 
       - run: ls -alh /home
       - run: ls -alh /home/runner 
@@ -50,17 +37,6 @@ jobs:
           ls -alh
           echo log1
           ls -alh dockerizer
-  
- ##     - run: |
-  ##        curl -O github.com/dublyo/dockerizer-linux 
-  ##       ls -alh
-   ##       echo droit-modif
-   ##       chmod +x ./dockerizer-linux
-    ##      ls -alh
-    ##      echo exec-test
-    ##      ./dockerizer-linux -v .
-    ##      echo test-tar
-    #$      file dockerizer-linux
           
       - run: |
           cd cmd/install 
@@ -68,15 +44,12 @@ jobs:
           go run main.go
 
       - run: go build install_mise.go 
-      - run: ls -alh
       - run: ./install_mise install
-     ## - run: mise install
+      
       - run: ls -alh /home/runner/.local/share/mise/installs
       - run: |
           ls -alh /home/runner/.local/share/mise/installs/terraform 
-          echo verif
-          ls -alh /home/runner/.local/share/mise/installs/k3s
-          echo verif2
+          echo verif1
           ls -alh /home/runner/.local/share/mise/installs/aqua-arttor-helmify
           echo verif3 
           ls -alh /home/runner/.local/share/mise/installs/http-dockerizer
@@ -85,23 +58,12 @@ jobs:
           eval "$(mise activate bash)"
           terraform version
           dockerizer version
-
-  ##    - run: |
-  ##        mkdir test-mise
-  ##        cd test-mise
-  ##        curl -O https://github.com/jdx/mise/releases/download/v2026.4.6/mise-v2026.4.6-linux-x64.tar.gz
- ##        ls
-
-   ##   - name: test mise
-    ##    run: go run install_mise.go
-  ##    - run: ls -alh 
  
       - run: |
           echo v2
           cd cmd/install
           go run Test2.go
-        ## docker --version
-        ##  terraform version
+        
       - run: ls -alh /home/runner/.local/bin
       - run: |
          mkdir exec
@@ -119,24 +81,11 @@ jobs:
          echo 'voici docker compose'
          cat docker-compose.yml
          
-  #$    - run: |
-   ##      cd cmd/install
-   ##       echo v1
-   ##       sudo go run Install.go
-      - run: ls -alh /home/runner/.local/bin
       - name: test exécution
         run: k3s --version
 
-      - run: terraform version
-
-      - name: log
-        run: ls -alh & pwd
-
-  ##    - name: log2
-  ##      run: sudo cp install-k3s.sh /home
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo test, and deploy your project.
-  ##        sudo chmod +x /home/install-k3s.sh
+  build2:
+    runs-on: ubuntu-latest
+    steps:
+        - name: echo test
+          run: echo test
