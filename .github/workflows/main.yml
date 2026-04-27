@@ -111,16 +111,12 @@ jobs:
       
       - run: ls -alh /home/runner/.local/share/mise/installs
       - run: |
-          ls -alh /home/runner/.local/share/mise/installs/terraform 
-          echo verif1
-          ls -alh /home/runner/.local/share/mise/installs/aqua-arttor-helmify
-          echo verif3 
           ls -alh /home/runner/.local/share/mise/installs/http-dockerizer
       - run: |
           echo start
           eval "$(mise activate bash)"
-          terraform version
           dockerizer version
+    ##      terraform version
 
   build-test2:
     runs-on: ubuntu-latest
