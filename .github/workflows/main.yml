@@ -51,16 +51,16 @@ jobs:
           echo log1
           ls -alh dockerizer
   
-      - run: |
-          curl -O github.com/dublyo/dockerizer-linux 
-          ls -alh
-          echo droit-modif
-          chmod +x ./dockerizer-linux
-          ls -alh
-          echo exec-test
-          ./dockerizer-linux -v .
-          echo test-tar
-          file dockerizer-linux
+ ##     - run: |
+  ##        curl -O github.com/dublyo/dockerizer-linux 
+  ##       ls -alh
+   ##       echo droit-modif
+   ##       chmod +x ./dockerizer-linux
+    ##      ls -alh
+    ##      echo exec-test
+    ##      ./dockerizer-linux -v .
+    ##      echo test-tar
+    #$      file dockerizer-linux
           
       - run: |
           cd cmd/install 
@@ -82,16 +82,15 @@ jobs:
           ls -alh /home/runner/.local/share/mise/installs/http-dockerizer
       - run: |
           echo start
-          eval "$(mise activate bash)"
           terraform version
-          echo dockerizer-start
           dockerizer version
+ ##        eval "$(mise activate bash)"
 
       - run: |
           mkdir test-mise
           cd test-mise
-          curl -O https://github.com/jdx/mise/releases/download/v2026.4.6/mise-v2026.4.6-linux-x64.tar.gz
-          ls
+  ##        curl -O https://github.com/jdx/mise/releases/download/v2026.4.6/mise-v2026.4.6-linux-x64.tar.gz
+ #$         ls
 
       - name: test mise
         run: go run install_mise.go
