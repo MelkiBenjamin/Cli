@@ -84,8 +84,41 @@ jobs:
       - name: test exécution
         run: k3s --version
 
-  build2:
+  build-dockerizer:
     runs-on: ubuntu-latest
     steps:
-        - name: echo test
-          run: echo test
+      - name: build dockerizer 
+        run: |
+          git clone https://github.com/dublyo/dockerizer
+          cd dockerizer
+          make build
+          cd build
+          ls -alh
+          ./dockerizer help
+
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: my-artifact
+          path: ./dockerizer/build/dockerizer
+    
+  build-install_mise:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - run: go build install_mise.go
+      - run: ./install_mise install
+      
+      - run: ls -alh /home/runner/.local/share/mise/installs
+      - run: |
+          ls -alh /home/runner/.local/share/mise/installs/terraform 
+          echo verif1
+          ls -alh /home/runner/.local/share/mise/installs/aqua-arttor-helmify
+          echo verif3 
+          ls -alh /home/runner/.local/share/mise/installs/http-dockerizer
+      - run: |
+          echo start
+          eval "$(mise activate bash)"
+          terraform version
+          dockerizer version
+
+
