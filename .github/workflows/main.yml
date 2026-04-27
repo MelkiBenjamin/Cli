@@ -108,7 +108,12 @@ jobs:
       - run: rm Install.json
       - run: go build install_mise.go
       - run: ./install_mise install
-      
+
+      - run: |
+         echo 'Voici le dockerfile'
+         cat Dockerfile 
+         echo 'voici docker compose'
+         cat docker-compose.yml
       - run: ls -alh /home/runner/.local/share/mise/installs
       - run: |
           ls -alh /home/runner/.local/share/mise/installs/http-dockerizer
