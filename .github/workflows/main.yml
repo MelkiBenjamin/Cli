@@ -105,9 +105,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.2
+      - run: rm Install.json
       - run: go build install_mise.go
       - run: ./install_mise install
-      - run: rm Install.json
       
       - run: ls -alh /home/runner/.local/share/mise/installs
       - run: |
