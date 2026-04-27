@@ -82,9 +82,9 @@ jobs:
           ls -alh /home/runner/.local/share/mise/installs/http-dockerizer
       - run: |
           echo start
+          eval "$(mise activate bash)"
           terraform version
           dockerizer version
-          eval "$(mise activate bash)"
 
       - run: |
           mkdir test-mise
