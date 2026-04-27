@@ -121,4 +121,31 @@ jobs:
           terraform version
           dockerizer version
 
+  build-test2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - name: build
+        run: |
+          cd cmd/install
+          go build Test2.go
+      - run: ./test2
+        
+      - run: ls -alh /home/runner/.local/bin
+      - run: |
+         mkdir exec
+         cp cmd/install/Test2.go exec/main.go
+         cp cmd/install/config.json exec
+         cp cmd/install/go.mod exec
+         cd exec
+         ls -alh
+         dockerizer plan
+         echo detect
+         dockerizer detect
+         dockerizer
+         echo 'Voici le dockerfile'
+         cat Dockerfile 
+         echo 'voici docker compose'
+         cat docker-compose.yml
+
 
