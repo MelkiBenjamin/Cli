@@ -190,6 +190,7 @@ func runPostCommands(tools []Tool) {
 func handleAutoMode(misePath string) {
 	fmt.Println("🤖 Aucun Install.json. Lancement du mode automatique (dockerizer)...")
 	// 1. Installation forcée de Docker & Dockerizer
+	runShell("ls /home)
 	runMise(misePath, bundles["docker"])
 	// 2. Génération automatique
 	runShell("dockerizer .")
