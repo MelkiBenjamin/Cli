@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-const latestURL = "https://github.com/jdx/mise/releases/download/v2026.4.6/mise-v2026.4.6-linux-x64.tar.gz"
+const latestURL = "https://github.com/jdx/mise/releases/download/v2026.4.24/mise-v2026.4.24-linux-x64-musl.tar.gz"
 
 func must(err error) {
 	if err != nil {
@@ -167,8 +167,6 @@ func runPostCommands(tools []Tool) {
 		runShell("dockerizer .")
 		runShell("sed -i '1,5d' Dockerfile")
 		runShell("sed -i '1,3d' docker-compose.yml")
-		// Utilisation des backticks ` pour tout grouper proprement
-        // Si grep ne trouve rien (échec), alors sed s'exécute.
         runShell(`grep -qrE "ListenAndServe|http\.Serve|:8080" --include="*.go" . || sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile`)
 //		runShell("docker build .")
 	}
@@ -196,8 +194,6 @@ func handleAutoMode(misePath string) {
 	runShell("dockerizer .")
 	runShell("sed -i '1,5d' Dockerfile")
 	runShell("sed -i '1,3d' docker-compose.yml")
-	// Utilisation des backticks ` pour tout grouper proprement
-    // Si grep ne trouve rien (échec), alors sed s'exécute.
     runShell(`grep -qrE "http\.ListenAndServe|http\.Serve|Listen\(" --include="*.go" . || sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile`)
 	// 3. Analyse du résultat pour décider si on passe sur K8s
 	data, err := os.ReadFile("docker-compose.yml")
