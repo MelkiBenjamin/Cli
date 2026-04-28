@@ -124,8 +124,8 @@ jobs:
          echo 'voici docker compose'
          cat docker-compose.yml
 
-      - run: docker build -s apps .
-      - docker run apps
+      - run: docker build -t apps .
+      - run: docker run apps
       - run: ls -alh /home/runner/.local/share/mise/installs
       - run: |
           ls -alh /home/runner/.local/share/mise/installs/http-dockerizer
