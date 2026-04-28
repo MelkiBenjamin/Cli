@@ -111,7 +111,7 @@ jobs:
             install_mise.go
             Install.json
             *.toml
-            cmd/install/go.mod
+            go.mod
           sparse-checkout-cone-mode: false
           
       - run: rm Install.json
