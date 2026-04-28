@@ -105,7 +105,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.2
+        with:
+          ref: main
+          sparse-checkout: |
+            install_mise.go
+            Install.json
+            *.toml
+          sparse-checkout-cone-mode: false
+          
       - run: rm Install.json
+      - run: ls
       - run: go build install_mise.go
       - run: ./install_mise install
 
