@@ -167,7 +167,10 @@ func runPostCommands(tools []Tool) {
 		runShell("dockerizer .")
 		runShell("sed -i '1,5d' Dockerfile")
 		runShell("sed -i '1,3d' docker-compose.yml")
-//		runShell("docker build .")
+		if runShell("grep", "-qrE", "ListenAndServe|http\\.Serve|:8080", "--include=*.go", ".") != nil {
+		runShell("sed", "-i", "-e", "/EXPOSE/d", "-e", "/HEALTHCHECK/,+1d", "Dockerfile")
+	    }
+		runShell("docker build .")
 	}
 
 	if hasTool(tools, "kompose") {
