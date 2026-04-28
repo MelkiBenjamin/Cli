@@ -168,7 +168,7 @@ func runPostCommands(tools []Tool) {
 		runShell("sed -i '1,5d' Dockerfile")
 		runShell("sed -i '1,3d' docker-compose.yml")
 		if runShell("grep", "-qrE", "ListenAndServe|http\\.Serve|:8080", "--include=*.go", ".") != nil {
-		runShell("sed", "-i", "-e", "/EXPOSE/d", "-e", "/HEALTHCHECK/,+1d", "Dockerfile")
+		  runShell("sed", "-i", "-e", "/EXPOSE/d", "-e", "/HEALTHCHECK/,+1d", "Dockerfile")
 	    }
 		runShell("docker build .")
 	}
