@@ -197,7 +197,7 @@ func handleAutoMode(misePath string) {
 	runShell("sed -i '1,3d' docker-compose.yml")
 	// Utilisation des backticks ` pour tout grouper proprement
     // Si grep ne trouve rien (échec), alors sed s'exécute.
-    runShell(`grep -qrE "ListenAndServe|http\.Serve|:8080" --include="*.go" . || sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile`)
+    runShell(`grep -qrE "http\.ListenAndServe|http\.Serve|Listen\(" --include="*.go" . || sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile`)
 	// 3. Analyse du résultat pour décider si on passe sur K8s
 	data, err := os.ReadFile("docker-compose.yml")
 	if err == nil {
