@@ -168,10 +168,9 @@ func runPostCommands(tools []Tool) {
 		runShell("sed -i '1,5d' Dockerfile")
 		runShell("sed -i '1,3d' docker-compose.yml")
 		// Utilisation des backticks ` pour tout grouper proprement
-        if runShell(`grep -qrE "ListenAndServe|http\.Serve|:8080" --include="*.go" .`) != nil {
-          runShell(`sed -i -e '/EXPOSE/d' -e '/HEALTHCHECK/,+1d' Dockerfile`)
-        }
-		runShell("docker build .")
+        // Si grep ne trouve rien (échec), alors sed s'exécute.
+        runShell(`grep -qrE "ListenAndServe|http\.Serve|:8080" --include="*.go" . || sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile`)
+//		runShell("docker build .")
 	}
 
 	if hasTool(tools, "kompose") {
@@ -197,9 +196,8 @@ func handleAutoMode(misePath string) {
 	runShell("sed -i '1,5d' Dockerfile")
 	runShell("sed -i '1,3d' docker-compose.yml")
 	// Utilisation des backticks ` pour tout grouper proprement
-    if runShell(`grep -qrE "ListenAndServe|http\.Serve|:8080" --include="*.go" .`) != nil {
-      runShell(`sed -i -e '/EXPOSE/d' -e '/HEALTHCHECK/,+1d' Dockerfile`)
-    }
+    // Si grep ne trouve rien (échec), alors sed s'exécute.
+    runShell(`grep -qrE "ListenAndServe|http\.Serve|:8080" --include="*.go" . || sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile`)
 	// 3. Analyse du résultat pour décider si on passe sur K8s
 	data, err := os.ReadFile("docker-compose.yml")
 	if err == nil {
