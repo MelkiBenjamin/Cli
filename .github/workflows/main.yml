@@ -33,7 +33,7 @@ jobs:
       - uses: actions/upload-artifact@v7.0.1
         with:
           name: my-artifact
-          path: ./dockerizer-musl/dockerizer
+          path: ./dockerizer/dockerizer-musl/dockerizer
 
       - run: |
           ls -alh
@@ -100,11 +100,10 @@ jobs:
           echo exec-musl
           ./dockerizer-musl/dockerizer help
           
-          
       - uses: actions/upload-artifact@v7.0.1
         with:
           name: my-artifact
-          path: ./dockerizer-musl/dockerizer
+          path: ./dockerizer/dockerizer-musl/dockerizer
     
   build-install_mise:
     runs-on: ubuntu-latest
