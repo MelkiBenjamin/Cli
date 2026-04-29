@@ -112,10 +112,10 @@ jobs:
         with:
           ref: main
           sparse-checkout: |
-            install_mise.go
-            Install.json
-            .mise.toml
-            go.mod
+            ./install_mise.go
+            ./Install.json
+            ./.mise.toml
+            ./go.mod
           sparse-checkout-cone-mode: false
           
       - run: rm Install.json
