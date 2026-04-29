@@ -96,6 +96,8 @@ jobs:
           ls -alh
           ./dockerizer help
 
+      - run: ldd ./dockerizer/build/dockerizer
+
       - uses: actions/upload-artifact@v7.0.1
         with:
           name: my-artifact
