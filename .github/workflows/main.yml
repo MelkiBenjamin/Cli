@@ -93,7 +93,7 @@ jobs:
           git clone https://github.com/dublyo/dockerizer
           cd dockerizer
           mkdir dockerizer-musl
-          CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./dockerizer-musl/dockerizer ./cmd/dockerize
+          CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./dockerizer-musl/dockerizer ./cmd/dockerizer
           ./dockerizer-musl/dockerizer help
           
       - uses: actions/upload-artifact@v7.0.1
@@ -147,7 +147,7 @@ jobs:
         run: |
           go build ./cmd/install/Test2.go
       - run: |
-          ./cmd/install/Test2
+          ./Test2
         
       - run: ls -alh /home/runner/.local/bin
       - run: |
