@@ -126,7 +126,7 @@ jobs:
 
       - run: sed -i '26i COPY . .' Dockerfile
       - run: ls -alh
-      - rm mise.toml
+      - run: rm mise.toml
 
       - run: |
          echo 'Voici le dockerfile'
