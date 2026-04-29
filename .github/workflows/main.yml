@@ -113,7 +113,6 @@ jobs:
           sparse-checkout: |
             install_mise.go
             Install.json
-            .mise.toml
             go.mod
           sparse-checkout-cone-mode: false
           
