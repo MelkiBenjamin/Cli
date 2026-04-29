@@ -94,15 +94,15 @@ jobs:
           echo exec-make
           make build
           echo exec-go-build
-          CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./dockerizer ./cmd/dockerizer  
-          ls -alh
-          ldd dockerizer
-          ./dockerizer help
+          mkdir dockerizer-musl
+          CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./dockerizer-musl/dockerizer ./cmd/dockerizer  
+          ls -alh dockerizer-musl
+          ldd ./dockerizer-musl/dockerizer
+          echo exec-musl
+          ./dockerizer-musl/dockerizer help
           cd build
           ls -alh
           ./dockerizer help
-
- ##     - run: CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./dockerizer ./dockerizer/
 
       - run: ldd ./dockerizer/build/dockerizer
 
