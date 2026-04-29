@@ -129,7 +129,7 @@ jobs:
           sed -i '27i COPY go.mod .' Dockerfile
                   
       - run: ls -alh
-      - run: rm mise.toml
+   ##   - run: rm mise.toml
 
       - run: |
          echo 'Voici le dockerfile'
