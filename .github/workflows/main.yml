@@ -116,7 +116,8 @@ jobs:
             Install.json
             .mise.toml
             go.mod
-   ##       sparse-checkout-cone-mode: false
+            .github
+          sparse-checkout-cone-mode: false
           
       - run: ls
       - run: rm Install.json
