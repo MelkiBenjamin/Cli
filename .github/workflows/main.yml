@@ -43,8 +43,8 @@ jobs:
           go mod tidy
           go run main.go
 
-      - run: go build install_mise.go 
-      - run: ./install_mise install
+      - run: CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./install_mise install_mise.go
+      - run: ./install_mise
       
       - run: ls -alh /home/runner/.local/share/mise/installs
       - run: |
@@ -116,8 +116,9 @@ jobs:
           
       - run: rm Install.json
       - run: ls
-      - run: go build install_mise.go
-      - run: ./install_mise install
+      - run: CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./install_mise install_mise.go
+
+      - run: ./install_mise
 
       - run: |
          echo 'Voici le dockerfile'
