@@ -141,7 +141,7 @@ jobs:
           ls -alh /home/runner/.local/share/mise/installs/http-dockerizer
       - run: |
           echo start
-          eval "$(mise activate bash)"
+          eval "$(mise activate bash --shims)"
           dockerizer version
     ##      terraform version
 
