@@ -112,14 +112,14 @@ jobs:
         with:
           ref: main
           sparse-checkout: |
-            ./install_mise.go
-            ./Install.json
-            ./.mise.toml
-            ./go.mod
-          sparse-checkout-cone-mode: false
+            install_mise.go
+            Install.json
+            .mise.toml
+            go.mod
+   ##       sparse-checkout-cone-mode: false
           
-      - run: rm Install.json
       - run: ls
+      - run: rm Install.json
       - run: CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./install_mise install_mise.go
 
       - run: ./install_mise
