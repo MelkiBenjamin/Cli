@@ -13,7 +13,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6.0.2
-
       - run: ls -alh /home
       - run: ls -alh /home/runner 
       - run: echo $PATH
@@ -109,9 +108,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.2
+        with:
+          ref: main
+          sparse-checkout: |
+            install_mise.go
+            Install.json
+            .mise.toml
+            go.mod
+          sparse-checkout-cone-mode: false
           
       - run: ls -alh
-      - run: rm Install.json install-config.yaml install-k3s.sh my-artifact.zip
+      - run: rm Install.json
+##      - run: rm Install.json install-config.yaml install-k3s.sh my-artifact.zip
       - run: CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./install_mise install_mise.go
 
       - run: ./install_mise
