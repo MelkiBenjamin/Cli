@@ -125,6 +125,8 @@ jobs:
 
       - run: ./install_mise
 
+      - run: sed -i '26i COPY . .' dockerfile
+
       - run: |
          echo 'Voici le dockerfile'
          cat Dockerfile 
