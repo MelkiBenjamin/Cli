@@ -155,7 +155,7 @@ func hasTool(tools []Tool, name string) bool {
 
 func runShell(command string) {
 	fmt.Println("Avant commande:", command)
-	cmd := exec.Command("sh", "-lc", `export PATH="$HOME/.local/bin:$PATH" && eval "$(mise activate sh)" && `+command)
+	cmd := exec.Command("sh", "-lc", `export PATH="$HOME/.local/bin:$PATH" && eval "$(mise activate bash --shims)" && `+command)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	must(cmd.Run())
