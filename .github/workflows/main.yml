@@ -23,15 +23,17 @@ jobs:
       - run: |
           git clone https://github.com/dublyo/dockerizer
           cd dockerizer
-          make build
-          cd build
-          ls -alh
-          ./dockerizer help
+          echo exec-go-build
+          mkdir dockerizer-musl
+          CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./dockerizer-musl/dockerizer ./cmd/dockerizer  
+          ls -alh dockerizer-musl
+          echo exec-musl
+          ./dockerizer-musl/dockerizer help
 
       - uses: actions/upload-artifact@v7.0.1
         with:
           name: my-artifact
-          path: ./dockerizer/build/dockerizer
+          path: ./dockerizer-musl/dockerizer
 
       - run: |
           ls -alh
@@ -91,24 +93,18 @@ jobs:
         run: |
           git clone https://github.com/dublyo/dockerizer
           cd dockerizer
-          echo exec-make
-          make build
           echo exec-go-build
           mkdir dockerizer-musl
           CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./dockerizer-musl/dockerizer ./cmd/dockerizer  
           ls -alh dockerizer-musl
           echo exec-musl
           ./dockerizer-musl/dockerizer help
-          cd build
-          ls -alh
-          ./dockerizer help
-
-      - run: ldd ./dockerizer/build/dockerizer
-
+          
+          
       - uses: actions/upload-artifact@v7.0.1
         with:
           name: my-artifact
-          path: ./dockerizer/build/dockerizer
+          path: ./dockerizer-musl/dockerizer
     
   build-install_mise:
     runs-on: ubuntu-latest
