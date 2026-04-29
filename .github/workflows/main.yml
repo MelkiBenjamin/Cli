@@ -118,8 +118,9 @@ jobs:
           sparse-checkout-cone-mode: false
           
       - run: ls -alh
-      - run: rm Install.json
+      - run: rm -r Install.json cmd
 ##      - run: rm Install.json install-config.yaml install-k3s.sh my-artifact.zip
+      - run: ls -alh
       - run: CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./install_mise install_mise.go
 
       - run: ./install_mise
