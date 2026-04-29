@@ -92,11 +92,15 @@ jobs:
           git clone https://github.com/dublyo/dockerizer
           cd dockerizer
           make build
+          CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./dockerizer . 
+          ls -alh
+          ldd dockerizer
+          ./dockerizer help
           cd build
           ls -alh
           ./dockerizer help
 
-      - run: CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./dockerizer ./dockerizer/
+ ##     - run: CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./dockerizer ./dockerizer/
 
       - run: ldd ./dockerizer/build/dockerizer
 
