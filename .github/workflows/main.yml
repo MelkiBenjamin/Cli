@@ -13,6 +13,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6.0.2
+      - run: |
+          npm install -g pin-github-action
+          pin-github-action .github/workflows/main.yml
       - run: ls -alh /home
       - run: ls -alh /home/runner 
       - run: echo $PATH
