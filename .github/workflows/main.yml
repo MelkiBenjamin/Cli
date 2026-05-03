@@ -4,7 +4,7 @@ permissions:
   pull-requests: write
   
 on:
-  push:
+ #$ push:
   workflow_dispatch:
 
 jobs:
@@ -13,9 +13,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6.0.2
-      - run: |
-          npm install -g pin-github-action
-          pin-github-action .github/workflows/main.yml
+      - name: Self-hosted Renovate 
+        uses: renovatebot/github-action@v46.1.12
+        with: configurationFile: .github/renovate.json
       - run: ls -alh /home
       - run: ls -alh /home/runner 
       - run: echo $PATH
