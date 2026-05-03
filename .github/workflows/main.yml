@@ -17,6 +17,7 @@ jobs:
         uses: renovatebot/github-action@v46.1.12
         with: 
           configurationFile: .github/renovate.json
+          token: ${{ secrets.RENOVATE }}
       - run: ls -alh /home
       - run: ls -alh /home/runner 
       - run: echo $PATH
