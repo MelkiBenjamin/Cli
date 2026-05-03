@@ -1,6 +1,5 @@
 {
   "extends": ["config:recommended"],
-  "autodiscover": true,
   "repositories": ["melkibenjamin/cli"],
   "github-actions": {
     "pinDigests": true
