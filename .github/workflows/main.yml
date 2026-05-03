@@ -15,7 +15,8 @@ jobs:
       - uses: actions/checkout@v6.0.2
       - name: Self-hosted Renovate 
         uses: renovatebot/github-action@v46.1.12
-        with: configurationFile: .github/renovate.json
+        with: 
+          configurationFile: .github/renovate.json
       - run: ls -alh /home
       - run: ls -alh /home/runner 
       - run: echo $PATH
