@@ -164,10 +164,13 @@ func runShell(command string) {
 
 func runPostCommands(tools []Tool) {
 	if hasTool(tools, "docker") {
-		runShell("dockerizer .")
-		runShell("sed -i '1,5d' Dockerfile")
-		runShell("sed -i '1,3d' docker-compose.yml")
-		runShell(`find . -name "*.go" -exec grep -qE "http\.ListenAndServe|http\.Serve|Listen\(" {} + || sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile`)
+		runShell(` 			
+				 dockerizer . && \ 			
+				 sed -i '1,5d' Dockerfile && \ 			
+				 sed -i '1,3d' docker-compose.yml && \ 			
+				 { find . -name "*.go" -exec grep -qE "http\.ListenAndServe|http\.Serve|Listen\(" {} + || \ 			 
+				 sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile; } 		
+				 `)	
 	}
 
 	if hasTool(tools, "kompose") {
