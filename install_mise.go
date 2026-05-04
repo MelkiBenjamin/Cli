@@ -162,7 +162,7 @@ func runShell(command string) {
 	fmt.Println("Après commande:", command)
 }
 
-var cmdDockerizer := `
+var cmdDockerizer = `
     dockerizer . && \
     sed -i '1,5d' Dockerfile && \
     sed -i '1,3d' docker-compose.yml && \
