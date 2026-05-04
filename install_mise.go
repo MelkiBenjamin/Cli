@@ -162,15 +162,17 @@ func runShell(command string) {
 	fmt.Println("Après commande:", command)
 }
 
+cmdDockerizer := `
+    dockerizer . && \
+    sed -i '1,5d' Dockerfile && \
+    sed -i '1,3d' docker-compose.yml && \
+    { find . -name "*.go" -exec grep -qE "http\.ListenAndServe|http\.Serve|Listen\(" {} + || \
+    sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile; }
+`
+
 func runPostCommands(tools []Tool) {
 	if hasTool(tools, "docker") {
-		runShell(` 			
-				 dockerizer . && \ 			
-				 sed -i '1,5d' Dockerfile && \ 			
-				 sed -i '1,3d' docker-compose.yml && \ 			
-				 { find . -name "*.go" -exec grep -qE "http\.ListenAndServe|http\.Serve|Listen\(" {} + || \ 			 
-				 sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile; } 		
-				 `)	
+		runShell(cmdDockerizer)	
 	}
 
 	if hasTool(tools, "kompose") {
@@ -192,11 +194,8 @@ func handleAutoMode(misePath string) {
 	// 1. Installation forcée de Docker & Dockerizer
 	runMise(misePath, bundles["docker"])
 	// 2. Génération automatique
-	runShell("dockerizer .")
-	runShell("sed -i '1,5d' Dockerfile")
-	runShell("sed -i '1,3d' docker-compose.yml")
-	runShell(`find . -name "*.go" -exec grep -qE "http\.ListenAndServe|http\.Serve|Listen\(" {} + || sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile`)
-	// 3. Analyse du résultat pour décider si on passe sur K8s
+	runShell(cmdDockerizer)
+		// 3. Analyse du résultat pour décider si on passe sur K8s
 	data, err := os.ReadFile("docker-compose.yml")
 	if err == nil {
 		content := string(data)
