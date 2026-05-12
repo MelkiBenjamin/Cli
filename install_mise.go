@@ -190,8 +190,7 @@ func runPostCommands(tools []Tool) {
 }
 
 func runAutoDocker(misePath string) []Tool {
-	fmt.Println("🐳 [Auto] Installation de la base Docker...")
-	// On récupère le bundle docker
+    fmt.Println("🤖 Aucun Install.json. Lancement du mode automatique...")	// On récupère le bundle docker
 	tools := bundles["docker"]
 	
 	// On réutilise tes fonctions telles quelles
@@ -211,7 +210,9 @@ func runAutoK8s(misePath string) {
 		
 		runMise(misePath, k8sTools)
 		runPostCommands(k8sTools) // Cela lancera 'kompose convert' automatiquement
-	}
+	} else {
+		fmt.Println("📦 Monolithe détecté -> On reste sur Docker Compose.")
+    }
 }
 
 func main() {
@@ -227,7 +228,6 @@ func main() {
 		runPostCommands(expanded)
 	} else {
 		// --- MODE 2 : AUTOMATIQUE ---
-		// handleAutoMode(misePath)
 		runAutoDocker(misePath)
         runAutoK8s(misePath)
 	}
