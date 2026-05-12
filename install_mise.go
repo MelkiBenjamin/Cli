@@ -66,6 +66,13 @@ func extractMiseFromURL(url, dir string) string {
 	panic("binaire mise introuvable")
 }
 
+func installMise() string {
+    dir := localBin()
+	misePath := extractMiseFromURL(latestURL, dir)
+	fmt.Println("mise installé dans", misePath)
+	return path 
+}
+
 func readTools(jsonFile string) []string {
 	file, err := os.Open(jsonFile)
 	must(err)
@@ -215,11 +222,7 @@ func runAutoK8s(misePath string) {
     }
 }
 
-func main() {
-	dir := localBin()
-	misePath := extractMiseFromURL(latestURL, dir)
-	fmt.Println("mise installé dans", misePath)
-
+func startMode(misePath string) {
 	if _, err := os.Stat("Install.json"); err == nil {
 		// --- MODE 1 : EXPERT ---
 		tools := readTools("Install.json")
@@ -231,4 +234,11 @@ func main() {
 		runAutoDocker(misePath)
         runAutoK8s(misePath)
 	}
+}
+
+func main() {
+	// Étape 1 : Préparer l'exécutable 'mise' (Téléchargement + Extraction)
+    misePath := installMise()
+    // Étape 2 : Décider s'il faut utiliser le JSON (Expert) ou l'Auto-détection
+    startMode(misePath)
 }
