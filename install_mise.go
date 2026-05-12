@@ -181,7 +181,7 @@ var cmdDockerizer = `
     sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile; }
 `
 
-func runPostCommands(tools []Tool) {
+func startgenerate(tools []Tool) {
 	if hasTool(tools, "docker") {
 		runShell(cmdDockerizer)	
 	}
@@ -194,19 +194,14 @@ func runPostCommands(tools []Tool) {
 	if hasTool(tools, "helm") {
 		runShell("kompose convert -c")
 	}
-
-	//if hasTool(tools, "k3s") {
-	//	runShell("k3s")
-	//}
 }
 
-func runAutoDocker(misePath string) []Tool {
+func installAutoDocker(misePath string) []Tool {
     fmt.Println("🤖 Aucun Install.json. Lancement du mode automatique...")	// On récupère le bundle docker
 	tools := bundles["docker"]
 	
-	// On réutilise tes fonctions telles quelles
 	runMise(misePath, tools)
-	runPostCommands(tools)
+	startGenerate(tools)
 	
 	return tools
 }
@@ -220,7 +215,7 @@ func runAutoK8s(misePath string) {
 		k8sTools := append(bundles["kubectl"], bundles["helm"]...)
 		
 		runMise(misePath, k8sTools)
-		runPostCommands(k8sTools) // Cela lancera 'kompose convert' automatiquement
+		startGenerate(k8sTools) // Cela lancera 'kompose convert' automatiquement
 	} else {
 		fmt.Println("📦 Monolithe détecté -> On reste sur Docker Compose.")
     }
@@ -232,10 +227,10 @@ func startMode(misePath string) {
 		tools := readTools("Install.json")
 		expanded := expand(tools)
 		runMise(misePath, expanded)
-		runPostCommands(expanded)
+		startGenerate(expanded)
 	} else {
 		// --- MODE 2 : AUTOMATIQUE ---
-		runAutoDocker(misePath)
+		installAutoDocker(misePath)
         runAutoK8s(misePath)
 	}
 }
