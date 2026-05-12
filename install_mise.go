@@ -201,7 +201,7 @@ func runAutoDocker(misePath string) []Tool {
 	return tools
 }
 
-func runAutoK8sEscalation(misePath string) {
+func runAutoK8s(misePath string) {
 	data, err := os.ReadFile("docker-compose.yml")
 	if err == nil && strings.Count(string(data), "image:") > 1 {
 		fmt.Println("🏢 [Auto] Architecture multiple détectée -> Passage à K8s")
