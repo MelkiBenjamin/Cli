@@ -70,7 +70,7 @@ func installMise() string {
     dir := localBin()
 	misePath := extractMiseFromURL(latestURL, dir)
 	fmt.Println("mise installé dans", misePath)
-	return misePath 
+	return misePath
 }
 
 func readTools(jsonFile string) []string {
@@ -130,7 +130,7 @@ func expand(tools []string) []Tool {
 	return result
 }
 
-func runMise(misePath string, tools []Tool) {
+func prepaMise(tools []Tool) []string {
 	var args []string
 	args = append(args, "use")
 	for _, t := range tools {
@@ -143,12 +143,7 @@ func runMise(misePath string, tools []Tool) {
 		}
 	}
 	fmt.Println("Running:", args)
-
-	cmd := exec.Command(misePath, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	must(cmd.Run())
+	return args
 }
 
 func hasTool(tools []Tool, name string) bool {
@@ -160,13 +155,22 @@ func hasTool(tools []Tool, name string) bool {
 	return false
 }
 
-func runShell(command string) {
-	fmt.Println("Avant commande:", command)
-	cmd := exec.Command("sh", "-lc", `export PATH="$HOME/.local/bin:$PATH" && eval "$(mise activate bash --shims)" && `+command)
+func runShell(command string, args ...string) {
+	fullCommand := command
+    if len(args) > 0 {
+        fullCommand += " " + strings.Join(args, " ")
+    }
+	fmt.Println("Avant commande:", fullCommand)
+	cmd := exec.Command("sh", "-lc", `export PATH="$HOME/.local/bin:$PATH" && eval "$(mise activate bash --shims)" && `+fullCommand)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	must(cmd.Run())
-	fmt.Println("Après commande:", command)
+	fmt.Println("Après commande:", fullCommand)
+}
+
+func runMise(misePath string, tools []Tool) {
+	args := prepaMise(tools)
+	runShell(misePath, args...)
 }
 
 var cmdDockerizer = `
@@ -239,6 +243,6 @@ func startMode(misePath string) {
 func main() {
 	// Étape 1 : Préparer l'exécutable 'mise' (Téléchargement + Extraction)
     misePath := installMise()
-    // Étape 2 : Décider s'il faut utiliser le JSON (Expert) ou l'Auto-détection
+    // Étape 2 : Décider s'il faut utiliser le mode avec JSON (Expert) ou mode de l'Auto-détection (Automatique)
     startMode(misePath)
 }
