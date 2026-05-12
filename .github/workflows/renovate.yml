@@ -1,4 +1,4 @@
-name: CI
+name: renovate
 permissions:
   contents: read 
   pull-requests: write
