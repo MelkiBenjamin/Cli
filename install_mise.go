@@ -181,7 +181,7 @@ var cmdDockerizer = `
     sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile; }
 `
 
-func startgenerate(tools []Tool) {
+func startGenerate(tools []Tool) {
 	if hasTool(tools, "docker") {
 		runShell(cmdDockerizer)	
 	}
