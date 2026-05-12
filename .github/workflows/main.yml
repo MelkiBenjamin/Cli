@@ -13,11 +13,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Self-hosted Renovate 
-        uses: renovatebot/github-action@693b9ef15eec82123529a37c782242f091365961 # v46.1.14
-        with: 
-          configurationFile: .github/renovate.json
-          token: ${{ secrets.RENOVATE }}
       - run: ls -alh /home
       - run: ls -alh /home/runner 
       - run: echo $PATH
@@ -25,24 +20,7 @@ jobs:
       - run: go version
 
       - run: |
-          git clone https://github.com/dublyo/dockerizer
-          cd dockerizer
-          echo exec-go-build
-          mkdir dockerizer-musl
-          CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./dockerizer-musl/dockerizer ./cmd/dockerizer  
-          ls -alh dockerizer-musl
-          echo exec-musl
-          ./dockerizer-musl/dockerizer help
-
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: my-artifact
-          path: ./dockerizer/dockerizer-musl/dockerizer
-
-      - run: |
           ls -alh
-          echo log1
-          ls -alh dockerizer
           
       - run: |
           cd cmd/install 
