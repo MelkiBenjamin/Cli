@@ -130,7 +130,7 @@ func expand(tools []string) []Tool {
 	return result
 }
 
-func prepaMise(tools []Tool) []string {
+func prepaMise(tools []Tool) []string { // prépare la commande mise
 	var args []string
 	args = append(args, "use")
 	for _, t := range tools {
@@ -155,7 +155,7 @@ func hasTool(tools []Tool, name string) bool {
 	return false
 }
 
-func runShell(command string, args ...string) {
+func runShell(command string, args ...string) { // pour kancer des commandes shell
 	fullCommand := command
     if len(args) > 0 {
         fullCommand += " " + strings.Join(args, " ")
@@ -168,7 +168,7 @@ func runShell(command string, args ...string) {
 	fmt.Println("Après commande:", fullCommand)
 }
 
-func runMise(misePath string, tools []Tool) {
+func runMise(misePath string, tools []Tool) { // pour installer les outils
 	args := prepaMise(tools)
 	runShell(misePath, args...)
 }
@@ -183,32 +183,30 @@ var cmdDockerizer = `
 
 func startGenerate(tools []Tool) {
 	if hasTool(tools, "docker") {
-		runShell(cmdDockerizer)	
+		runShell(cmdDockerizer)	//lance dockerizer et corrige dockerfile 
 	}
 
 	if hasTool(tools, "kompose") {
 		runShell("cp .env.example .env")
-		runShell("kompose convert")
+		runShell("kompose convert") // lance kompose pour manifest k8s
 	}
 
 	if hasTool(tools, "helm") {
-		runShell("kompose convert -c")
+		runShell("kompose convert -c") // lance kompose pour helm chart
 	}
 }
 
 func installAutoDocker(misePath string) []Tool {
     fmt.Println("🤖 Aucun Install.json. Lancement du mode automatique...")	// On récupère le bundle docker
 	tools := bundles["docker"]
-	
 	runMise(misePath, tools)
-	startGenerate(tools)
 	
 	return tools
 }
 
 func runAutoK8s(misePath string) {
 	data, err := os.ReadFile("docker-compose.yml")
-	if err == nil && strings.Count(string(data), "image:") > 1 {
+	if err == nil && strings.Count(string(data), "image:") > 1 { // regle pour detecter si9 monolithique ou microservice 
 		fmt.Println("🏢 [Auto] Architecture multiple détectée -> Passage à K8s")
 		
 		// On combine kubectl (qui contient kompose) et helm
@@ -221,16 +219,26 @@ func runAutoK8s(misePath string) {
     }
 }
 
+//func workflows(
+//	docker build
+//	if hasTool(tools, "docker") {
+//		runShell(docker compose up)	//lance docker compose
+//	}
+//	if hasTool(tools, "kubectl) {
+//		runShell(kubectl -f .)	//lance manifest k8s
+//	}
+
 func startMode(misePath string) {
 	if _, err := os.Stat("Install.json"); err == nil {
 		// --- MODE 1 : EXPERT ---
-		tools := readTools("Install.json")
+		tools := readTools("Install.json") // lecture du json
 		expanded := expand(tools)
-		runMise(misePath, expanded)
-		startGenerate(expanded)
+		runMise(misePath, expanded) // install des outils du json
+		startGenerate(expanded)     // lancement des outils générateur
 	} else {
 		// --- MODE 2 : AUTOMATIQUE ---
-		installAutoDocker(misePath)
+		installAutoDocker(misePath) // install de docker dockerizer
+		startGenerate(tools)  // lancement des outils générateur
         runAutoK8s(misePath)
 	}
 }
