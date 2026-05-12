@@ -1,0 +1,19 @@
+name: CI
+permissions:
+  contents: read 
+  pull-requests: write
+  
+on:
+ ## push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Self-hosted Renovate 
+        uses: renovatebot/github-action@693b9ef15eec82123529a37c782242f091365961 # v46.1.14
+        with: 
+          configurationFile: .github/renovate.json
+          token: ${{ secrets.RENOVATE }}
