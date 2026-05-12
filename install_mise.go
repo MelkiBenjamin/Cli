@@ -70,7 +70,7 @@ func installMise() string {
     dir := localBin()
 	misePath := extractMiseFromURL(latestURL, dir)
 	fmt.Println("mise installé dans", misePath)
-	return path 
+	return misePath 
 }
 
 func readTools(jsonFile string) []string {
