@@ -223,7 +223,7 @@ func microservicesk8s(misePath string) {
             installAndGenerateK8s(misePath)
     } else {
             fmt.Println("📦 Monolithe détecté -> On reste sur Docker Compose.")
- }
+    }
 }
 
 //func workflows(
@@ -246,7 +246,7 @@ func startMode(misePath string) {
 		// --- MODE 2 : AUTOMATIQUE ---
 		dockerTools := installAutoDocker(misePath) // install de docker dockerizer
 		startGenerate(dockerTools) // lancement des outils générateur
-        microservicesk8s(misepath) // inspecte si microservices et si oui, install outils k8s et lance générateur 
+        microservicesk8s(misePath) // inspecte si microservices et si oui, install outils k8s et lance générateur 
 	}
 }
 
