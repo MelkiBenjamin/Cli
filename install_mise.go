@@ -219,7 +219,7 @@ func installAndGenerateK8s(misePath string) {
 }
 
 func microservicesk8s(misePath string) {
-    if isMicroservice() {
+    if AutoIsMicroservice() {
             installAndGenerateK8s(misePath)
     } else {
             fmt.Println("📦 Monolithe détecté -> On reste sur Docker Compose.")
