@@ -155,7 +155,7 @@ func hasTool(tools []Tool, name string) bool {
 	return false
 }
 
-func runShell(command string, args ...string) { // pour kancer des commandes shell
+func runShell(command string, args ...string) { // Pour lancer des commandes shell
 	fullCommand := command
     if len(args) > 0 {
         fullCommand += " " + strings.Join(args, " ")
@@ -183,7 +183,7 @@ var cmdDockerizer = `
 
 func startGenerate(tools []Tool) {
 	if hasTool(tools, "docker") {
-		runShell(cmdDockerizer)	//lance dockerizer et corrige dockerfile 
+		runShell(cmdDockerizer)	// lance dockerizer.dev et corrige dockerfile 
 	}
 
 	if hasTool(tools, "kompose") {
@@ -204,19 +204,26 @@ func installAutoDocker(misePath string) []Tool {
 	return tools
 }
 
-func runAutoK8s(misePath string) {
+func AutoIsMicroservice() bool { // Regle pour vérifier si apli microservices 
 	data, err := os.ReadFile("docker-compose.yml")
-	if err == nil && strings.Count(string(data), "image:") > 1 { // regle pour detecter si9 monolithique ou microservice 
-		fmt.Println("🏢 [Auto] Architecture multiple détectée -> Passage à K8s")
-		
-		// On combine kubectl (qui contient kompose) et helm
-		k8sTools := append(bundles["kubectl"], bundles["helm"]...)
-		
-		runMise(misePath, k8sTools)
-		startGenerate(k8sTools) // Cela lancera 'kompose convert' automatiquement
-	} else {
-		fmt.Println("📦 Monolithe détecté -> On reste sur Docker Compose.")
-    }
+	return strings.Count(string(data), "image:") > 1
+}
+
+func installAndGenerateK8s(misePath string) {
+    fmt.Println("🏢 Architecture multiple détectée -> Passage à K8s")
+    
+    k8sTools := append(bundles["kubectl"], bundles["helm"]...)
+    
+    runMise(misePath, k8sTools)
+    startGenerate(k8sTools)
+}
+
+func microservicesk8s(misePath string) {
+    if isMicroservice() {
+            installAndGenerateK8s(misePath)
+    } else {
+            fmt.Println("📦 Monolithe détecté -> On reste sur Docker Compose.")
+ }
 }
 
 //func workflows(
@@ -237,9 +244,9 @@ func startMode(misePath string) {
 		startGenerate(expanded)     // lancement des outils générateur
 	} else {
 		// --- MODE 2 : AUTOMATIQUE ---
-		installAutoDocker(misePath) // install de docker dockerizer
-		startGenerate(tools)  // lancement des outils générateur
-        runAutoK8s(misePath)
+		dockerTools := installAutoDocker(misePath) // install de docker dockerizer
+		startGenerate(dockerTools) // lancement des outils générateur
+        microservicesk8s(misepath) // inspecte si microservices et si oui, install outils k8s et lance générateur 
 	}
 }
 
