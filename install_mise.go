@@ -206,7 +206,7 @@ func installAutoDocker(misePath string) []Tool {
 
 func AutoIsMicroservice() bool { // Regle pour vérifier si apli microservices 
 	data, err := os.ReadFile("docker-compose.yml")
-	return strings.Count(string(data), "image:") > 1
+	return err == nil && strings.Count(string(data), "image:") > 1
 }
 
 func installAndGenerateK8s(misePath string) {
