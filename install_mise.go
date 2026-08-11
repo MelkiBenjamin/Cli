@@ -372,44 +372,119 @@ func setupForgejo() (string, string) {
 	return forgejoBin, forgejoDir
 }
 
+// Lit un fichier INI et vérifie si une clé sous une section a une valeur spécifique
+func checkIniValue(filePath, section, key, expectedValue string) bool {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	currentSection := ""
+
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		
+		// Ignorer commentaires et lignes vides
+		if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, ";") {
+			continue
+		}
+
+		// Détection de section [section]
+		if strings.HasPrefix(line, "[") && strings.HasSuffix(line, "]") {
+			currentSection = strings.TrimSpace(line[1 : len(line)-1])
+			continue
+		}
+
+		// Traitement clé = valeur dans la bonne section
+		if strings.EqualFold(currentSection, section) && strings.Contains(line, "=") {
+			parts := strings.SplitN(line, "=", 2)
+			k := strings.TrimSpace(parts[0])
+			v := strings.TrimSpace(parts[1])
+
+			if strings.EqualFold(k, key) {
+				return strings.EqualFold(v, expectedValue)
+			}
+		}
+	}
+	return false
+}
+
 func setupRunner(forgejoBin, forgejoDir string) {
 	fmt.Println("\n[*] --- Configuration du Runner CI/CD ---")
 	home, _ := os.UserHomeDir()
 	runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
+
+	appIniPath := filepath.Join(forgejoDir, "custom", "conf", "app.ini")
+	fmt.Printf("[🔍] Inspection du fichier INI : %s\n", appIniPath)
+
+	// 1. Vérification avec notre lecteur INI
+	actionsEnabled := checkIniValue(appIniPath, "actions", "ENABLED", "true")
+	if actionsEnabled {
+		fmt.Println("  └─ [OK] Section [actions] ENABLED = true confirmée dans app.ini")
+	} else {
+		fmt.Println("  └─ [⚠️] [actions] non activé dans app.ini. Correction en cours...")
+		
+		// Injecter [actions] si absent
+		f, err := os.OpenFile(appIniPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o644)
+		must(err)
+		_, _ = f.WriteString("\n[actions]\nENABLED = true\n")
+		f.Close()
+
+		// Redémarrer Forgejo pour charger la nouvelle configuration
+		fmt.Println("[*] Redémarrage de Forgejo pour appliquer la configuration...")
+		_ = exec.Command("pkill", "-9", "-f", "forgejo").Run()
+		time.Sleep(1 * time.Second)
+		must(startDaemon("forgejo.log", forgejoBin, "web", "--work-path", forgejoDir))
+		if !waitForPort("127.0.0.1", 3000, 30*time.Second) {
+			panic("Forgejo ne répond pas après redémarrage")
+		}
+	}
 
 	if _, err := os.Stat(runnerBin); err != nil {
 		fmt.Println("[*] Téléchargement du binaire Forgejo Runner...")
 		must(downloadFile(runnerURL, runnerBin, 10*1024*1024))
 	}
 
+	// 2. Génération du Token via la CLI
 	var runnerToken string
 	var lastErr string
 
-	for i := 0; i < 15; i++ {
-		cmd := exec.Command(forgejoBin, "actions", "generate-runner-token", "--work-path", forgejoDir)
+	for i := 0; i < 10; i++ {
+		cmd := exec.Command(forgejoBin, "actions", "generate-runner-token", "-c", appIniPath)
 		cmd.Dir = forgejoDir
 		out, err := cmd.CombinedOutput()
+
 		if err == nil {
-			runnerToken = strings.TrimSpace(string(out))
+			lines := strings.Split(strings.TrimSpace(string(out)), "\n")
+			for _, line := range lines {
+				line = strings.TrimSpace(line)
+				if len(line) >= 32 && !strings.Contains(line, " ") && !strings.Contains(line, "[") {
+					runnerToken = line
+					break
+				}
+			}
 			if runnerToken != "" {
 				break
 			}
-		} else {
-			lastErr = string(out)
 		}
+		lastErr = string(out)
 		time.Sleep(2 * time.Second)
 	}
 
 	if runnerToken == "" {
-		fmt.Printf("[❌] Erreur CLI Forgejo : %s\n", lastErr)
+		fmt.Printf("[❌] Échec CLI Forgejo.\nSortie brute :\n%s\n", lastErr)
 		panic("Impossible de récupérer le token du Runner")
 	}
 
+	fmt.Printf("[+] Token Runner récupéré : %s...\n", runnerToken[:8])
+
+	// 3. Enregistrement et Démarrage du Runner
 	configDir := filepath.Join(home, ".runner_config")
 	must(os.MkdirAll(configDir, 0o755))
 	configFile := filepath.Join(configDir, "config.yaml")
 
-	// Correction du format de configuration
 	configContent := fmt.Sprintf(`
 log:
   level: debug
@@ -429,10 +504,8 @@ runner:
 
 	must(os.WriteFile(configFile, []byte(configContent), 0o644))
 
-	// Nettoyage préalable d'un éventuel enregistrement précédent
 	_ = os.Remove(filepath.Join(configDir, ".runner"))
 
-	// Enregistrement avec --connect et gestion de l'erreur
 	regCmd := exec.Command(runnerBin, "register",
 		"--instance", "http://localhost:3000",
 		"--token", runnerToken,
@@ -450,7 +523,6 @@ runner:
 
 	_ = exec.Command("pkill", "-9", "-f", "forgejo-runner").Run()
 
-	// Lancement du démon en ciblant le bon répertoire de travail (.runner)
 	cmdDaemon := exec.Command(runnerBin, "daemon", "--config", configFile)
 	cmdDaemon.Dir = configDir
 
