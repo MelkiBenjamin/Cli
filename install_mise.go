@@ -250,9 +250,266 @@ func startMode(misePath string) {
 	}
 }
 
+// ============================================================================
+// --- AJOUTS : CONSTANTES & FONCTIONS D'EXÉCUTION (EX-PYTHON) ---
+// ============================================================================
+
+const (
+	forgejoURL = "https://codeberg.org/forgejo/forgejo/releases/download/v15.0.3/forgejo-15.0.3-linux-amd64"
+	runnerURL  = "https://code.forgejo.org/forgejo/runner/releases/download/v12.13.0/forgejo-runner-12.13.0-linux-amd64"
+)
+
+func generateRandomSecret(length int) string {
+	b := make([]byte, length)
+	if _, err := rand.Read(b); err != nil {
+		panic(err)
+	}
+	return hex.EncodeToString(b)
+}
+
+func downloadFile(url, dest string, minSize int64) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	must(os.MkdirAll(filepath.Dir(dest), 0o755))
+	tmp := dest + ".tmp"
+	out, err := os.OpenFile(tmp, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
+	if err != nil {
+		return err
+	}
+
+	n, err := io.Copy(out, resp.Body)
+	out.Close()
+	if err != nil {
+		return err
+	}
+
+	if minSize > 0 && n < minSize {
+		os.Remove(tmp)
+		return fmt.Errorf("fichier trop petit : %d octets", n)
+	}
+
+	return os.Rename(tmp, dest)
+}
+
+func waitForPort(host string, port int, timeout time.Duration) bool {
+	target := fmt.Sprintf("%s:%d", host, port)
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		conn, err := net.DialTimeout("tcp", target, 2*time.Second)
+		if err == nil {
+			conn.Close()
+			return true
+		}
+		time.Sleep(2 * time.Second)
+	}
+	return false
+}
+
+func startDaemon(logPath string, command string, args ...string) error {
+	cmd := exec.Command(command, args...)
+	logFile, err := os.Create(logPath)
+	if err != nil {
+		return err
+	}
+	cmd.Stdout = logFile
+	cmd.Stderr = logFile
+	return cmd.Start()
+}
+
+func setupForgejo() (string, string) {
+	fmt.Println("\n[*] --- Démarrage de Forgejo ---")
+	home, _ := os.UserHomeDir()
+	binDir := filepath.Join(home, ".local", "bin")
+	forgejoBin := filepath.Join(binDir, "forgejo")
+	forgejoDir := filepath.Join(home, "forgejo")
+
+	if _, err := os.Stat(forgejoBin); err != nil {
+		fmt.Println("[*] Téléchargement du binaire Forgejo...")
+		must(downloadFile(forgejoURL, forgejoBin, 50*1024*1024))
+	}
+
+	_ = exec.Command("pkill", "-9", "-f", "forgejo").Run()
+
+	dbPath := filepath.Join(forgejoDir, "data", "forgejo.db")
+	if _, err := os.Stat(dbPath); err != nil {
+		fmt.Println("[*] Migration initiale de la base de données...")
+		cmd := exec.Command(forgejoBin, "migrate", "--work-path", forgejoDir)
+		_ = cmd.Run()
+	}
+
+	fmt.Println("[*] Démarrage du démon Forgejo...")
+	must(startDaemon("forgejo.log", forgejoBin, "web", "--work-path", forgejoDir))
+
+	if !waitForPort("127.0.0.1", 3000, 60*time.Second) {
+		panic("Forgejo ne répond pas sur le port 3000")
+	}
+	fmt.Println("[+] Forgejo est prêt sur http://localhost:3000.")
+	return forgejoBin, forgejoDir
+}
+
+func setupRunner(forgejoBin, forgejoDir string) {
+	fmt.Println("\n[*] --- Configuration du Runner CI/CD ---")
+	home, _ := os.UserHomeDir()
+	runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
+
+	if _, err := os.Stat(runnerBin); err != nil {
+		fmt.Println("[*] Téléchargement du binaire Forgejo Runner...")
+		must(downloadFile(runnerURL, runnerBin, 10*1024*1024))
+	}
+
+	var runnerToken string
+	for i := 0; i < 15; i++ {
+		cmd := exec.Command(forgejoBin, "actions", "generate-runner-token", "--work-path", forgejoDir)
+		out, err := cmd.Output()
+		if err == nil {
+			runnerToken = strings.TrimSpace(string(out))
+			if runnerToken != "" {
+				break
+			}
+		}
+		time.Sleep(2 * time.Second)
+	}
+
+	if runnerToken == "" {
+		panic("Impossible de récupérer le token du Runner")
+	}
+
+	configDir := filepath.Join(home, ".runner_config")
+	must(os.MkdirAll(configDir, 0o755))
+	configFile := filepath.Join(configDir, "config.yaml")
+
+	configContent := fmt.Sprintf(`
+log:
+  level: debug
+runner:
+  enabled: true
+  capacity: 1
+  name: runner-zero-touch
+  labels:
+    - "self-hosted:host"
+  host:
+    workdir_parent: "%s"
+container:
+  docker_host: "-"
+`, filepath.Join(configDir, "workdir"))
+
+	must(os.WriteFile(configFile, []byte(configContent), 0o644))
+
+	regCmd := exec.Command(runnerBin, "register",
+		"--instance", "http://localhost:3000",
+		"--token", runnerToken,
+		"--name", "runner-zero-touch",
+		"--no-interactive",
+		"--config", configFile)
+	_ = regCmd.Run()
+
+	_ = exec.Command("pkill", "-9", "-f", "forgejo-runner").Run()
+	must(startDaemon("runner.log", runnerBin, "daemon", "--config", configFile))
+	fmt.Println("[+] Runner CI/CD démarré.")
+}
+
+func createAdminAndRepo(forgejoBin, forgejoDir string) (string, string) {
+	fmt.Println("\n[*] --- Création de l'administrateur et du dépôt ---")
+
+	adminUser := "admin_" + generateRandomSecret(3)
+	adminPass := generateRandomSecret(10)
+	adminEmail := adminUser + "@localhost"
+
+	cmd := exec.Command(forgejoBin, "admin", "user", "create",
+		"--username", adminUser,
+		"--password", adminPass,
+		"--email", adminEmail,
+		"--admin",
+		"--work-path", forgejoDir)
+	_ = cmd.Run()
+
+	repoName := "app-repo"
+	reqBody, _ := json.Marshal(map[string]interface{}{
+		"name":    repoName,
+		"private": false,
+	})
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	req, _ := http.NewRequest("POST", "http://127.0.0.1:3000/api/v1/user/repos", bytes.NewBuffer(reqBody))
+	req.SetBasicAuth(adminUser, adminPass)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err == nil {
+		defer resp.Body.Close()
+		fmt.Printf("[+] Compte '%s' et dépôt '%s' créés.\n", adminUser, repoName)
+	}
+
+	return adminUser, adminPass
+}
+
+func deployGitOps(isMicroservice bool, user, password string) {
+	fmt.Println("\n[*] --- Génération CI/CD et Déploiement Git ---")
+	must(os.MkdirAll(".github/workflows", 0o755))
+
+	workflowContent := `name: CI/CD Pipeline
+on: [push]
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build Docker Image
+      run: docker build --network=host -t app-prod:${{ github.sha }} .
+`
+	if isMicroservice {
+		workflowContent += `
+  deploy:
+    runs-on: self-hosted
+    needs: build
+    steps:
+    - name: Deploy Kubernetes
+      run: kubectl apply -f k8s/
+`
+	} else {
+		workflowContent += `
+  deploy:
+    runs-on: self-hosted
+    needs: build
+    steps:
+    - name: Deploy Docker Compose
+      run: docker-compose up -d
+`
+	}
+
+	must(os.WriteFile(".github/workflows/main.yaml", []byte(workflowContent), 0o644))
+
+	runShell("git init")
+	runShell("git config user.name '" + user + "'")
+	runShell("git config user.email '" + user + "@localhost'")
+	runShell("git config transfer.credentialsInUrl allow")
+
+	remoteURL := fmt.Sprintf("http://%s:%s@localhost:3000/%s/app-repo.git", user, password, user)
+	runShell("git remote remove origin || true")
+	runShell("git remote add origin " + remoteURL)
+
+	runShell("git add .")
+	runShell("git commit -m 'Zero-Touch: Auto-generated pipeline' || true")
+	runShell("git push -u origin master --force")
+	fmt.Println("[+] Pipeline GitOps déployé !")
+}
+
 func main() {
 	// Étape 1 : Préparer l'exécutable 'mise' (Téléchargement + Extraction)
     misePath := installMise()
     // Étape 2 : Décider s'il faut utiliser le mode avec JSON (Expert) ou mode de l'Auto-détection (Automatique)
     startMode(misePath)
+	// étape 3
+	isMicro := AutoIsMicroservice()
+	forgejoBin, forgejoDir := setupForgejo()
+	setupRunner(forgejoBin, forgejoDir)
+	user, pass := createAdminAndRepo(forgejoBin, forgejoDir)
+
+	deployGitOps(isMicro, user, pass)
+
+	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
 }
