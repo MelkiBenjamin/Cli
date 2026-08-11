@@ -339,19 +339,35 @@ func setupForgejo() (string, string) {
 
 	_ = exec.Command("pkill", "-9", "-f", "forgejo").Run()
 
-	dbPath := filepath.Join(forgejoDir, "data", "forgejo.db")
-	if _, err := os.Stat(dbPath); err != nil {
-		fmt.Println("[*] Migration initiale de la base de données...")
-		cmd := exec.Command(forgejoBin, "migrate", "--work-path", forgejoDir)
-		_ = cmd.Run()
-	}
-
+	// Démarrage initial pour que Forgejo génère son app.ini par défaut
 	fmt.Println("[*] Démarrage du démon Forgejo...")
+	cmd := exec.Command(forgejoBin, "web", "--work-path", forgejoDir)
+	cmd.Dir = forgejoDir
 	must(startDaemon("forgejo.log", forgejoBin, "web", "--work-path", forgejoDir))
 
 	if !waitForPort("127.0.0.1", 3000, 60*time.Second) {
 		panic("Forgejo ne répond pas sur le port 3000")
 	}
+
+	// Modification de app.ini comme en Python (ajout de [actions])
+	appIni := filepath.Join(forgejoDir, "custom", "conf", "app.ini")
+	if _, err := os.Stat(appIni); err == nil {
+		content, _ := os.ReadFile(appIni)
+		if !strings.Contains(string(content), "[actions]") {
+			f, err := os.OpenFile(appIni, os.O_APPEND|os.O_WRONLY, 0o644)
+			if err == nil {
+				_, _ = f.WriteString("\n[actions]\nENABLED = true\n")
+				f.Close()
+
+				// Redémarrage pour appliquer la config Actions
+				_ = exec.Command("pkill", "-9", "-f", "forgejo").Run()
+				time.Sleep(1 * time.Second)
+				must(startDaemon("forgejo.log", forgejoBin, "web", "--work-path", forgejoDir))
+				waitForPort("127.0.0.1", 3000, 30*time.Second)
+			}
+		}
+	}
+
 	fmt.Println("[+] Forgejo est prêt sur http://localhost:3000.")
 	return forgejoBin, forgejoDir
 }
@@ -367,19 +383,25 @@ func setupRunner(forgejoBin, forgejoDir string) {
 	}
 
 	var runnerToken string
+	var lastErr string
+
 	for i := 0; i < 15; i++ {
 		cmd := exec.Command(forgejoBin, "actions", "generate-runner-token", "--work-path", forgejoDir)
-		out, err := cmd.Output()
+		cmd.Dir = forgejoDir // Équivalent au cwd Python
+		out, err := cmd.CombinedOutput()
 		if err == nil {
 			runnerToken = strings.TrimSpace(string(out))
 			if runnerToken != "" {
 				break
 			}
+		} else {
+			lastErr = string(out)
 		}
 		time.Sleep(2 * time.Second)
 	}
 
 	if runnerToken == "" {
+		fmt.Printf("[❌] Erreur CLI Forgejo : %s\n", lastErr)
 		panic("Impossible de récupérer le token du Runner")
 	}
 
