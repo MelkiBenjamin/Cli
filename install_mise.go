@@ -12,6 +12,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"net"
+	"bytes"
+	"time"
+	"crypto/rand"
+	"encoding/hex"
 )
 
 const latestURL = "https://github.com/jdx/mise/releases/download/v2026.4.24/mise-v2026.4.24-linux-x64-musl.tar.gz"
