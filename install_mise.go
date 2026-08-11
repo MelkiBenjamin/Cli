@@ -517,6 +517,9 @@ runner:
 		"--config", configFile,
 		"--connect")
 
+	// S'assurer que le binaire est exécutable
+    _ = os.Chmod(runnerBin, 0o755)
+
 	regCmd.Dir = configDir
 	out, err := regCmd.CombinedOutput()
 	if err != nil {
