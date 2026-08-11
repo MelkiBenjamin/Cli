@@ -338,40 +338,39 @@ func setupForgejo() (string, string) {
 	}
 
 	_ = exec.Command("pkill", "-9", "-f", "forgejo").Run()
+	time.Sleep(1 * time.Second)
 
-	// Démarrage initial pour que Forgejo génère son app.ini par défaut
+	// Création explicite du dossier custom/conf et du fichier app.ini AVANT le démarrage
+	confDir := filepath.Join(forgejoDir, "custom", "conf")
+	must(os.MkdirAll(confDir, 0o755))
+	appIniPath := filepath.Join(confDir, "app.ini")
+
+	if _, err := os.Stat(appIniPath); os.IsNotExist(err) {
+		initialConfig := `[DEFAULT]
+RUN_MODE = prod
+
+[server]
+HTTP_PORT = 3000
+ROOT_URL  = http://localhost:3000/
+
+[actions]
+ENABLED = true
+`
+		must(os.WriteFile(appIniPath, []byte(initialConfig), 0o644))
+		fmt.Println("[+] Fichier app.ini initialisé avec [actions] ENABLED = true")
+	}
+
+	// Démarrage du démon Forgejo
 	fmt.Println("[*] Démarrage du démon Forgejo...")
-	cmd := exec.Command(forgejoBin, "web", "--work-path", forgejoDir)
-	cmd.Dir = forgejoDir
 	must(startDaemon("forgejo.log", forgejoBin, "web", "--work-path", forgejoDir))
 
 	if !waitForPort("127.0.0.1", 3000, 60*time.Second) {
 		panic("Forgejo ne répond pas sur le port 3000")
 	}
 
-	// Modification de app.ini comme en Python (ajout de [actions])
-	appIni := filepath.Join(forgejoDir, "custom", "conf", "app.ini")
-	if _, err := os.Stat(appIni); err == nil {
-		content, _ := os.ReadFile(appIni)
-		if !strings.Contains(string(content), "[actions]") {
-			f, err := os.OpenFile(appIni, os.O_APPEND|os.O_WRONLY, 0o644)
-			if err == nil {
-				_, _ = f.WriteString("\n[actions]\nENABLED = true\n")
-				f.Close()
-
-				// Redémarrage pour appliquer la config Actions
-				_ = exec.Command("pkill", "-9", "-f", "forgejo").Run()
-				time.Sleep(1 * time.Second)
-				must(startDaemon("forgejo.log", forgejoBin, "web", "--work-path", forgejoDir))
-				waitForPort("127.0.0.1", 3000, 30*time.Second)
-			}
-		}
-	}
-
 	fmt.Println("[+] Forgejo est prêt sur http://localhost:3000.")
 	return forgejoBin, forgejoDir
 }
-
 // Lit un fichier INI et vérifie si une clé sous une section a une valeur spécifique
 func checkIniValue(filePath, section, key, expectedValue string) bool {
 	file, err := os.Open(filePath)
