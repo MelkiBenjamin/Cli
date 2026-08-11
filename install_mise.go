@@ -346,18 +346,28 @@ func setupForgejo() (string, string) {
 	appIniPath := filepath.Join(confDir, "app.ini")
 
 	if _, err := os.Stat(appIniPath); os.IsNotExist(err) {
-		initialConfig := `[DEFAULT]
+		initialConfig := fmt.Sprintf(`[DEFAULT]
 RUN_MODE = prod
 
 [server]
 HTTP_PORT = 3000
 ROOT_URL  = http://localhost:3000/
+DOMAIN    = localhost
+HTTP_ADDR = 127.0.0.1
+
+[security]
+INSTALL_LOCK = true
+
+[database]
+DB_TYPE = sqlite3
+PATH    = %s
 
 [actions]
 ENABLED = true
-`
+`, filepath.Join(forgejoDir, "data", "forgejo.db"))
+
 		must(os.WriteFile(appIniPath, []byte(initialConfig), 0o644))
-		fmt.Println("[+] Fichier app.ini initialisé avec [actions] ENABLED = true")
+		fmt.Println("[+] Fichier app.ini initialisé avec INSTALL_LOCK = true et [actions] ENABLED = true")
 	}
 
 	// Démarrage du démon Forgejo
@@ -440,18 +450,12 @@ func setupRunner(forgejoBin, forgejoDir string) {
 			panic("Forgejo ne répond pas après redémarrage")
 		}
 	}
-
-	if _, err := os.Stat(runnerBin); err != nil {
-		fmt.Println("[*] Téléchargement du binaire Forgejo Runner...")
-		must(downloadFile(runnerURL, runnerBin, 10*1024*1024))
-	}
-
-	// 2. Génération du Token via la CLI
+    // 2. Génération du Token via la CLI
 	var runnerToken string
 	var lastErr string
 
 	for i := 0; i < 10; i++ {
-		cmd := exec.Command(forgejoBin, "actions", "generate-runner-token", "-c", appIniPath)
+		cmd := exec.Command(forgejoBin, "actions", "generate-runner-token", "--config", appIniPath, "--work-path", forgejoDir)
 		cmd.Dir = forgejoDir
 		out, err := cmd.CombinedOutput()
 
