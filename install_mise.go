@@ -387,7 +387,7 @@ func setupRunner(forgejoBin, forgejoDir string) {
 
 	for i := 0; i < 15; i++ {
 		cmd := exec.Command(forgejoBin, "actions", "generate-runner-token", "--work-path", forgejoDir)
-		cmd.Dir = forgejoDir // Équivalent au cwd Python
+		cmd.Dir = forgejoDir
 		out, err := cmd.CombinedOutput()
 		if err == nil {
 			runnerToken = strings.TrimSpace(string(out))
@@ -409,33 +409,57 @@ func setupRunner(forgejoBin, forgejoDir string) {
 	must(os.MkdirAll(configDir, 0o755))
 	configFile := filepath.Join(configDir, "config.yaml")
 
+	// Correction du format de configuration
 	configContent := fmt.Sprintf(`
 log:
   level: debug
 runner:
-  enabled: true
   capacity: 1
   name: runner-zero-touch
+  envs: {}
+  timeout: 3h
+  shutdown_timeout: 0s
+  fetch_timeout: 5s
+  fetch_interval: 2s
   labels:
-    - "self-hosted:host"
+    - "self-hosted:host://-"
   host:
     workdir_parent: "%s"
-container:
-  docker_host: "-"
 `, filepath.Join(configDir, "workdir"))
 
 	must(os.WriteFile(configFile, []byte(configContent), 0o644))
 
+	// Nettoyage préalable d'un éventuel enregistrement précédent
+	_ = os.Remove(filepath.Join(configDir, ".runner"))
+
+	// Enregistrement avec --connect et gestion de l'erreur
 	regCmd := exec.Command(runnerBin, "register",
 		"--instance", "http://localhost:3000",
 		"--token", runnerToken,
 		"--name", "runner-zero-touch",
 		"--no-interactive",
-		"--config", configFile)
-	_ = regCmd.Run()
+		"--config", configFile,
+		"--connect")
+
+	regCmd.Dir = configDir
+	out, err := regCmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("[❌] Erreur d'enregistrement du Runner : %s\n", string(out))
+		panic(err)
+	}
 
 	_ = exec.Command("pkill", "-9", "-f", "forgejo-runner").Run()
-	must(startDaemon("runner.log", runnerBin, "daemon", "--config", configFile))
+
+	// Lancement du démon en ciblant le bon répertoire de travail (.runner)
+	cmdDaemon := exec.Command(runnerBin, "daemon", "--config", configFile)
+	cmdDaemon.Dir = configDir
+
+	logFile, err := os.Create("runner.log")
+	must(err)
+	cmdDaemon.Stdout = logFile
+	cmdDaemon.Stderr = logFile
+
+	must(cmdDaemon.Start())
 	fmt.Println("[+] Runner CI/CD démarré.")
 }
 
