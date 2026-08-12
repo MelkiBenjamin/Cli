@@ -546,6 +546,41 @@ runner:
 	fmt.Println("[+] Runner CI/CD démarré.")
 }
 
+func createAdminAndRepo(forgejoBin, forgejoDir string) (string, string) {
+	fmt.Println("\n[*] --- Création de l'administrateur et du dépôt ---")
+
+	adminUser := "admin_" + generateRandomSecret(3)
+	adminPass := generateRandomSecret(10)
+	adminEmail := adminUser + "@localhost"
+
+	cmd := exec.Command(forgejoBin, "admin", "user", "create",
+		"--username", adminUser,
+		"--password", adminPass,
+		"--email", adminEmail,
+		"--admin",
+		"--work-path", forgejoDir)
+	_ = cmd.Run()
+
+	repoName := "app-repo"
+	reqBody, _ := json.Marshal(map[string]interface{}{
+		"name":    repoName,
+		"private": false,
+	})
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	req, _ := http.NewRequest("POST", "http://127.0.0.1:3000/api/v1/user/repos", bytes.NewBuffer(reqBody))
+	req.SetBasicAuth(adminUser, adminPass)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err == nil {
+		defer resp.Body.Close()
+		fmt.Printf("[+] Compte '%s' et dépôt '%s' créés.\n", adminUser, repoName)
+	}
+
+	return adminUser, adminPass
+}
+
 func deployGitOps(isMicroservice bool, user, password string) {
 	fmt.Println("\n[*] --- Génération CI/CD et Déploiement Git ---")
 	must(os.MkdirAll(".github/workflows", 0o755))
