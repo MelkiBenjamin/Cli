@@ -522,8 +522,7 @@ runner:
 		"--token", runnerToken,
 		"--name", "runner-zero-touch",
 		"--no-interactive",
-		"--config", configFile,
-		"--connect")
+		"--config", configFile)
 
 	regCmd.Dir = configDir
 	out, err := regCmd.CombinedOutput()
