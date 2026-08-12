@@ -425,6 +425,13 @@ func setupRunner(forgejoBin, forgejoDir string) {
 	home, _ := os.UserHomeDir()
 	runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
 
+	// 0. Téléchargement du binaire Runner si absent
+	if _, err := os.Stat(runnerBin); err != nil {
+		fmt.Println("[*] Téléchargement du binaire Forgejo Runner...")
+		must(downloadFile(runnerURL, runnerBin, 10*1024*1024))
+		must(os.Chmod(runnerBin, 0o755))
+	}
+
 	appIniPath := filepath.Join(forgejoDir, "custom", "conf", "app.ini")
 	fmt.Printf("[🔍] Inspection du fichier INI : %s\n", appIniPath)
 
@@ -450,7 +457,8 @@ func setupRunner(forgejoBin, forgejoDir string) {
 			panic("Forgejo ne répond pas après redémarrage")
 		}
 	}
-    // 2. Génération du Token via la CLI
+
+	// 2. Génération du Token via la CLI
 	var runnerToken string
 	var lastErr string
 
@@ -517,9 +525,6 @@ runner:
 		"--config", configFile,
 		"--connect")
 
-	// S'assurer que le binaire est exécutable
-    _ = os.Chmod(runnerBin, 0o755)
-
 	regCmd.Dir = configDir
 	out, err := regCmd.CombinedOutput()
 	if err != nil {
@@ -539,41 +544,6 @@ runner:
 
 	must(cmdDaemon.Start())
 	fmt.Println("[+] Runner CI/CD démarré.")
-}
-
-func createAdminAndRepo(forgejoBin, forgejoDir string) (string, string) {
-	fmt.Println("\n[*] --- Création de l'administrateur et du dépôt ---")
-
-	adminUser := "admin_" + generateRandomSecret(3)
-	adminPass := generateRandomSecret(10)
-	adminEmail := adminUser + "@localhost"
-
-	cmd := exec.Command(forgejoBin, "admin", "user", "create",
-		"--username", adminUser,
-		"--password", adminPass,
-		"--email", adminEmail,
-		"--admin",
-		"--work-path", forgejoDir)
-	_ = cmd.Run()
-
-	repoName := "app-repo"
-	reqBody, _ := json.Marshal(map[string]interface{}{
-		"name":    repoName,
-		"private": false,
-	})
-
-	client := &http.Client{Timeout: 10 * time.Second}
-	req, _ := http.NewRequest("POST", "http://127.0.0.1:3000/api/v1/user/repos", bytes.NewBuffer(reqBody))
-	req.SetBasicAuth(adminUser, adminPass)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := client.Do(req)
-	if err == nil {
-		defer resp.Body.Close()
-		fmt.Printf("[+] Compte '%s' et dépôt '%s' créés.\n", adminUser, repoName)
-	}
-
-	return adminUser, adminPass
 }
 
 func deployGitOps(isMicroservice bool, user, password string) {
