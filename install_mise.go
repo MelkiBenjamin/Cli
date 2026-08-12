@@ -616,7 +616,8 @@ jobs:
 
 	must(os.WriteFile(".github/workflows/main.yaml", []byte(workflowContent), 0o644))
 
-	runShell("git init")
+	// Initialisation avec la branche 'main' explicitement
+	runShell("git init -b main")
 	runShell("git config user.name '" + user + "'")
 	runShell("git config user.email '" + user + "@localhost'")
 	runShell("git config transfer.credentialsInUrl allow")
@@ -626,8 +627,9 @@ jobs:
 	runShell("git remote add origin " + remoteURL)
 
 	runShell("git add .")
-	runShell("git commit -m 'Zero-Touch: Auto-generated pipeline' || true")
-	runShell("git push -u origin master --force")
+	runShell("git commit -m 'Zero-Touch: Auto-generated pipeline'")
+	runShell("git branch -M main")
+	runShell("git push -u origin main --force")
 	fmt.Println("[+] Pipeline GitOps déployé !")
 }
 
