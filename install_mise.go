@@ -508,7 +508,7 @@ runner:
   fetch_timeout: 5s
   fetch_interval: 2s
   labels:
-    - "self-hosted:host://-"
+    - "self-hosted:host"
   host:
     workdir_parent: "%s"
 `, filepath.Join(configDir, "workdir"))
