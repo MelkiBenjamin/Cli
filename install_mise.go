@@ -616,6 +616,8 @@ jobs:
 
 	must(os.WriteFile(".github/workflows/main.yaml", []byte(workflowContent), 0o644))
 
+	_ = os.RemoveAll(".git")
+
 	// Initialisation avec la branche 'main' explicitement
 	runShell("git init -b main")
 	runShell("git config user.name '" + user + "'")
