@@ -610,7 +610,7 @@ jobs:
     needs: build
     steps:
     - name: Deploy Docker Compose
-      run: docker-compose up -d
+      run: docker compose up -d
 `
 	}
 
