@@ -587,7 +587,7 @@ func deployGitOps(isMicroservice bool, user, password string) {
 	workflowContent := `name: CI/CD Pipeline
 on: [push]
 jobs:
-  build:
+  build-deploy:
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v4
@@ -596,19 +596,11 @@ jobs:
 `
 	if isMicroservice {
 		workflowContent += `
-  deploy:
-    runs-on: self-hosted
-    needs: build
-    steps:
     - name: Deploy Kubernetes
       run: kubectl apply -f k8s/
 `
 	} else {
 		workflowContent += `
-  deploy:
-    runs-on: self-hosted
-    needs: build
-    steps:
     - name: Deploy Docker Compose
       run: docker compose up -d
 `
