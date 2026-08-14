@@ -32,7 +32,8 @@ jobs:
 
       - run: |
           ls -alh
-          tail -n 50 -f runner.log
+          Sleep 240 
+          cat runner.log
       
       - run: ls -alh /home/runner/.local/share/mise/installs
       - run: |
