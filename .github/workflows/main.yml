@@ -29,6 +29,10 @@ jobs:
 
       - run: CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./install_mise install_mise.go
       - run: ./install_mise
+
+      - run: |
+          ls -alh
+          tail -n 50 -f runner.log
       
       - run: ls -alh /home/runner/.local/share/mise/installs
       - run: |
@@ -111,8 +115,8 @@ jobs:
          echo 'voici docker compose'
          cat docker-compose.yml
 
-      - run: docker build -t apps .
-      - run: docker run apps
+   ##   - run: docker build -t apps .
+   ##   - run: docker run apps
       
       - run: ls -alh /home/runner/.local/share/mise/installs
       - run: |
