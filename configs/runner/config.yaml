@@ -1,0 +1,14 @@
+log:
+  level: debug
+runner:
+  capacity: 1
+  name: runner-zero-touch
+  envs: {}
+  timeout: 3h
+  shutdown_timeout: 0s
+  fetch_timeout: 5s
+  fetch_interval: 2s
+  labels:
+    - "self-hosted:host"
+  host:
+    workdir_parent: "/home/user/.runner_config/workdir"

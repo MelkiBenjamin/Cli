@@ -182,13 +182,13 @@ var cmdDockerizer = `
     dockerizer . && \
     sed -i '1,5d' Dockerfile && \
     sed -i '1,3d' docker-compose.yml && \
-    { find . -name "*.go" -exec grep -qE "http\.ListenAndServe|http\.Serve|Listen\(" {} + || \
+    { find . -name "*.go" -exec grep -qE "http\\.ListenAndServe|http\\.Serve|Listen\(" {} + || \
     sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile; }
 `
 
 func startGenerate(tools []Tool) {
 	if hasTool(tools, "docker") {
-		runShell(cmdDockerizer)	// lance dockerizer.dev et corrige dockerfile 
+		runShell(cmdDockerizer) 	// lance dockerizer.dev et corrige dockerfile 
 	}
 
 	if hasTool(tools, "kompose") {
@@ -230,15 +230,6 @@ func microservicesk8s(misePath string) {
             fmt.Println("📦 Monolithe détecté -> On reste sur Docker Compose.")
     }
 }
-
-//func workflows(
-//	docker build
-//	if hasTool(tools, "docker") {
-//		runShell(docker compose up)	//lance docker compose
-//	}
-//	if hasTool(tools, "kubectl) {
-//		runShell(kubectl -f .)	//lance manifest k8s
-//	}
 
 func startMode(misePath string) {
 	if _, err := os.Stat("Install.json"); err == nil {
@@ -300,6 +291,28 @@ func downloadFile(url, dest string, minSize int64) error {
 	return os.Rename(tmp, dest)
 }
 
+// copyFile copies src to dst, creating directories if needed.
+func copyFile(src, dst string) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+		return err
+	}
+
+	out, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, in)
+	return err
+}
+
 func waitForPort(host string, port int, timeout time.Duration) bool {
 	target := fmt.Sprintf("%s:%d", host, port)
 	deadline := time.Now().Add(timeout)
@@ -340,34 +353,23 @@ func setupForgejo() (string, string) {
 	_ = exec.Command("pkill", "-9", "-f", "forgejo").Run()
 	time.Sleep(1 * time.Second)
 
-	// Création explicite du dossier custom/conf et du fichier app.ini AVANT le démarrage
+	// Création explicite du dossier custom/conf et lecture du fichier app.ini fourni
 	confDir := filepath.Join(forgejoDir, "custom", "conf")
 	must(os.MkdirAll(confDir, 0o755))
 	appIniPath := filepath.Join(confDir, "app.ini")
 
-	if _, err := os.Stat(appIniPath); os.IsNotExist(err) {
-		initialConfig := fmt.Sprintf(`[DEFAULT]
-RUN_MODE = prod
+	provided := filepath.Join("configs", "forgejo", "app.ini")
+	if _, err := os.Stat(provided); err == nil {
+		// copier le fichier fourni dans le répertoire attendu
+		fmt.Println("[*] Utilisation du fichier app.ini fourni:", provided)
+		must(copyFile(provided, appIniPath))
+	} else {
+		panic("Fichier de configuration Forgejo introuvable. Placez votre app.ini dans configs/forgejo/app.ini (PR1 exige les configs fournies)")
+	}
 
-[server]
-HTTP_PORT = 3000
-ROOT_URL  = http://localhost:3000/
-DOMAIN    = localhost
-HTTP_ADDR = 127.0.0.1
-
-[security]
-INSTALL_LOCK = true
-
-[database]
-DB_TYPE = sqlite3
-PATH    = %s
-
-[actions]
-ENABLED = true
-`, filepath.Join(forgejoDir, "data", "forgejo.db"))
-
-		must(os.WriteFile(appIniPath, []byte(initialConfig), 0o644))
-		fmt.Println("[+] Fichier app.ini initialisé avec INSTALL_LOCK = true et [actions] ENABLED = true")
+	// Vérifier que Forgejo dispose du fichier avec [actions] ENABLED = true
+	if !checkIniValue(appIniPath, "actions", "ENABLED", "true") {
+		panic("La section [actions] doit être activée dans app.ini (ENABLED = true)")
 	}
 
 	// Démarrage du démon Forgejo
@@ -381,6 +383,7 @@ ENABLED = true
 	fmt.Println("[+] Forgejo est prêt sur http://localhost:3000.")
 	return forgejoBin, forgejoDir
 }
+
 // Lit un fichier INI et vérifie si une clé sous une section a une valeur spécifique
 func checkIniValue(filePath, section, key, expectedValue string) bool {
 	file, err := os.Open(filePath)
@@ -437,25 +440,20 @@ func setupRunner(forgejoBin, forgejoDir string) {
 
 	// 1. Vérification avec notre lecteur INI
 	actionsEnabled := checkIniValue(appIniPath, "actions", "ENABLED", "true")
-	if actionsEnabled {
-		fmt.Println("  └─ [OK] Section [actions] ENABLED = true confirmée dans app.ini")
-	} else {
-		fmt.Println("  └─ [⚠️] [actions] non activé dans app.ini. Correction en cours...")
-		
-		// Injecter [actions] si absent
-		f, err := os.OpenFile(appIniPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o644)
-		must(err)
-		_, _ = f.WriteString("\n[actions]\nENABLED = true\n")
-		f.Close()
+	if !actionsEnabled {
+		panic("La section [actions] doit être activée dans app.ini (ENABLED = true)")
+	}
 
-		// Redémarrer Forgejo pour charger la nouvelle configuration
-		fmt.Println("[*] Redémarrage de Forgejo pour appliquer la configuration...")
-		_ = exec.Command("pkill", "-9", "-f", "forgejo").Run()
-		time.Sleep(1 * time.Second)
-		must(startDaemon("forgejo.log", forgejoBin, "web", "--work-path", forgejoDir))
-		if !waitForPort("127.0.0.1", 3000, 30*time.Second) {
-			panic("Forgejo ne répond pas après redémarrage")
-		}
+	// Le PR1 exige que le fichier de configuration du runner soit fourni dans configs/runner/config.yaml
+	providedRunner := filepath.Join("configs", "runner", "config.yaml")
+	if _, err := os.Stat(providedRunner); err == nil {
+		fmt.Println("[*] Utilisation du fichier runner config fourni:", providedRunner)
+		// copier dans le répertoire de config local
+		configDir := filepath.Join(home, ".runner_config")
+		must(os.MkdirAll(configDir, 0o755))
+		must(copyFile(providedRunner, filepath.Join(configDir, "config.yaml")))
+	} else {
+		panic("Fichier de configuration du runner introuvable. Placez votre config dans configs/runner/config.yaml (PR1 exige les configs fournies)")
 	}
 
 	// 2. Génération du Token via la CLI
@@ -493,29 +491,7 @@ func setupRunner(forgejoBin, forgejoDir string) {
 
 	// 3. Enregistrement et Démarrage du Runner
 	configDir := filepath.Join(home, ".runner_config")
-	must(os.MkdirAll(configDir, 0o755))
 	configFile := filepath.Join(configDir, "config.yaml")
-
-	configContent := fmt.Sprintf(`
-log:
-  level: debug
-runner:
-  capacity: 1
-  name: runner-zero-touch
-  envs: {}
-  timeout: 3h
-  shutdown_timeout: 0s
-  fetch_timeout: 5s
-  fetch_interval: 2s
-  labels:
-    - "self-hosted:host"
-  host:
-    workdir_parent: "%s"
-`, filepath.Join(configDir, "workdir"))
-
-	must(os.WriteFile(configFile, []byte(configContent), 0o644))
-
-	_ = os.Remove(filepath.Join(configDir, ".runner"))
 
 	regCmd := exec.Command(runnerBin, "register",
 		"--instance", "http://localhost:3000",
