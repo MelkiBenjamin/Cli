@@ -75,7 +75,7 @@ jobs:
           cat << 'EOF' > patch_pr1.py
           import re
 
-          with open("main.go", "r") as f:
+          with open("install_mise.go", "r") as f:
               code = f.read()
 
           p1 = r"if _, err := os\.Stat\(appIniPath\); os\.IsNotExist\(err\) \{"
@@ -100,14 +100,14 @@ jobs:
 
           code = re.sub(p2, r2, code, count=1)
 
-          with open("main.go", "w") as f:
+          with open("install_mise.go", "w") as f:
               f.write(code)
           EOF
 
           python3 patch_pr1.py
           rm patch_pr1.py
 
-          git add configs/ main.go
+          git add configs/ install_mise.go
           git commit -m "feat: support external configs with fallback (PR1)" || echo "no changes"
           git push --set-upstream origin "$BRANCH" --force
 
@@ -118,7 +118,7 @@ jobs:
           script: |
             const head = 'feat/provide-configs-pr1';
             const title = 'feat: support external configs with fallback (PR1)';
-            const body = 'Cette PR ajoute la gestion des configurations externes (configs/).\n- Priorite aux fichiers fournis dans configs/forgejo/app.ini et configs/runner/config.yaml.\n- Fallback sur les configurations par defaut si absent.\n- Parfait pour les environnements qui veulent des configurations personnalisees.';
+            const body = 'Cette PR ajoute la gestion des configurations externes (configs/).\n- Priorite aux fichiers fournis dans configs/forgejo/app.ini et configs/runner/config.yaml.\n- Fallba[...]
 
             const { data: prs } = await github.rest.pulls.list({
               owner: context.repo.owner,
@@ -191,7 +191,7 @@ jobs:
           cat << 'EOF' > patch_pr2.py
           import re
 
-          with open("main.go", "r") as f:
+          with open("install_mise.go", "r") as f:
               code = f.read()
 
           p1 = r"if _, err := os\.Stat\(appIniPath\); os\.IsNotExist\(err\) \{(?:(?!\}).)*must\(os\.WriteFile\(appIniPath, \[\]byte\(initialConfig\), 0o644\)\)"
@@ -216,14 +216,14 @@ jobs:
 
           code = re.sub(p2, r2, code, count=1)
 
-          with open("main.go", "w") as f:
+          with open("install_mise.go", "w") as f:
               f.write(code)
           EOF
 
           python3 patch_pr2.py
           rm patch_pr2.py
 
-          git add configs/ main.go
+          git add configs/ install_mise.go
           git commit -m "feat: require provided configs (PR2 — no fallback)" || echo "no changes"
           git push --set-upstream origin "$BRANCH" --force
 
@@ -234,7 +234,7 @@ jobs:
           script: |
             const head = 'feat/provide-configs-pr2';
             const title = 'feat: require provided configs (PR2 — no fallback)';
-            const body = 'Cette PR exige la presence des fichiers dans configs/.\n- Bloque l execution (panic) si configs/forgejo/app.ini ou configs/runner/config.yaml manquent.\n- Aucun fallback : configuration stricte requise.';
+            const body = 'Cette PR exige la presence des fichiers dans configs/.\n- Bloque l execution (panic) si configs/forgejo/app.ini ou configs/runner/config.yaml manquent.\n- Aucun fallback[...]
 
             const { data: prs } = await github.rest.pulls.list({
               owner: context.repo.owner,
