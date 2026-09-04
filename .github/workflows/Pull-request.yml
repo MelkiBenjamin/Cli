@@ -28,7 +28,8 @@ jobs:
         run: |
           set -euo pipefail
           BRANCH="feat/provide-configs-pr1"
-          git fetch origin main:main
+          git checkout main
+          git pull origin main
           git checkout -B "$BRANCH" main
 
           mkdir -p configs/forgejo configs/runner
@@ -117,7 +118,7 @@ jobs:
           script: |
             const head = 'feat/provide-configs-pr1';
             const title = 'feat: support external configs with fallback (PR1)';
-            const body = 'Cette PR ajoute la gestion des configurations externes (configs/).\n- Priorite aux fichiers fournis dans configs/forgejo/app.ini et configs/runner/config.yaml.\n- Fallback automatique en cas d absence.\n- Conserve 100% de la chaine de deploiement d origine.';
+            const body = 'Cette PR ajoute la gestion des configurations externes (configs/).\n- Priorite aux fichiers fournis dans configs/forgejo/app.ini et configs/runner/config.yaml.\n- Fallback sur les configurations par defaut si absent.\n- Parfait pour les environnements qui veulent des configurations personnalisees.';
 
             const { data: prs } = await github.rest.pulls.list({
               owner: context.repo.owner,
@@ -143,7 +144,8 @@ jobs:
         run: |
           set -euo pipefail
           BRANCH="feat/provide-configs-pr2"
-          git fetch origin main:main
+          git checkout main
+          git pull origin main
           git checkout -B "$BRANCH" main
 
           mkdir -p configs/forgejo configs/runner
@@ -232,7 +234,7 @@ jobs:
           script: |
             const head = 'feat/provide-configs-pr2';
             const title = 'feat: require provided configs (PR2 — no fallback)';
-            const body = 'Cette PR exige la presence des fichiers dans configs/.\n- Bloque l execution (panic) si configs/forgejo/app.ini ou configs/runner/config.yaml manquent.\n- Aucun fallback automatique.';
+            const body = 'Cette PR exige la presence des fichiers dans configs/.\n- Bloque l execution (panic) si configs/forgejo/app.ini ou configs/runner/config.yaml manquent.\n- Aucun fallback : configuration stricte requise.';
 
             const { data: prs } = await github.rest.pulls.list({
               owner: context.repo.owner,
