@@ -114,11 +114,11 @@ jobs:
       - name: Create PR1 if missing
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT_TOKEN }}
           script: |
             const head = 'feat/provide-configs-pr1';
             const title = 'feat: support external configs with fallback (PR1)';
-            const body = 'Cette PR ajoute la gestion des configurations externes (configs/).\n- Priorite aux fichiers fournis dans configs/forgejo/app.ini et configs/runner/config.yaml.\n- Fallback sur les configurations par defaut si les fichiers n\'existent pas.\n- Backward compatible avec le comportement existant.';
+            const body = 'Cette PR ajoute la gestion des configurations externes (configs/).\n- Priorite aux fichiers fournis dans configs/forgejo/app.ini et configs/runner/config.yaml.\n- Fallback vers les configurations par défaut si absent.';
 
             const { data: prs } = await github.rest.pulls.list({
               owner: context.repo.owner,
@@ -230,11 +230,11 @@ jobs:
       - name: Create PR2 if missing
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT_TOKEN }}
           script: |
             const head = 'feat/provide-configs-pr2';
             const title = 'feat: require provided configs (PR2 — no fallback)';
-            const body = 'Cette PR exige la presence des fichiers dans configs/.\n- Bloque l\'execution (panic) si configs/forgejo/app.ini ou configs/runner/config.yaml manquent.\n- Aucun fallback sur les configurations par defaut.\n- Mecanisme strict pour garantir que les configs externes sont toujours utilisees.';
+            const body = 'Cette PR exige la presence des fichiers dans configs/.\n- Bloque l\'execution (panic) si configs/forgejo/app.ini ou configs/runner/config.yaml manquent.\n- Aucun fallback.';
 
             const { data: prs } = await github.rest.pulls.list({
               owner: context.repo.owner,
