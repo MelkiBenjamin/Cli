@@ -33,78 +33,78 @@ jobs:
 
           mkdir -p configs/forgejo configs/runner
 
-          cat > configs/forgejo/app.ini <<'EOF'
-[DEFAULT]
-RUN_MODE = prod
+          cat << 'EOF' > configs/forgejo/app.ini
+          [DEFAULT]
+          RUN_MODE = prod
 
-[server]
-HTTP_PORT = 3000
-ROOT_URL  = http://localhost:3000/
-DOMAIN    = localhost
-HTTP_ADDR = 127.0.0.1
+          [server]
+          HTTP_PORT = 3000
+          ROOT_URL = http://localhost:3000/
+          DOMAIN = localhost
+          HTTP_ADDR = 127.0.0.1
 
-[security]
-INSTALL_LOCK = true
+          [security]
+          INSTALL_LOCK = true
 
-[database]
-DB_TYPE = sqlite3
-PATH    = /home/runner/forgejo/data/forgejo.db
+          [database]
+          DB_TYPE = sqlite3
+          PATH = /home/runner/forgejo/data/forgejo.db
 
-[actions]
-ENABLED = true
-EOF
+          [actions]
+          ENABLED = true
+          EOF
 
-          cat > configs/runner/config.yaml <<'EOF'
-log:
-  level: debug
-runner:
-  capacity: 1
-  name: runner-zero-touch
-  envs: {}
-  timeout: 3h
-  shutdown_timeout: 0s
-  fetch_timeout: 5s
-  fetch_interval: 2s
-  labels:
-    - "self-hosted:host"
-  host:
-    workdir_parent: "/home/runner/.runner_config/workdir"
-EOF
+          cat << 'EOF' > configs/runner/config.yaml
+          log:
+            level: debug
+          runner:
+            capacity: 1
+            name: runner-zero-touch
+            envs: {}
+            timeout: 3h
+            shutdown_timeout: 0s
+            fetch_timeout: 5s
+            fetch_interval: 2s
+            labels:
+              - "self-hosted:host"
+            host:
+              workdir_parent: "/home/runner/.runner_config/workdir"
+          EOF
 
-          # Injection Python securisee pour PR1
-          python3 -c '
-import re
+          cat << 'EOF' > patch_pr1.py
+          import re
 
-with open("main.go", "r") as f:
-    code = f.read()
+          with open("main.go", "r") as f:
+              code = f.read()
 
-# 1. Forgejo avec Fallback
-p1 = r"if _, err := os\.Stat\(appIniPath\); os\.IsNotExist\(err\) \{"
-r1 = """providedAppIni := filepath.Join("configs", "forgejo", "app.ini")
-	if _, err := os.Stat(providedAppIni); err == nil {
-		fmt.Println("[+] Utilisation de app.ini depuis configs/forgejo/")
-		input, _ := os.ReadFile(providedAppIni)
-		must(os.WriteFile(appIniPath, input, 0o644))
-	} else if _, err := os.Stat(appIniPath); os.IsNotExist(err) {"""
+          p1 = r"if _, err := os\.Stat\(appIniPath\); os\.IsNotExist\(err\) \{"
+          r1 = """providedAppIni := filepath.Join("configs", "forgejo", "app.ini")
+          \tif _, err := os.Stat(providedAppIni); err == nil {
+          \t\tfmt.Println("[+] Utilisation de app.ini depuis configs/forgejo/")
+          \t\tinput, _ := os.ReadFile(providedAppIni)
+          \t\tmust(os.WriteFile(appIniPath, input, 0o644))
+          \t} else if _, err := os.Stat(appIniPath); os.IsNotExist(err) {"""
 
-code = re.sub(p1, r1, code, count=1)
+          code = re.sub(p1, r1, code, count=1)
 
-# 2. Runner avec Fallback
-p2 = r"must\(os\.WriteFile\(configFile, \[\]byte\(configContent\), 0o644\)\)"
-r2 = """providedRunnerConf := filepath.Join("configs", "runner", "config.yaml")
-	if _, err := os.Stat(providedRunnerConf); err == nil {
-		fmt.Println("[+] Utilisation de config.yaml depuis configs/runner/")
-		input, _ := os.ReadFile(providedRunnerConf)
-		must(os.WriteFile(configFile, input, 0o644))
-	} else {
-		must(os.WriteFile(configFile, []byte(configContent), 0o644))
-	}"""
+          p2 = r"must\(os\.WriteFile\(configFile, \[\]byte\(configContent\), 0o644\)\)"
+          r2 = """providedRunnerConf := filepath.Join("configs", "runner", "config.yaml")
+          \tif _, err := os.Stat(providedRunnerConf); err == nil {
+          \t\tfmt.Println("[+] Utilisation de config.yaml depuis configs/runner/")
+          \t\tinput, _ := os.ReadFile(providedRunnerConf)
+          \t\tmust(os.WriteFile(configFile, input, 0o644))
+          \t} else {
+          \t\tmust(os.WriteFile(configFile, []byte(configContent), 0o644))
+          \t}"""
 
-code = re.sub(p2, r2, code, count=1)
+          code = re.sub(p2, r2, code, count=1)
 
-with open("main.go", "w") as f:
-    f.write(code)
-'
+          with open("main.go", "w") as f:
+              f.write(code)
+          EOF
+
+          python3 patch_pr1.py
+          rm patch_pr1.py
 
           git add configs/ main.go
           git commit -m "feat: support external configs with fallback (PR1)" || echo "no changes"
@@ -117,16 +117,23 @@ with open("main.go", "w") as f:
           script: |
             const head = 'feat/provide-configs-pr1';
             const title = 'feat: support external configs with fallback (PR1)';
-            const body = `Cette PR ajoute la gestion des configurations externes (\`configs/\`).
-- Priorité aux fichiers fournis dans \`configs/forgejo/app.ini\` et \`configs/runner/config.yaml\`.
-- Fallback automatique en cas d'absence.
-- Conserve 100% de la chaîne de déploiement d'origine.`;
-            
+            const body = 'Cette PR ajoute la gestion des configurations externes (configs/).\n- Priorite aux fichiers fournis dans configs/forgejo/app.ini et configs/runner/config.yaml.\n- Fallback automatique en cas d absence.\n- Conserve 100% de la chaine de deploiement d origine.';
+
             const { data: prs } = await github.rest.pulls.list({
-              owner: context.repo.owner, repo: context.repo.repo, state: 'open', head: `${context.repo.owner}:${head}`
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${context.repo.owner}:${head}`
             });
             if (prs.length === 0) {
-              await github.rest.pulls.create({ owner: context.repo.owner, repo: context.repo.repo, title, head, base: 'main', body });
+              await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                head: head,
+                base: 'main',
+                body: body
+              });
             }
 
       # ---------------------------------------------------------
@@ -141,78 +148,78 @@ with open("main.go", "w") as f:
 
           mkdir -p configs/forgejo configs/runner
 
-          cat > configs/forgejo/app.ini <<'EOF'
-[DEFAULT]
-RUN_MODE = prod
+          cat << 'EOF' > configs/forgejo/app.ini
+          [DEFAULT]
+          RUN_MODE = prod
 
-[server]
-HTTP_PORT = 3000
-ROOT_URL  = http://localhost:3000/
-DOMAIN    = localhost
-HTTP_ADDR = 127.0.0.1
+          [server]
+          HTTP_PORT = 3000
+          ROOT_URL = http://localhost:3000/
+          DOMAIN = localhost
+          HTTP_ADDR = 127.0.0.1
 
-[security]
-INSTALL_LOCK = true
+          [security]
+          INSTALL_LOCK = true
 
-[database]
-DB_TYPE = sqlite3
-PATH    = /home/runner/forgejo/data/forgejo.db
+          [database]
+          DB_TYPE = sqlite3
+          PATH = /home/runner/forgejo/data/forgejo.db
 
-[actions]
-ENABLED = true
-EOF
+          [actions]
+          ENABLED = true
+          EOF
 
-          cat > configs/runner/config.yaml <<'EOF'
-log:
-  level: debug
-runner:
-  capacity: 1
-  name: runner-zero-touch
-  envs: {}
-  timeout: 3h
-  shutdown_timeout: 0s
-  fetch_timeout: 5s
-  fetch_interval: 2s
-  labels:
-    - "self-hosted:host"
-  host:
-    workdir_parent: "/home/runner/.runner_config/workdir"
-EOF
+          cat << 'EOF' > configs/runner/config.yaml
+          log:
+            level: debug
+          runner:
+            capacity: 1
+            name: runner-zero-touch
+            envs: {}
+            timeout: 3h
+            shutdown_timeout: 0s
+            fetch_timeout: 5s
+            fetch_interval: 2s
+            labels:
+              - "self-hosted:host"
+            host:
+              workdir_parent: "/home/runner/.runner_config/workdir"
+          EOF
 
-          # Injection Python securisee pour PR2
-          python3 -c '
-import re
+          cat << 'EOF' > patch_pr2.py
+          import re
 
-with open("main.go", "r") as f:
-    code = f.read()
+          with open("main.go", "r") as f:
+              code = f.read()
 
-# 1. Forgejo Mode Strict (Cible uniquement la structure specifique)
-p1 = r"if _, err := os\.Stat\(appIniPath\); os\.IsNotExist\(err\) \{(?:(?!\}).)*must\(os\.WriteFile\(appIniPath, \[\]byte\(initialConfig\), 0o644\)\)"
-r1 = """providedAppIni := filepath.Join("configs", "forgejo", "app.ini")
-	if _, err := os.Stat(providedAppIni); err != nil {
-		panic("Fichier requis absent : configs/forgejo/app.ini")
-	}
-	input, err := os.ReadFile(providedAppIni)
-	must(err)
-	must(os.WriteFile(appIniPath, input, 0o644))"""
+          p1 = r"if _, err := os\.Stat\(appIniPath\); os\.IsNotExist\(err\) \{(?:(?!\}).)*must\(os\.WriteFile\(appIniPath, \[\]byte\(initialConfig\), 0o644\)\)"
+          r1 = """providedAppIni := filepath.Join("configs", "forgejo", "app.ini")
+          \tif _, err := os.Stat(providedAppIni); err != nil {
+          \t\tpanic("Fichier requis absent : configs/forgejo/app.ini")
+          \t}
+          \tinput, err := os.ReadFile(providedAppIni)
+          \tmust(err)
+          \tmust(os.WriteFile(appIniPath, input, 0o644))"""
 
-code = re.sub(p1, r1, code, flags=re.DOTALL, count=1)
+          code = re.sub(p1, r1, code, flags=re.DOTALL, count=1)
 
-# 2. Runner Mode Strict
-p2 = r"must\(os\.WriteFile\(configFile, \[\]byte\(configContent\), 0o644\)\)"
-r2 = """providedRunnerConf := filepath.Join("configs", "runner", "config.yaml")
-	if _, err := os.Stat(providedRunnerConf); err != nil {
-		panic("Fichier requis absent : configs/runner/config.yaml")
-	}
-	input, err := os.ReadFile(providedRunnerConf)
-	must(err)
-	must(os.WriteFile(configFile, input, 0o644))"""
+          p2 = r"must\(os\.WriteFile\(configFile, \[\]byte\(configContent\), 0o644\)\)"
+          r2 = """providedRunnerConf := filepath.Join("configs", "runner", "config.yaml")
+          \tif _, err := os.Stat(providedRunnerConf); err != nil {
+          \t\tpanic("Fichier requis absent : configs/runner/config.yaml")
+          \t}
+          \tinput, err := os.ReadFile(providedRunnerConf)
+          \tmust(err)
+          \tmust(os.WriteFile(configFile, input, 0o644))"""
 
-code = re.sub(p2, r2, code, count=1)
+          code = re.sub(p2, r2, code, count=1)
 
-with open("main.go", "w") as f:
-    f.write(code)
-'
+          with open("main.go", "w") as f:
+              f.write(code)
+          EOF
+
+          python3 patch_pr2.py
+          rm patch_pr2.py
 
           git add configs/ main.go
           git commit -m "feat: require provided configs (PR2 — no fallback)" || echo "no changes"
@@ -225,13 +232,21 @@ with open("main.go", "w") as f:
           script: |
             const head = 'feat/provide-configs-pr2';
             const title = 'feat: require provided configs (PR2 — no fallback)';
-            const body = `Cette PR exige la présence des fichiers dans \`configs/\`.
-- Bloque l'exécution (\`panic\`) si \`configs/forgejo/app.ini\` ou \`configs/runner/config.yaml\` manquent.
-- Aucun fallback automatique.`;
-            
+            const body = 'Cette PR exige la presence des fichiers dans configs/.\n- Bloque l execution (panic) si configs/forgejo/app.ini ou configs/runner/config.yaml manquent.\n- Aucun fallback automatique.';
+
             const { data: prs } = await github.rest.pulls.list({
-              owner: context.repo.owner, repo: context.repo.repo, state: 'open', head: `${context.repo.owner}:${head}`
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${context.repo.owner}:${head}`
             });
             if (prs.length === 0) {
-              await github.rest.pulls.create({ owner: context.repo.owner, repo: context.repo.repo, title, head, base: 'main', body });
+              await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                head: head,
+                base: 'main',
+                body: body
+              });
             }
