@@ -71,23 +71,27 @@ runner:
     workdir_parent: "/home/runner/.runner_config/workdir"
 EOF
 
-          # Injection de la logique avec Fallback dans main.go
+          # Injection robuste via Regex pour PR1
           python3 -c '
+import re
+
 with open("main.go", "r") as f:
     code = f.read()
 
-old_forgejo = """if _, err := os.Stat(appIniPath); os.IsNotExist(err) {"""
-new_forgejo = """providedAppIni := filepath.Join("configs", "forgejo", "app.ini")
+# 1. Remplacement injection Forgejo (Fallback)
+pattern_forgejo = r"if _, err := os\.Stat\(appIniPath\); os\.IsNotExist\(err\) \{"
+replacement_forgejo = """providedAppIni := filepath.Join("configs", "forgejo", "app.ini")
 	if _, err := os.Stat(providedAppIni); err == nil {
 		fmt.Println("[+] Utilisation de app.ini depuis configs/forgejo/")
 		input, _ := os.ReadFile(providedAppIni)
 		must(os.WriteFile(appIniPath, input, 0o644))
 	} else if _, err := os.Stat(appIniPath); os.IsNotExist(err) {"""
 
-code = code.replace(old_forgejo, new_forgejo)
+code = re.sub(pattern_forgejo, replacement_forgejo, code)
 
-old_runner = """must(os.WriteFile(configFile, []byte(configContent), 0o644))"""
-new_runner = """providedRunnerConf := filepath.Join("configs", "runner", "config.yaml")
+# 2. Remplacement injection Runner (Fallback)
+pattern_runner = r"must\(os\.WriteFile\(configFile, \[\]byte\(configContent\), 0o644\)\)"
+replacement_runner = """providedRunnerConf := filepath.Join("configs", "runner", "config.yaml")
 	if _, err := os.Stat(providedRunnerConf); err == nil {
 		fmt.Println("[+] Utilisation de config.yaml depuis configs/runner/")
 		input, _ := os.ReadFile(providedRunnerConf)
@@ -96,7 +100,7 @@ new_runner = """providedRunnerConf := filepath.Join("configs", "runner", "config
 		must(os.WriteFile(configFile, []byte(configContent), 0o644))
 	}"""
 
-code = code.replace(old_runner, new_runner)
+code = re.sub(pattern_runner, replacement_runner, code)
 
 with open("main.go", "w") as f:
     f.write(code)
@@ -175,31 +179,36 @@ runner:
     workdir_parent: "/home/runner/.runner_config/workdir"
 EOF
 
-          # Injection de la logique Stricte dans main.go
+          # Injection robuste via Regex pour PR2
           python3 -c '
+import re
+
 with open("main.go", "r") as f:
     code = f.read()
 
-old_forgejo = """if _, err := os.Stat(appIniPath); os.IsNotExist(err) {"""
-new_forgejo = """providedAppIni := filepath.Join("configs", "forgejo", "app.ini")
+# 1. Remplacement injection Forgejo (Mode Strict)
+pattern_forgejo = r"if _, err := os\.Stat\(appIniPath\); os\.IsNotExist\(err\) \{[\s\S]*?must\(os\.WriteFile\(appIniPath, \[\]byte\(initialConfig\), 0o644\)\)"
+replacement_forgejo = """providedAppIni := filepath.Join("configs", "forgejo", "app.ini")
 	if _, err := os.Stat(providedAppIni); err != nil {
-		panic("Fichier de configuration requis non trouve : configs/forgejo/app.ini")
+		panic("Fichier requis absent : configs/forgejo/app.ini")
 	}
-	input, _ := os.ReadFile(providedAppIni)
-	must(os.WriteFile(appIniPath, input, 0o644))
-	if false {"""
+	input, err := os.ReadFile(providedAppIni)
+	must(err)
+	must(os.WriteFile(appIniPath, input, 0o644))"""
 
-code = code.replace(old_forgejo, new_forgejo)
+code = re.sub(pattern_forgejo, replacement_forgejo, code)
 
-old_runner = """must(os.WriteFile(configFile, []byte(configContent), 0o644))"""
-new_runner = """providedRunnerConf := filepath.Join("configs", "runner", "config.yaml")
+# 2. Remplacement injection Runner (Mode Strict)
+pattern_runner = r"must\(os\.WriteFile\(configFile, \[\]byte\(configContent\), 0o644\)\)"
+replacement_runner = """providedRunnerConf := filepath.Join("configs", "runner", "config.yaml")
 	if _, err := os.Stat(providedRunnerConf); err != nil {
-		panic("Fichier de configuration requis non trouve : configs/runner/config.yaml")
+		panic("Fichier requis absent : configs/runner/config.yaml")
 	}
-	input, _ := os.ReadFile(providedRunnerConf)
+	input, err := os.ReadFile(providedRunnerConf)
+	must(err)
 	must(os.WriteFile(configFile, input, 0o644))"""
 
-code = code.replace(old_runner, new_runner)
+code = re.sub(pattern_runner, replacement_runner, code)
 
 with open("main.go", "w") as f:
     f.write(code)
