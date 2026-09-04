@@ -137,6 +137,19 @@ jobs:
               });
             }
 
+      - name: Trigger CI tests for PR1
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.PAT_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'main.yml',
+              ref: 'feat/provide-configs-pr1'
+            });
+            console.log('✅ Triggered CI workflow for PR1 on branch feat/provide-configs-pr1');
+
       # ---------------------------------------------------------
       # PR2: Prise en charge des configs externes Stricte (No Fallback)
       # ---------------------------------------------------------
@@ -252,3 +265,16 @@ jobs:
                 body: body
               });
             }
+
+      - name: Trigger CI tests for PR2
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.PAT_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'main.yml',
+              ref: 'feat/provide-configs-pr2'
+            });
+            console.log('✅ Triggered CI workflow for PR2 on branch feat/provide-configs-pr2');
