@@ -345,7 +345,12 @@ func setupForgejo() (string, string) {
 	must(os.MkdirAll(confDir, 0o755))
 	appIniPath := filepath.Join(confDir, "app.ini")
 
-	if _, err := os.Stat(appIniPath); os.IsNotExist(err) {
+	providedAppIni := filepath.Join("configs", "forgejo", "app.ini")
+	if _, err := os.Stat(providedAppIni); err == nil {
+		fmt.Println("[+] Utilisation de app.ini depuis configs/forgejo/")
+		input, _ := os.ReadFile(providedAppIni)
+		must(os.WriteFile(appIniPath, input, 0o644))
+	} else if _, err := os.Stat(appIniPath); os.IsNotExist(err) {
 		initialConfig := fmt.Sprintf(`[DEFAULT]
 RUN_MODE = prod
 
@@ -513,7 +518,14 @@ runner:
     workdir_parent: "%s"
 `, filepath.Join(configDir, "workdir"))
 
-	must(os.WriteFile(configFile, []byte(configContent), 0o644))
+	providedRunnerConf := filepath.Join("configs", "runner", "config.yaml")
+	if _, err := os.Stat(providedRunnerConf); err == nil {
+		fmt.Println("[+] Utilisation de config.yaml depuis configs/runner/")
+		input, _ := os.ReadFile(providedRunnerConf)
+		must(os.WriteFile(configFile, input, 0o644))
+	} else {
+		must(os.WriteFile(configFile, []byte(configContent), 0o644))
+	}
 
 	_ = os.Remove(filepath.Join(configDir, ".runner"))
 
