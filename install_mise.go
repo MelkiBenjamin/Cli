@@ -345,28 +345,13 @@ func setupForgejo() (string, string) {
 	must(os.MkdirAll(confDir, 0o755))
 	appIniPath := filepath.Join(confDir, "app.ini")
 
-	if _, err := os.Stat(appIniPath); os.IsNotExist(err) {
-		initialConfig := fmt.Sprintf(`[DEFAULT]
-RUN_MODE = prod
-
-[server]
-HTTP_PORT = 3000
-ROOT_URL  = http://localhost:3000/
-DOMAIN    = localhost
-HTTP_ADDR = 127.0.0.1
-
-[security]
-INSTALL_LOCK = true
-
-[database]
-DB_TYPE = sqlite3
-PATH    = %s
-
-[actions]
-ENABLED = true
-`, filepath.Join(forgejoDir, "data", "forgejo.db"))
-
-		must(os.WriteFile(appIniPath, []byte(initialConfig), 0o644))
+	providedAppIni := filepath.Join("configs", "forgejo", "app.ini")
+	if _, err := os.Stat(providedAppIni); err != nil {
+		panic("Fichier requis absent : configs/forgejo/app.ini")
+	}
+	input, err := os.ReadFile(providedAppIni)
+	must(err)
+	must(os.WriteFile(appIniPath, input, 0o644))
 		fmt.Println("[+] Fichier app.ini initialisé avec INSTALL_LOCK = true et [actions] ENABLED = true")
 	}
 
@@ -513,7 +498,13 @@ runner:
     workdir_parent: "%s"
 `, filepath.Join(configDir, "workdir"))
 
-	must(os.WriteFile(configFile, []byte(configContent), 0o644))
+	providedRunnerConf := filepath.Join("configs", "runner", "config.yaml")
+	if _, err := os.Stat(providedRunnerConf); err != nil {
+		panic("Fichier requis absent : configs/runner/config.yaml")
+	}
+	input, err := os.ReadFile(providedRunnerConf)
+	must(err)
+	must(os.WriteFile(configFile, input, 0o644))
 
 	_ = os.Remove(filepath.Join(configDir, ".runner"))
 
