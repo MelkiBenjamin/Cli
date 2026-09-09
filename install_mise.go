@@ -352,8 +352,7 @@ func setupForgejo() (string, string) {
 	input, err := os.ReadFile(providedAppIni)
 	must(err)
 	must(os.WriteFile(appIniPath, input, 0o644))
-		fmt.Println("[+] Fichier app.ini initialisé avec INSTALL_LOCK = true et [actions] ENABLED = true")
-	}
+	fmt.Println("[+] Fichier app.ini initialisé avec INSTALL_LOCK = true et [actions] ENABLED = true")
 
 	// Démarrage du démon Forgejo
 	fmt.Println("[*] Démarrage du démon Forgejo...")
@@ -366,6 +365,7 @@ func setupForgejo() (string, string) {
 	fmt.Println("[+] Forgejo est prêt sur http://localhost:3000.")
 	return forgejoBin, forgejoDir
 }
+
 // Lit un fichier INI et vérifie si une clé sous une section a une valeur spécifique
 func checkIniValue(filePath, section, key, expectedValue string) bool {
 	file, err := os.Open(filePath)
