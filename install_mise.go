@@ -255,8 +255,6 @@ const (
 	runnerURL  = "https://code.forgejo.org/forgejo/runner/releases/download/v12.13.0/forgejo-runner-12.13.0-linux-amd64"
 )
 
-adminUser, adminPass := "admin_root", hex.EncodeToString(rand.Bytes(16))
-
 func downloadFile(url, dest string, minSize int64) error {
 	resp, err := http.Get(url)
 	must(err)
@@ -465,10 +463,10 @@ runner:
 func createAdminAndRepo(forgejoBin, forgejoDir string) (string, string) {
 	fmt.Println("\n[*] --- Création de l'administrateur et du dépôt ---")
 
-	adminUser := "admin_" + generateRandomSecret(4)
-	adminPass := generateRandomSecret(32)
+	adminUser := "admin_" + hex.EncodeToString(rand.Bytes(8))
+	adminPass := hex.EncodeToString(rand.Bytes(16))
 	adminEmail := adminUser + "@localhost"
-
+	
 	cmd := exec.Command(forgejoBin, "admin", "user", "create",
 		"--username", adminUser,
 		"--password", adminPass,
