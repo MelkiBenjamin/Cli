@@ -375,6 +375,10 @@ func setupRunner(forgejoBin, forgejoDir string) {
 	home, _ := os.UserHomeDir()
 	runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
 
+    appIniPath := filepath.Join(
+        forgejoDir,"custom","conf","app.ini",
+    )
+
 	// 0. Téléchargement du binaire Runner si absent
 	if _, err := os.Stat(runnerBin); err != nil {
 		fmt.Println("[*] Téléchargement du binaire Forgejo Runner...")
@@ -387,10 +391,42 @@ func setupRunner(forgejoBin, forgejoDir string) {
 	var lastErr string
 
 	for i := 0; i < 10; i++ {
-		cmd := exec.Command(forgejoBin, "actions", "generate-runner-token", "--config", appIniPath, "--work-path", forgejoDir)
-		cmd.Dir = forgejoDir
-		out, err := cmd.CombinedOutput()
-	}
+    cmd := exec.Command(
+        forgejoBin,
+        "actions",
+        "generate-runner-token",
+        "--config", appIniPath,
+        "--work-path", forgejoDir,
+    )
+
+    cmd.Dir = forgejoDir
+
+    out, err := cmd.CombinedOutput()
+
+    if err == nil {
+        lines := strings.Split(strings.TrimSpace(string(out)), "\n")
+
+        for _, line := range lines {
+            line = strings.TrimSpace(line)
+
+            if len(line) >= 32 &&
+                !strings.Contains(line, " ") &&
+                !strings.Contains(line, "[") {
+
+                runnerToken = line
+                break
+            }
+        }
+
+		
+        if runnerToken != "" {
+            break
+        }
+    }
+
+    lastErr = string(out)
+    time.Sleep(2 * time.Second)
+}
 
 	if runnerToken == "" {
 		fmt.Printf("[❌] Échec CLI Forgejo.\nSortie brute :\n%s\n", lastErr)
