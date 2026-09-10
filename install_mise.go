@@ -17,6 +17,7 @@ import (
 	"time"
 	"crypto/rand"
 	"encoding/hex"
+	crand "crypto/rand"
 )
 
 const latestURL = "https://github.com/jdx/mise/releases/download/v2026.4.24/mise-v2026.4.24-linux-x64-musl.tar.gz"
