@@ -255,7 +255,7 @@ const (
 	runnerURL  = "https://code.forgejo.org/forgejo/runner/releases/download/v12.13.0/forgejo-runner-12.13.0-linux-amd64"
 )
 
-func download(url, dest string) error {
+func downloadFile(url, dest string) error {
 	if _, err := os.Stat(dest); err == nil {
 		return nil // Déjà téléchargé
 	}
