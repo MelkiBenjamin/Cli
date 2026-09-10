@@ -328,9 +328,6 @@ func setupForgejo() (string, string) {
 		must(downloadFile(forgejoURL, forgejoBin, 50*1024*1024))
 	}
 
-	_ = exec.Command("pkill", "-9", "-f", "forgejo").Run()
-	time.Sleep(1 * time.Second)
-
 	// Création explicite du dossier custom/conf et du fichier app.ini AVANT le démarrage
 	confDir := filepath.Join(forgejoDir, "custom", "conf")
 	must(os.MkdirAll(confDir, 0o755))
@@ -372,44 +369,6 @@ ENABLED = true
 	fmt.Println("[+] Forgejo est prêt sur http://localhost:3000.")
 	return forgejoBin, forgejoDir
 }
-// Lit un fichier INI et vérifie si une clé sous une section a une valeur spécifique
-func checkIniValue(filePath, section, key, expectedValue string) bool {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return false
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	currentSection := ""
-
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		
-		// Ignorer commentaires et lignes vides
-		if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, ";") {
-			continue
-		}
-
-		// Détection de section [section]
-		if strings.HasPrefix(line, "[") && strings.HasSuffix(line, "]") {
-			currentSection = strings.TrimSpace(line[1 : len(line)-1])
-			continue
-		}
-
-		// Traitement clé = valeur dans la bonne section
-		if strings.EqualFold(currentSection, section) && strings.Contains(line, "=") {
-			parts := strings.SplitN(line, "=", 2)
-			k := strings.TrimSpace(parts[0])
-			v := strings.TrimSpace(parts[1])
-
-			if strings.EqualFold(k, key) {
-				return strings.EqualFold(v, expectedValue)
-			}
-		}
-	}
-	return false
-}
 
 func setupRunner(forgejoBin, forgejoDir string) {
 	fmt.Println("\n[*] --- Configuration du Runner CI/CD ---")
@@ -423,32 +382,6 @@ func setupRunner(forgejoBin, forgejoDir string) {
 		must(os.Chmod(runnerBin, 0o755))
 	}
 
-	appIniPath := filepath.Join(forgejoDir, "custom", "conf", "app.ini")
-	fmt.Printf("[🔍] Inspection du fichier INI : %s\n", appIniPath)
-
-	// 1. Vérification avec notre lecteur INI
-	actionsEnabled := checkIniValue(appIniPath, "actions", "ENABLED", "true")
-	if actionsEnabled {
-		fmt.Println("  └─ [OK] Section [actions] ENABLED = true confirmée dans app.ini")
-	} else {
-		fmt.Println("  └─ [⚠️] [actions] non activé dans app.ini. Correction en cours...")
-		
-		// Injecter [actions] si absent
-		f, err := os.OpenFile(appIniPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o644)
-		must(err)
-		_, _ = f.WriteString("\n[actions]\nENABLED = true\n")
-		f.Close()
-
-		// Redémarrer Forgejo pour charger la nouvelle configuration
-		fmt.Println("[*] Redémarrage de Forgejo pour appliquer la configuration...")
-		_ = exec.Command("pkill", "-9", "-f", "forgejo").Run()
-		time.Sleep(1 * time.Second)
-		must(startDaemon("forgejo.log", forgejoBin, "web", "--work-path", forgejoDir))
-		if !waitForPort("127.0.0.1", 3000, 30*time.Second) {
-			panic("Forgejo ne répond pas après redémarrage")
-		}
-	}
-
 	// 2. Génération du Token via la CLI
 	var runnerToken string
 	var lastErr string
@@ -457,22 +390,6 @@ func setupRunner(forgejoBin, forgejoDir string) {
 		cmd := exec.Command(forgejoBin, "actions", "generate-runner-token", "--config", appIniPath, "--work-path", forgejoDir)
 		cmd.Dir = forgejoDir
 		out, err := cmd.CombinedOutput()
-
-		if err == nil {
-			lines := strings.Split(strings.TrimSpace(string(out)), "\n")
-			for _, line := range lines {
-				line = strings.TrimSpace(line)
-				if len(line) >= 32 && !strings.Contains(line, " ") && !strings.Contains(line, "[") {
-					runnerToken = line
-					break
-				}
-			}
-			if runnerToken != "" {
-				break
-			}
-		}
-		lastErr = string(out)
-		time.Sleep(2 * time.Second)
 	}
 
 	if runnerToken == "" {
@@ -506,8 +423,6 @@ runner:
 
 	must(os.WriteFile(configFile, []byte(configContent), 0o644))
 
-	_ = os.Remove(filepath.Join(configDir, ".runner"))
-
 	regCmd := exec.Command(runnerBin, "register",
 		"--instance", "http://localhost:3000",
 		"--token", runnerToken,
@@ -521,8 +436,6 @@ runner:
 		fmt.Printf("[❌] Erreur d'enregistrement du Runner : %s\n", string(out))
 		panic(err)
 	}
-
-	_ = exec.Command("pkill", "-9", "-f", "forgejo-runner").Run()
 
 	cmdDaemon := exec.Command(runnerBin, "daemon", "--config", configFile)
 	cmdDaemon.Dir = configDir
@@ -539,8 +452,8 @@ runner:
 func createAdminAndRepo(forgejoBin, forgejoDir string) (string, string) {
 	fmt.Println("\n[*] --- Création de l'administrateur et du dépôt ---")
 
-	adminUser := "admin_" + generateRandomSecret(3)
-	adminPass := generateRandomSecret(10)
+	adminUser := "admin_" + generateRandomSecret(32)
+	adminPass := generateRandomSecret(32)
 	adminEmail := adminUser + "@localhost"
 
 	cmd := exec.Command(forgejoBin, "admin", "user", "create",
