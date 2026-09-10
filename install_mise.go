@@ -255,40 +255,18 @@ const (
 	runnerURL  = "https://code.forgejo.org/forgejo/runner/releases/download/v12.13.0/forgejo-runner-12.13.0-linux-amd64"
 )
 
-func generateRandomSecret(length int) string {
-	b := make([]byte, length)
-	if _, err := rand.Read(b); err != nil {
-		panic(err)
-	}
-	return hex.EncodeToString(b)
-}
+adminUser, adminPass := "admin_root", hex.EncodeToString(rand.Bytes(16))
 
 func downloadFile(url, dest string, minSize int64) error {
 	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
+	must(err)
 	defer resp.Body.Close()
 
 	must(os.MkdirAll(filepath.Dir(dest), 0o755))
-	tmp := dest + ".tmp"
 	out, err := os.OpenFile(tmp, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
-	if err != nil {
-		return err
-	}
 
 	n, err := io.Copy(out, resp.Body)
 	out.Close()
-	if err != nil {
-		return err
-	}
-
-	if minSize > 0 && n < minSize {
-		os.Remove(tmp)
-		return fmt.Errorf("fichier trop petit : %d octets", n)
-	}
-
-	return os.Rename(tmp, dest)
 }
 
 func waitForPort(host string, port int, timeout time.Duration) bool {
