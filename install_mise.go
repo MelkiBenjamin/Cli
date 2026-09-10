@@ -477,8 +477,8 @@ func createAdminAndRepo(forgejoBin, forgejoDir string) (string, string) {
     _, _ = crand.Read(userBytes)
     _, _ = crand.Read(passBytes)
 
-	adminUser := "admin_" + hex.EncodeToString(rand.Bytes(8))
-	adminPass := hex.EncodeToString(rand.Bytes(16))
+    adminUser := "admin_" + hex.EncodeToString(userBytes)
+    adminPass := hex.EncodeToString(passBytes)
 	adminEmail := adminUser + "@localhost"
 	
 	cmd := exec.Command(forgejoBin, "admin", "user", "create",
