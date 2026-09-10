@@ -408,7 +408,7 @@ func setupRunner(forgejoBin, forgejoDir string) {
 		panic("Impossible de récupérer le token du Runner")
 	}
 
-	fmt.Printf("[+] Token Runner récupéré.)
+	fmt.Printf("[+] Token Runner récupéré.")
 
 	// 3. Enregistrement et Démarrage du Runner
 	configDir := filepath.Join(home, ".runner_config")
