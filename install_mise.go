@@ -418,7 +418,6 @@ func setupRunner(forgejoBin, forgejoDir string) {
             }
         }
 
-		
         if runnerToken != "" {
             break
         }
@@ -433,7 +432,7 @@ func setupRunner(forgejoBin, forgejoDir string) {
 		panic("Impossible de récupérer le token du Runner")
 	}
 
-	fmt.Printf("[+] Token Runner récupéré : %s...\n", runnerToken[:8])
+	fmt.Printf("[+] Token Runner récupéré.)
 
 	// 3. Enregistrement et Démarrage du Runner
 	configDir := filepath.Join(home, ".runner_config")
@@ -488,7 +487,7 @@ runner:
 func createAdminAndRepo(forgejoBin, forgejoDir string) (string, string) {
 	fmt.Println("\n[*] --- Création de l'administrateur et du dépôt ---")
 
-	adminUser := "admin_" + generateRandomSecret(32)
+	adminUser := "admin_" + generateRandomSecret(4)
 	adminPass := generateRandomSecret(32)
 	adminEmail := adminUser + "@localhost"
 
