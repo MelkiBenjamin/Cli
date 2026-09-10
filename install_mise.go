@@ -318,7 +318,7 @@ func setupForgejo() (string, string) {
 	appIniPath := filepath.Join(confDir, "app.ini")
 
 	if _, err := os.Stat(appIniPath); os.IsNotExist(err) {
-		initialConfig := fmt.Sprintf(`[DEFAULT]p
+		initialConfig := fmt.Sprintf(`[DEFAULT]
 RUN_MODE = prod
 
 [server]
