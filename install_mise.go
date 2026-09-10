@@ -511,9 +511,8 @@ func main() {
 	// étape 3
 	isMicro := AutoIsMicroservice()
 	forgejoBin, forgejoDir := setupForgejo()
-	setupRunner(forgejoBin, forgejoDir)
-	user, pass := createAdminAndRepo(forgejoBin, forgejoDir)
-
+	adminUser, adminPass := createAdminAndRepo(forgejoBin, forgejoDir)
+	setupRunner(forgejoBin, forgejoDir, adminUser, adminPass)
 	deployGitOps(isMicro, user, pass)
 
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
