@@ -338,11 +338,22 @@ func setupForgejo() (string, string) {
 
 	if _, err := os.Stat(appIniPath); os.IsNotExist(err) {
 		initialConfig := fmt.Sprintf(`[DEFAULT]
+RUN_MODE = prod 
 
-[security]
-INSTALL_LOCK = true
+[server] 
+HTTP_PORT = 3000 
+ROOT_URL  = http://localhost:3000/ 
+DOMAIN    = localhost 
+HTTP_ADDR = 127.0.0.1 
 
-[actions]
+[security] 
+INSTALL_LOCK = true 
+
+[database] 
+DB_TYPE = sqlite3 
+PATH    = %s 
+
+[actions] 
 ENABLED = true
 `, filepath.Join(forgejoDir, "data", "forgejo.db"))
 
