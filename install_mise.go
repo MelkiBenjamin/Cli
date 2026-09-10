@@ -309,7 +309,7 @@ func setupForgejo() (string, string) {
 
 	if _, err := os.Stat(forgejoBin); err != nil {
 		fmt.Println("[*] Téléchargement du binaire Forgejo...")
-		must(downloadFile(forgejoURL, forgejoBin, 50*1024*1024))
+		must(downloadFile(forgejoURL, forgejoBin))
 	}
 
 	// Création explicite du dossier custom/conf et du fichier app.ini AVANT le démarrage
@@ -470,6 +470,11 @@ runner:
 
 func createAdminAndRepo(forgejoBin, forgejoDir string) (string, string) {
 	fmt.Println("\n[*] --- Création de l'administrateur et du dépôt ---")
+
+	userBytes := make([]byte, 8)
+    passBytes := make([]byte, 16)
+    _, _ = crand.Read(userBytes)
+    _, _ = crand.Read(passBytes)
 
 	adminUser := "admin_" + hex.EncodeToString(rand.Bytes(8))
 	adminPass := hex.EncodeToString(rand.Bytes(16))
