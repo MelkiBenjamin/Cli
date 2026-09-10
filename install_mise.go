@@ -255,16 +255,24 @@ const (
 	runnerURL  = "https://code.forgejo.org/forgejo/runner/releases/download/v12.13.0/forgejo-runner-12.13.0-linux-amd64"
 )
 
-func downloadFile(url, dest string, minSize int64) error {
+func download(url, dest string) error {
+	if _, err := os.Stat(dest); err == nil {
+		return nil // Déjà téléchargé
+	}
+	must(os.MkdirAll(filepath.Dir(dest), 0o755))
 	resp, err := http.Get(url)
-	must(err)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 
-	must(os.MkdirAll(filepath.Dir(dest), 0o755))
-	out, err := os.OpenFile(tmp, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
-
-	n, err := io.Copy(out, resp.Body)
-	out.Close()
+	out, err := os.OpenFile(dest, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	_, err = io.Copy(out, resp.Body)
+	return err
 }
 
 func waitForPort(host string, port int, timeout time.Duration) bool {
