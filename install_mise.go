@@ -513,7 +513,7 @@ func main() {
 	forgejoBin, forgejoDir := setupForgejo()
 	adminUser, adminPass := createAdminAndRepo(forgejoBin, forgejoDir)
 	setupRunner(forgejoBin, forgejoDir, adminUser, adminPass)
-	deployGitOps(isMicro, user, pass)
+	deployGitOps(isMicro, adminUser, adminPass)
 
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
 }
