@@ -366,7 +366,7 @@ func setupRunner(forgejoBin, forgejoDir string) {
 	// 0. Téléchargement du binaire Runner si absent
 	if _, err := os.Stat(runnerBin); err != nil {
 		fmt.Println("[*] Téléchargement du binaire Forgejo Runner...")
-		must(downloadFile(runnerURL, runnerBin, 10*1024*1024))
+		must(downloadFile(runnerURL, runnerBin))
 		must(os.Chmod(runnerBin, 0o755))
 	}
 
