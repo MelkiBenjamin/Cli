@@ -15,7 +15,6 @@ import (
 	"net"
 	"bytes"
 	"time"
-	"crypto/rand"
 	"encoding/hex"
 	crand "crypto/rand"
 )
