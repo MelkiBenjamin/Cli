@@ -231,15 +231,6 @@ func microservicesk8s(misePath string) {
     }
 }
 
-//func workflows(
-//	docker build
-//	if hasTool(tools, "docker") {
-//		runShell(docker compose up)	//lance docker compose
-//	}
-//	if hasTool(tools, "kubectl) {
-//		runShell(kubectl -f .)	//lance manifest k8s
-//	}
-
 func startMode(misePath string) {
 	if _, err := os.Stat("Install.json"); err == nil {
 		// --- MODE 1 : EXPERT ---
@@ -347,20 +338,9 @@ func setupForgejo() (string, string) {
 
 	if _, err := os.Stat(appIniPath); os.IsNotExist(err) {
 		initialConfig := fmt.Sprintf(`[DEFAULT]
-RUN_MODE = prod
-
-[server]
-HTTP_PORT = 3000
-ROOT_URL  = http://localhost:3000/
-DOMAIN    = localhost
-HTTP_ADDR = 127.0.0.1
 
 [security]
 INSTALL_LOCK = true
-
-[database]
-DB_TYPE = sqlite3
-PATH    = %s
 
 [actions]
 ENABLED = true
