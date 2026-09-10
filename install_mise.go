@@ -318,23 +318,23 @@ func setupForgejo() (string, string) {
 	appIniPath := filepath.Join(confDir, "app.ini")
 
 	if _, err := os.Stat(appIniPath); os.IsNotExist(err) {
-		initialConfig := fmt.Sprintf(`[DEFAULT]
-RUN_MODE = prod 
+		initialConfig := fmt.Sprintf(`[DEFAULT]p
+RUN_MODE = prod
 
-[server] 
-HTTP_PORT = 3000 
-ROOT_URL  = http://localhost:3000/ 
-DOMAIN    = localhost 
-HTTP_ADDR = 127.0.0.1 
+[server]
+HTTP_PORT = 3000
+ROOT_URL  = http://localhost:3000/
+DOMAIN    = localhost
+HTTP_ADDR = 127.0.0.1
 
-[security] 
-INSTALL_LOCK = true 
+[security]
+INSTALL_LOCK = true
 
-[database] 
-DB_TYPE = sqlite3 
-PATH    = %s 
+[database]
+DB_TYPE = sqlite3
+PATH    = %s
 
-[actions] 
+[actions]
 ENABLED = true
 `, filepath.Join(forgejoDir, "data", "forgejo.db"))
 
@@ -354,14 +354,10 @@ ENABLED = true
 	return forgejoBin, forgejoDir
 }
 
-func setupRunner(forgejoBin, forgejoDir string) {
+func setupRunner(forgejoBin, forgejoDir, adminUser, adminPass string) {
 	fmt.Println("\n[*] --- Configuration du Runner CI/CD ---")
 	home, _ := os.UserHomeDir()
 	runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
-
-    appIniPath := filepath.Join(
-        forgejoDir,"custom","conf","app.ini",
-    )
 
 	// 0. Téléchargement du binaire Runner si absent
 	if _, err := os.Stat(runnerBin); err != nil {
@@ -370,84 +366,36 @@ func setupRunner(forgejoBin, forgejoDir string) {
 		must(os.Chmod(runnerBin, 0o755))
 	}
 
-	// 2. Génération du Token via la CLI
-	var runnerToken string
-	var lastErr string
+	// 2. Récupération directe du Token via l'API REST (Au lieu de la boucle CLI)
+	req, err := http.NewRequest("GET", "http://127.0.0.1:3000/api/v1/admin/runners/registration-token", nil)
+	must(err)
+	req.SetBasicAuth(adminUser, adminPass)
 
-	for i := 0; i < 10; i++ {
-    cmd := exec.Command(
-        forgejoBin,
-        "actions",
-        "generate-runner-token",
-        "--config", appIniPath,
-        "--work-path", forgejoDir,
-    )
+	resp, err := http.DefaultClient.Do(req)
+	must(err)
+	defer resp.Body.Close()
 
-    cmd.Dir = forgejoDir
-
-    out, err := cmd.CombinedOutput()
-
-    if err == nil {
-        lines := strings.Split(strings.TrimSpace(string(out)), "\n")
-
-        for _, line := range lines {
-            line = strings.TrimSpace(line)
-
-            if len(line) >= 32 &&
-                !strings.Contains(line, " ") &&
-                !strings.Contains(line, "[") {
-
-                runnerToken = line
-                break
-            }
-        }
-
-        if runnerToken != "" {
-            break
-        }
-    }
-
-    lastErr = string(out)
-    time.Sleep(2 * time.Second)
-}
-
-	if runnerToken == "" {
-		fmt.Printf("[❌] Échec CLI Forgejo.\nSortie brute :\n%s\n", lastErr)
-		panic("Impossible de récupérer le token du Runner")
+	if resp.StatusCode != http.StatusOK {
+		panic(fmt.Sprintf("Échec récupération token API (HTTP %d)", resp.StatusCode))
 	}
 
-	fmt.Printf("[+] Token Runner récupéré.")
+	var tokenResp struct {
+		Token string `json:"token"`
+	}
+	must(json.NewDecoder(resp.Body).Decode(&tokenResp))
+	runnerToken := tokenResp.Token
 
-	// 3. Enregistrement et Démarrage du Runner
+	fmt.Printf("[+] Token Runner récupéré : %s...\n", runnerToken[:8])
+
+	// 3. Enregistrement simplifié (sans fichier config.yaml manuel)
 	configDir := filepath.Join(home, ".runner_config")
 	must(os.MkdirAll(configDir, 0o755))
-	configFile := filepath.Join(configDir, "config.yaml")
-
-	configContent := fmt.Sprintf(`
-log:
-  level: debug
-runner:
-  capacity: 1
-  name: runner-zero-touch
-  envs: {}
-  timeout: 3h
-  shutdown_timeout: 0s
-  fetch_timeout: 5s
-  fetch_interval: 2s
-  labels:
-    - "self-hosted:host"
-  host:
-    workdir_parent: "%s"
-`, filepath.Join(configDir, "workdir"))
-
-	must(os.WriteFile(configFile, []byte(configContent), 0o644))
 
 	regCmd := exec.Command(runnerBin, "register",
 		"--instance", "http://localhost:3000",
 		"--token", runnerToken,
 		"--name", "runner-zero-touch",
-		"--no-interactive",
-		"--config", configFile)
+		"--no-interactive")
 
 	regCmd.Dir = configDir
 	out, err := regCmd.CombinedOutput()
@@ -456,7 +404,7 @@ runner:
 		panic(err)
 	}
 
-	cmdDaemon := exec.Command(runnerBin, "daemon", "--config", configFile)
+	cmdDaemon := exec.Command(runnerBin, "daemon")
 	cmdDaemon.Dir = configDir
 
 	logFile, err := os.Create("runner.log")
