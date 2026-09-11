@@ -261,15 +261,11 @@ func downloadFile(url, dest string) error {
 	}
 	must(os.MkdirAll(filepath.Dir(dest), 0o755))
 	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
+	must(err)
 	defer resp.Body.Close()
 
 	out, err := os.OpenFile(dest, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
-	if err != nil {
-		return err
-	}
+	must(err)
 	defer out.Close()
 	_, err = io.Copy(out, resp.Body)
 	return err
@@ -292,9 +288,7 @@ func waitForPort(host string, port int, timeout time.Duration) bool {
 func startDaemon(logPath string, command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	logFile, err := os.Create(logPath)
-	if err != nil {
-		return err
-	}
+	must(err)
 	cmd.Stdout = logFile
 	cmd.Stderr = logFile
 	return cmd.Start()
