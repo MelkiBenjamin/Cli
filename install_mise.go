@@ -281,20 +281,6 @@ func downloadFile(url, dest string) error {
 	return os.Chmod(dest, 0o755)
 }
 
-func waitForPort(host string, port int, timeout time.Duration) bool {
-	target := fmt.Sprintf("%s:%d", host, port)
-	deadline := time.Now().Add(timeout)
-	for time.Now().Before(deadline) {
-		conn, err := net.DialTimeout("tcp", target, 2*time.Second)
-		if err == nil {
-			conn.Close()
-			return true
-		}
-		time.Sleep(2 * time.Second)
-	}
-	return false
-}
-
 func startDaemon(logPath string, command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	logFile, err := os.Create(logPath)
@@ -350,9 +336,9 @@ ENABLED = true
 	fmt.Println("[*] Démarrage du démon Forgejo...")
 	must(startDaemon("forgejo.log", forgejoBin, "web", "--work-path", forgejoDir))
 
-	if !waitForPort("127.0.0.1", 3000, 60*time.Second) {
-		panic("Forgejo ne répond pas sur le port 3000")
-	}
+	for i := 0; net.DialTimeout("tcp", "127.0.0.1:3000", 500*time.Millisecond) != nil && i < 10; i++ {
+	time.Sleep(500 * time.Millisecond)
+    }
 
 	fmt.Println("[+] Forgejo est prêt sur http://localhost:3000.")
 	return forgejoBin, forgejoDir
