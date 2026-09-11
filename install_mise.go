@@ -336,7 +336,11 @@ ENABLED = true
 	fmt.Println("[*] Démarrage du démon Forgejo...")
 	must(startDaemon("forgejo.log", forgejoBin, "web", "--work-path", forgejoDir))
 
-	for i := 0; net.DialTimeout("tcp", "127.0.0.1:3000", 500*time.Millisecond) != nil && i < 10; i++ {
+	for i := 0; i < 10; i++ {
+	if conn, err := net.DialTimeout("tcp", "127.0.0.1:3000", 500*time.Millisecond); err == nil {
+		conn.Close()
+		break
+	}
 	time.Sleep(500 * time.Millisecond)
     }
 
