@@ -257,18 +257,28 @@ const (
 
 func downloadFile(url, dest string) error {
 	if _, err := os.Stat(dest); err == nil {
-		return nil // Déjà téléchargé
+		return nil
 	}
 	must(os.MkdirAll(filepath.Dir(dest), 0o755))
+
 	resp, err := http.Get(url)
 	must(err)
 	defer resp.Body.Close()
 
+	// Intercepte les pages 404 / redirections HTML avant d'écrire le fichier
+	if resp.StatusCode != http.StatusOK {
+		panic(fmt.Sprintf("Échec téléchargement HTTP %d pour : %s", resp.StatusCode, url))
+	}
+
 	out, err := os.OpenFile(dest, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
 	must(err)
 	defer out.Close()
+
 	_, err = io.Copy(out, resp.Body)
-	return err
+	must(err)
+
+	// S'assure que les droits d'exécution +x sont bien appliqués
+	return os.Chmod(dest, 0o755)
 }
 
 func waitForPort(host string, port int, timeout time.Duration) bool {
