@@ -278,7 +278,7 @@ func downloadFile(url, dest string) error {
 	must(err)
 
 	// S'assure que les droits d'exécution +x sont bien appliqués
-	return os.Chmod(dest, 0o755)
+	//return os.Chmod(dest, 0o755)
 }
 
 func startDaemon(logPath string, command string, args ...string) error {
