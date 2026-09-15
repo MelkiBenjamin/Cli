@@ -348,7 +348,7 @@ ENABLED = true
 	return forgejoBin, forgejoDir
 }
 
-func setupRunner(forgejoBin, forgejoDir, adminUser, adminPass string) {
+func setupRunner(adminUser, adminPass string) {
 	fmt.Println("\n[*] --- Configuration du Runner CI/CD ---")
 	home, _ := os.UserHomeDir()
 	runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
@@ -369,42 +369,24 @@ func setupRunner(forgejoBin, forgejoDir, adminUser, adminPass string) {
 	must(err)
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		panic(fmt.Sprintf("Échec récupération token API (HTTP %d)", resp.StatusCode))
-	}
-
 	var tokenResp struct {
 		Token string `json:"token"`
 	}
 	must(json.NewDecoder(resp.Body).Decode(&tokenResp))
-	runnerToken := tokenResp.Token
 
-	fmt.Printf("[+] Token Runner récupéré : %s...\n", runnerToken[:8])
+	fmt.Printf("[+] Token Runner récupéré")
 
 	// 3. Enregistrement simplifié (sans fichier config.yaml manuel)
-	configDir := filepath.Join(home, ".runner_config")
-	must(os.MkdirAll(configDir, 0o755))
-
 	regCmd := exec.Command(runnerBin, "register",
 		"--instance", "http://localhost:3000",
 		"--token", runnerToken,
 		"--name", "runner-zero-touch",
 		"--no-interactive")
 
-	regCmd.Dir = configDir
-	out, err := regCmd.CombinedOutput()
-	if err != nil {
-		fmt.Printf("[❌] Erreur d'enregistrement du Runner : %s\n", string(out))
-		panic(err)
-	}
-
 	cmdDaemon := exec.Command(runnerBin, "daemon")
-	cmdDaemon.Dir = configDir
 
-	logFile, err := os.Create("runner.log")
-	must(err)
-	cmdDaemon.Stdout = logFile
-	cmdDaemon.Stderr = logFile
+	logF, _ := os.Create("runner.log")
+    cmd.Stdout, cmd.Stderr = logF, logF
 
 	must(cmdDaemon.Start())
 	fmt.Println("[+] Runner CI/CD démarré.")
@@ -506,7 +488,7 @@ func main() {
 	isMicro := AutoIsMicroservice()
 	forgejoBin, forgejoDir := setupForgejo()
 	adminUser, adminPass := createAdminAndRepo(forgejoBin, forgejoDir)
-	setupRunner(forgejoBin, forgejoDir, adminUser, adminPass)
+	setupRunner(adminUser, adminPass)
 	deployGitOps(isMicro, adminUser, adminPass)
 
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
