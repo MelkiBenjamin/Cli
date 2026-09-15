@@ -377,17 +377,17 @@ func setupRunner(adminUser, adminPass string) {
 	fmt.Printf("[+] Token Runner récupéré")
 
 	// 3. Enregistrement simplifié (sans fichier config.yaml manuel)
-	regCmd := exec.Command(runnerBin, "register",
+	must(exec.Command(runnerBin, "register",
 		"--instance", "http://localhost:3000",
-		"--token", runnerToken,
+		"--token", tokenResp.Token,
 		"--name", "runner-zero-touch",
-		"--no-interactive")
+		"--no-interactive").Run())
 
 	cmdDaemon := exec.Command(runnerBin, "daemon")
 
 	logF, _ := os.Create("runner.log")
-    cmd.Stdout, cmd.Stderr = logF, logF
-
+    cmdDaemon.Stdout, cmdDaemon.Stderr = logF, logF
+	
 	must(cmdDaemon.Start())
 	fmt.Println("[+] Runner CI/CD démarré.")
 }
