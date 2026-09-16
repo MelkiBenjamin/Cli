@@ -384,9 +384,10 @@ func setupRunner(adminUser, adminPass string) {
 		"--labels", "self-hosted:host", // <-- Indique à Forgejo que ce runner répond à 'self-hosted'
 		"--no-interactive").Run())
 
-	cmdDaemon.Env = append(os.Environ(), "FORGEJO_RUNNER_LOG_LEVEL=debug")
+	
 	cmdDaemon := exec.Command(runnerBin, "daemon")
-
+    cmdDaemon.Env = append(os.Environ(), "FORGEJO_RUNNER_LOG_LEVEL=debug")
+	
 	logF, _ := os.Create("runner.log")
     cmdDaemon.Stdout, cmdDaemon.Stderr = logF, logF
 	
