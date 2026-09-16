@@ -386,7 +386,7 @@ func setupRunner(adminUser, adminPass string) {
 
 	
 	cmdDaemon := exec.Command(runnerBin, "daemon")
-    cmdDaemon.Env = append(os.Environ(), "FORGEJO_RUNNER_LOG_LEVEL=debug")
+    cmdDaemon.Env = append(os.Environ(), "RUNNER_LOG_LEVEL=debug")
 	
 	logF, _ := os.Create("runner.log")
     cmdDaemon.Stdout, cmdDaemon.Stderr = logF, logF
