@@ -382,7 +382,7 @@ func setupRunner(adminUser, adminPass string) {
 		"--token", tokenResp.Token,
 		"--name", "runner-zero-touch",
 		"--labels", "self-hosted:host", // <-- Indique à Forgejo que ce runner répond à 'self-hosted'
-		"--debug"
+		"--debug",
 		"--no-interactive").Run())
 
 	cmdDaemon := exec.Command(runnerBin, "daemon")
