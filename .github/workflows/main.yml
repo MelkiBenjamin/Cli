@@ -33,6 +33,8 @@ jobs:
 
       - run: |
           ls -alh
+          sleep 30
+          cat runner.log
           sleep 280
           cat runner.log
       
