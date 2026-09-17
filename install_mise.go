@@ -394,7 +394,7 @@ server:
 	must(os.WriteFile(".forgejo-runner", []byte(runnerConfig), 0o600))
 	fmt.Println("[+] Configuration .forgejo-runner générée.")
 
-	cmdDaemon := exec.Command(runnerBin, "daemon")
+	cmdDaemon := exec.Command(runnerBin, "daemon", "--config", ".forgejo-runner")
 
 	logF, _ := os.Create("runner.log")
 	cmdDaemon.Stdout, cmdDaemon.Stderr = logF, logF
