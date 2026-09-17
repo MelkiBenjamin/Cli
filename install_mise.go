@@ -403,11 +403,7 @@ server:
 	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
 
     logPath := filepath.Join("runner.log")
-    logF, err := os.OpenFile(
-      logPath,
-      os.O_CREATE|os.O_WRONLY|os.O_APPEND,
-      0o600,
-    )
+    logF, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND,0o600)
     must(err)
     cmdDaemon.Stdout, cmdDaemon.Stderr = logF, logF
 
