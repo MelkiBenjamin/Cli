@@ -402,7 +402,7 @@ server:
 
 	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
 
-    logPath := filepath.Join(forgejoDir, "runner.log")
+    logPath := filepath.Join("runner.log")
     logF, err := os.OpenFile(
       logPath,
       os.O_CREATE|os.O_WRONLY|os.O_APPEND,
