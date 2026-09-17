@@ -395,7 +395,7 @@ server:
       token: "%s"
 `, runnerUUID, sharedSecret)
 
-	must(os.WriteFile(".forgejo-runner", []byte(runnerConfig), 0o600))
+	must(os.WriteFile("config.yaml", []byte(runnerConfig), 0o600))
 	fmt.Println("[+] Configuration .forgejo-runner générée.")
 
 	cmdDaemon := exec.Command(runnerBin, "daemon")
