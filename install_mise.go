@@ -378,11 +378,13 @@ func setupRunner(forgejoBin, forgejoDir string) {
 	fmt.Printf("[+] Runner enregistré. UUID : %s\n", runnerUUID)
 
 	// 3. Écriture du fichier de configuration automatique .forgejo-runner
-	runnerConfig := fmt.Sprintf(`runner:
+	runnerConfig := fmt.Sprintf(`
+log:
+  level: debug
+runner:
   capacity: 1
   labels:
     - "self-hosted:host"
-
 server:
   connections:
     local-forgejo:
