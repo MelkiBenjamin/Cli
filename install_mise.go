@@ -473,7 +473,7 @@ jobs:
 	} else {
 		workflowContent += `
     - name: Deploy Docker Compose
-      run: docker compose up -d
+      run: docker compose --progress=plain up -d 
 `
 	}
 
