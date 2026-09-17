@@ -348,51 +348,60 @@ ENABLED = true
 	return forgejoBin, forgejoDir
 }
 
-func setupRunner(adminUser, adminPass string) {
-	fmt.Println("\n[*] --- Configuration du Runner CI/CD ---")
+func setupRunner(forgejoBin, forgejoDir string) {
+	fmt.Println("\n[*] --- Configuration Déclarative du Runner CI/CD ---")
 	home, _ := os.UserHomeDir()
 	runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
 
-	// 0. Téléchargement du binaire Runner si absent
 	if _, err := os.Stat(runnerBin); err != nil {
 		fmt.Println("[*] Téléchargement du binaire Forgejo Runner...")
 		must(downloadFile(runnerURL, runnerBin))
 		must(os.Chmod(runnerBin, 0o755))
 	}
 
-	// 2. Récupération directe du Token via l'API REST (Au lieu de la boucle CLI)
-	req, err := http.NewRequest("GET", "http://127.0.0.1:3000/api/v1/admin/runners/registration-token", nil)
+	// 1. Génération d'un secret hexadécimal de 40 caractères
+	secretBytes := make([]byte, 20)
+	_, err := crand.Read(secretBytes)
 	must(err)
-	req.SetBasicAuth(adminUser, adminPass)
+	sharedSecret := hex.EncodeToString(secretBytes)
 
-	resp, err := http.DefaultClient.Do(req)
-	must(err)
-	defer resp.Body.Close()
-
-	var tokenResp struct {
-		Token string `json:"token"`
-	}
-	must(json.NewDecoder(resp.Body).Decode(&tokenResp))
-
-	fmt.Printf("[+] Token Runner récupéré")
-
-	// 3. Enregistrement simplifié (sans fichier config.yaml manuel)
-	must(exec.Command(runnerBin, "register",
-		"--instance", "http://localhost:3000",
-		"--token", tokenResp.Token,
+	// 2. Enregistrement côté Forgejo (serveur CLI) et récupération de l'UUID
+	cmdRegister := exec.Command(forgejoBin, "forgejo-cli", "actions", "register",
 		"--name", "runner-zero-touch",
-		"--labels", "self-hosted:host", // <-- Indique à Forgejo que ce runner répond à 'self-hosted'
-		"--no-interactive").Run())
+		"--secret", sharedSecret,
+		"--work-path", forgejoDir)
 
-	
+	out, err := cmdRegister.Output()
+	must(err)
+	runnerUUID := strings.TrimSpace(string(out))
+
+	fmt.Printf("[+] Runner enregistré. UUID : %s\n", runnerUUID)
+
+	// 3. Écriture du fichier de configuration automatique .forgejo-runner
+	runnerConfig := fmt.Sprintf(`
+runner:
+  capacity: 1
+  labels:
+    - "self-hosted:host"
+
+server:
+  connections:
+    local-forgejo:
+      url: "http://localhost:3000"
+      uuid: "%s"
+      token: "%s"
+`, runnerUUID, sharedSecret)
+
+	must(os.WriteFile(".forgejo-runner", []byte(runnerConfig), 0o600))
+	fmt.Println("[+] Configuration .forgejo-runner générée.")
+
 	cmdDaemon := exec.Command(runnerBin, "daemon")
-    cmdDaemon.Env = append(os.Environ(), "RUNNER_LOG_LEVEL=debug")
-	
+
 	logF, _ := os.Create("runner.log")
-    cmdDaemon.Stdout, cmdDaemon.Stderr = logF, logF
-	
+	cmdDaemon.Stdout, cmdDaemon.Stderr = logF, logF
+
 	must(cmdDaemon.Start())
-	fmt.Println("[+] Runner CI/CD démarré.")
+	fmt.Println("[+] Runner CI/CD démarré en tâche de fond.")
 }
 
 func createAdminAndRepo(forgejoBin, forgejoDir string) (string, string) {
@@ -491,7 +500,7 @@ func main() {
 	isMicro := AutoIsMicroservice()
 	forgejoBin, forgejoDir := setupForgejo()
 	adminUser, adminPass := createAdminAndRepo(forgejoBin, forgejoDir)
-	setupRunner(adminUser, adminPass)
+	setupRunner(forgejoBin, forgejoDir)
 	deployGitOps(isMicro, adminUser, adminPass)
 
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
