@@ -509,6 +509,7 @@ func main() {
 	adminUser, adminPass := createAdminAndRepo(forgejoBin, forgejoDir)
 	setupRunner(forgejoBin, forgejoDir)
 	deployGitOps(isMicro, adminUser, adminPass)
-
+	
+    select {}
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
 }
