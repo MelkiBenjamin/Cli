@@ -563,7 +563,7 @@ func main() {
 	waitForJobCompletion(adminUser, adminPass)
 
 	/// 4. On arrête le daemon du runner pour fermer le script Go
-	if cmdDaemon.Process != nil {
+	if cmdDaemon != nil && cmdDaemon.Process != nil {
 		_ = cmdDaemon.Process.Kill()
 	}
 	
