@@ -403,17 +403,58 @@ server:
 	return configPath
 }
 
-func runRunnerDaemon(configPath string) {
-	fmt.Println("\n[*] Démarrage du runner Forgejo au premier plan...")
+func runRunnerDaemon(configPath string) *exec.Cmd {
+	fmt.Println("\n[*] Démarrage du runner Forgejo (logs redirigés dans runner.log)...")
 	home, _ := os.UserHomeDir()
 	runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
 
-	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
-	cmdDaemon.Stdout = os.Stdout
-	cmdDaemon.Stderr = os.Stderr
+	// Fichier de log dédié au lieu de la console
+	logFile, err := os.Create("runner.log")
+	must(err)
 
-	// Run() bloque l'exécution ici et maintient le runner actif
-	must(cmdDaemon.Run())
+	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
+	cmdDaemon.Stdout = logFile
+	cmdDaemon.Stderr = logFile
+
+	// Start() lance le daemon en arrière-plan au lieu de tout bloquer
+	must(cmdDaemon.Start())
+
+	return cmdDaemon
+}
+
+func waitForJobCompletion(user, pass string) {
+	fmt.Println("[*] En attente de la fin du pipeline CI/CD...")
+	client := &http.Client{Timeout: 5 * time.Second}
+	url := fmt.Sprintf("http://127.0.0.1:3000/api/v1/repos/%s/app-repo/actions/runs", user)
+
+	for i := 0; i < 60; i++ { // Attend jusqu'à 2 minutes max
+		time.Sleep(2 * time.Second)
+
+		req, _ := http.NewRequest("GET", url, nil)
+		req.SetBasicAuth(user, pass)
+
+		resp, err := client.Do(req)
+		if err != nil {
+			continue
+		}
+
+		var result struct {
+			WorkflowRuns []struct {
+				Status     string `json:"status"`
+				Conclusion string `json:"conclusion"`
+			} `json:"workflow_runs"`
+		}
+
+		if err := json.NewDecoder(resp.Body).Decode(&result); err == nil && len(result.WorkflowRuns) > 0 {
+			run := result.WorkflowRuns[0]
+			if run.Status == "completed" {
+				fmt.Printf("[+] Pipeline terminé (Statut : %s)\n", run.Conclusion)
+				resp.Body.Close()
+				return
+			}
+		}
+		resp.Body.Close()
+	}
 }
 
 func createAdminAndRepo(forgejoBin, forgejoDir string) (string, string) {
@@ -514,13 +555,17 @@ func main() {
 	adminUser, adminPass := createAdminAndRepo(forgejoBin, forgejoDir)
 	configPath := setupRunner(forgejoBin, forgejoDir)
 	
-    go func() {
-		time.Sleep(3 * time.Second) // Attendre que le runner soit prêt à écouter
-		deployGitOps(isMicro, adminUser, adminPass)
-		fmt.Println("\n[🎉] Push GitOps effectué avec succès !")
-	}()
+    // 2. Push GitOps
+	time.Sleep(2 * time.Second)
+	deployGitOps(isMicro, adminUser, adminPass)
 
-	// Étape 6 : Démarrage du daemon via la fonction dédiée (Bloquant)
-	runRunnerDaemon(configPath)	
+	// 3. Attente du résultat du pipeline
+	waitForJobCompletion(adminUser, adminPass)
+
+	/// 4. On arrête le daemon du runner pour fermer le script Go
+	if cmdDaemon.Process != nil {
+		_ = cmdDaemon.Process.Kill()
+	}
+	
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
 }
