@@ -385,6 +385,8 @@ runner:
   capacity: 1
   labels:
     - "self-hosted:host"
+  host:
+    workdir_parent: "%s"
 server:
   connections:
     local-forgejo:
