@@ -396,7 +396,7 @@ server:
 
 	cmdDaemon := exec.Command(runnerBin, "daemon")
 
-    logF, err := os.OpenFile("runner.log")	
+    logF, err := os.Create("runner.log")	
 	must(err)
 	cmdDaemon.Stdout, cmdDaemon.Stderr = logF, logF
 
