@@ -463,7 +463,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build Docker Image
-      run: docker build --network=host -t app-prod:${{ github.sha }} .
+      run: docker build --network=host --progress=plain -t app-prod:${{ github.sha }} .
 `
 	if isMicroservice {
 		workflowContent += `
