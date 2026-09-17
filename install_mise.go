@@ -348,7 +348,7 @@ ENABLED = true
 	return forgejoBin, forgejoDir
 }
 
-func setupRunner(forgejoBin, forgejoDir string) {
+func setupRunner(forgejoBin, forgejoDir string) string {
 	fmt.Println("\n[*] --- Configuration Déclarative du Runner CI/CD ---")
 	home, _ := os.UserHomeDir()
 	runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
