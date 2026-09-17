@@ -396,10 +396,22 @@ server:
 
 	cmdDaemon := exec.Command(runnerBin, "daemon", "--config", ".forgejo-runner")
 
-	logF, _ := os.Create("runner.log")
+    logF, err := os.OpenFile("runner.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)	
+	must(err)
 	cmdDaemon.Stdout, cmdDaemon.Stderr = logF, logF
 
 	must(cmdDaemon.Start())
+
+    // Petite pause pour laisser le temps au process d'écrire ses premières lignes
+	time.Sleep(500 * time.Millisecond)
+
+	// Vérifie si le processus s'est arrêté prématurément
+	if cmdDaemon.ProcessState != nil && cmdDaemon.ProcessState.Exited() {
+		fmt.Println("[!] Le runner s'est arrêté immédiatement. Vérifie le fichier runner.log")
+	} else {
+		fmt.Println("[+] Runner CI/CD démarré en tâche de fond (PID:", cmdDaemon.Process.Pid, ")")
+	}
+	
 	fmt.Println("[+] Runner CI/CD démarré en tâche de fond.")
 }
 
