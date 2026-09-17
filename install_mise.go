@@ -377,6 +377,8 @@ func setupRunner(forgejoBin, forgejoDir string) {
 
 	fmt.Printf("[+] Runner enregistré. UUID : %s\n", runnerUUID)
 
+	configPath := filepath.Join(forgejoDir, "runner-config.yaml")
+
 	// 3. Écriture du fichier de configuration automatique .forgejo-runner
 	runnerConfig := fmt.Sprintf(`
 log:
@@ -393,14 +395,14 @@ server:
       url: "http://localhost:3000"
       uuid: "%s"
       token: "%s"
-`, runnerUUID, sharedSecret)
+`, forgejoDir, runnerUUID, sharedSecret)
 
-	must(os.WriteFile("config.yaml", []byte(runnerConfig), 0o600))
-	fmt.Println("[+] Configuration .forgejo-runner générée.")
+	must(os.WriteFile(configPath, []byte(runnerConfig), 0o600))
+	fmt.Println("[+] Configuration .forgejo-runner générée : : %s\n", configPath")
 
-	cmdDaemon := exec.Command(runnerBin, "daemon")
+	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
 
-    logF, err := os.Create("runner.log")	
+    logF, err := os.Create(filepath.Join(forgejoDir, "runner.log"))
 	must(err)
 	cmdDaemon.Stdout, cmdDaemon.Stderr = logF, logF
 
