@@ -400,15 +400,20 @@ server:
 	must(os.WriteFile(configPath, []byte(runnerConfig), 0o600))
 	fmt.Println("[+] Configuration .forgejo-runner générée : %s\n", configPath)
 
+	return configPath
+}
+
+func runRunnerDaemon(configPath string) {
+	fmt.Println("\n[*] Démarrage du runner Forgejo au premier plan...")
+	home, _ := os.UserHomeDir()
+	runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
+
 	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
+	cmdDaemon.Stdout = os.Stdout
+	cmdDaemon.Stderr = os.Stderr
 
-    logPath := filepath.Join("runner.log")
-    logF, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND,0o600)
-    must(err)
-    cmdDaemon.Stdout, cmdDaemon.Stderr = logF, logF
-
-	must(cmdDaemon.Start())
-	fmt.Println("[+] Runner CI/CD démarré en tâche de fond.")
+	// Run() bloque l'exécution ici et maintient le runner actif
+	must(cmdDaemon.Run())
 }
 
 func createAdminAndRepo(forgejoBin, forgejoDir string) (string, string) {
@@ -507,9 +512,15 @@ func main() {
 	isMicro := AutoIsMicroservice()
 	forgejoBin, forgejoDir := setupForgejo()
 	adminUser, adminPass := createAdminAndRepo(forgejoBin, forgejoDir)
-	setupRunner(forgejoBin, forgejoDir)
-	deployGitOps(isMicro, adminUser, adminPass)
+	configPath := setupRunner(forgejoBin, forgejoDir)
 	
-    select {}
+    go func() {
+		time.Sleep(3 * time.Second) // Attendre que le runner soit prêt à écouter
+		deployGitOps(isMicro, adminUser, adminPass)
+		fmt.Println("\n[🎉] Push GitOps effectué avec succès !")
+	}()
+
+	// Étape 6 : Démarrage du daemon via la fonction dédiée (Bloquant)
+	runRunnerDaemon(configPath)	
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
 }
