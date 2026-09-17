@@ -542,6 +542,7 @@ jobs:
 	runShell("git branch -M main")
 	runShell("git push -u origin main --force")
 	fmt.Println("[+] Pipeline GitOps déployé !")
+	runShell("pgrep -f forgejo-runner")
 }
 
 func main() {
