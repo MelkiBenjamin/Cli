@@ -402,9 +402,14 @@ server:
 
 	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
 
-    logF, err := os.Create(filepath.Join(forgejoDir, "runner.log"))
-	must(err)
-	cmdDaemon.Stdout, cmdDaemon.Stderr = logF, logF
+    logPath := filepath.Join(forgejoDir, "runner.log")
+    logF, err := os.OpenFile(
+      logPath,
+      os.O_CREATE|os.O_WRONLY|os.O_APPEND,
+      0o600,
+    )
+    must(err)
+    cmdDaemon.Stdout, cmdDaemon.Stderr = logF, logF
 
 	must(cmdDaemon.Start())
 	fmt.Println("[+] Runner CI/CD démarré en tâche de fond.")
