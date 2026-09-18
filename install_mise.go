@@ -547,7 +547,7 @@ jobs:
 	fmt.Println("[+] Pipeline GitOps déployé !")
 	runShell("pgrep -f forgejo-runner")
 
-	// Structure minimale pour lire la réponse de l'API Forgejo
+// Structure minimale pour lire la réponse de l'API Forgejo
 type ActionRunsResponse struct {
 	TotalCount int `json:"total_count"`
 	Runs       []struct {
@@ -608,8 +608,8 @@ func main() {
     // 2. Push GitOps
 	time.Sleep(2 * time.Second)
 	deployGitOps(isMicro, adminUser, adminPass)
-	checkForgejoRunsCount(user, password)
-
+    checkForgejoRunsCount(adminUser, adminPass)
+	
 	// 3. Attente du résultat du pipeline
 	waitForJobCompletion(adminUser, adminPass)
 
