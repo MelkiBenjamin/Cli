@@ -418,6 +418,7 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 
 	// Start() lance le daemon en arrière-plan au lieu de tout bloquer
 	must(cmdDaemon.Start())
+	runShell("pgrep -f forgejo-runner")
 
 	return cmdDaemon
 }
