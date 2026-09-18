@@ -391,8 +391,10 @@ runner:
   fetch_interval: 10s
   labels:
     - "self-hosted:host"
+  envs:
+    ACTIONS_RUNNER_FORCE_RETRY: "false"
   host:
-    workdir_parent: "%s"
+    workdir_parent: "/tmp/forgejo_runner_work"
 server:
   connections:
     local-forgejo:
