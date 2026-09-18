@@ -546,6 +546,51 @@ jobs:
 	runShell("git push -u origin main --force")
 	fmt.Println("[+] Pipeline GitOps déployé !")
 	runShell("pgrep -f forgejo-runner")
+
+	// Structure minimale pour lire la réponse de l'API Forgejo
+type ActionRunsResponse struct {
+	TotalCount int `json:"total_count"`
+	Runs       []struct {
+		ID     int64  `json:"id"`
+		Event  string `json:"event"`
+		Status string `json:"status"`
+	} `json:"workflow_runs"`
+}
+
+func checkForgejoRunsCount(user, password string) {
+	// Petite pause de 1-2s pour laisser à Forgejo le temps d'enregistrer l'événement Git
+	time.Sleep(2 * time.Second)
+
+	url := fmt.Sprintf("http://localhost:3000/api/v1/repos/%s/app-repo/actions/runs", user)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		fmt.Printf("[DEBUG] Erreur création requête API : %v\n", err)
+		return
+	}
+
+	req.SetBasicAuth(user, password)
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		fmt.Printf("[DEBUG] Erreur appel API Forgejo : %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	var data ActionRunsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		fmt.Printf("[DEBUG] Erreur décodage JSON API : %v\n", err)
+		return
+	}
+
+	fmt.Printf("----------------------------------------\n")
+	fmt.Printf("[DIAGNOSTIC API] Nombre de runs détectés dans Forgejo : %d\n", len(data.Runs))
+	for i, run := range data.Runs {
+		fmt.Printf(" -> Run #%d : ID=%d | Event=%s | Status=%s\n", i+1, run.ID, run.Event, run.Status)
+	}
+	fmt.Printf("----------------------------------------\n")
+}
 }
 
 func main() {
@@ -563,6 +608,7 @@ func main() {
     // 2. Push GitOps
 	time.Sleep(2 * time.Second)
 	deployGitOps(isMicro, adminUser, adminPass)
+	checkForgejoRunsCount(user, password)
 
 	// 3. Attente du résultat du pipeline
 	waitForJobCompletion(adminUser, adminPass)
