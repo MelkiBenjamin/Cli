@@ -35,7 +35,7 @@ jobs:
           ls -alh
           sleep 30
           cat runner.log
-          sleep 280
+          sleep 150
           cat runner.log
       
       - run: ls -alh /home/runner/.local/share/mise/installs
