@@ -546,6 +546,7 @@ jobs:
 	runShell("git push -u origin main --force")
 	fmt.Println("[+] Pipeline GitOps déployé !")
 	runShell("pgrep -f forgejo-runner")
+}
 
 // Structure minimale pour lire la réponse de l'API Forgejo
 type ActionRunsResponse struct {
