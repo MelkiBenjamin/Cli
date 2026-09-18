@@ -401,7 +401,7 @@ server:
       url: "http://localhost:3000"
       uuid: "%s"
       token: "%s"
-`, forgejoDir, runnerUUID, sharedSecret)
+`, runnerUUID, sharedSecret)
 
 	must(os.WriteFile(configPath, []byte(runnerConfig), 0o600))
 	fmt.Println("[+] Configuration .forgejo-runner générée : %s\n", configPath)
