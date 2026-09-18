@@ -591,7 +591,7 @@ func checkForgejoRunsCount(user, password string) {
 	}
 	fmt.Printf("----------------------------------------\n")
 }
-}
+
 
 func main() {
 	// Étape 1 : Préparer l'exécutable 'mise' (Téléchargement + Extraction)
