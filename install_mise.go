@@ -400,6 +400,8 @@ server:
 	must(os.WriteFile(configPath, []byte(runnerConfig), 0o600))
 	fmt.Println("[+] Configuration .forgejo-runner générée : %s\n", configPath)
 
+	runShell("pgrep -f forgejo-runner")
+
 	return configPath
 }
 
@@ -411,7 +413,7 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	// Fichier de log dédié au lieu de la console
 	logFile, err := os.Create("runner.log")
 	must(err)
-
+    runShell("pgrep -f forgejo-runner")
 	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
 	cmdDaemon.Stdout = logFile
 	cmdDaemon.Stderr = logFile
