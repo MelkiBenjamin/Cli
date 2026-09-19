@@ -619,11 +619,13 @@ func main() {
 	
 	// 3. Attente du résultat du pipeline
 	waitForJobCompletion(adminUser, adminPass)
+	checkForgejoRunsCount(adminUser, adminPass)
 
 	/// 4. On arrête le daemon du runner pour fermer le script Go
 	if cmdDaemon != nil && cmdDaemon.Process != nil {
 		_ = cmdDaemon.Process.Kill()
 	}
-	
+	checkForgejoRunsCount(adminUser, adminPass)
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
+	checkForgejoRunsCount(adminUser, adminPass)
 }
