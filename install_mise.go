@@ -547,7 +547,7 @@ jobs:
 	runShell("git remote remove origin || true")
 	runShell("git remote add origin " + remoteURL)
 
-	runShell("git add install_mise.go docker-compose.yml Dockerfile .env.example .github/workflows/main.yaml go.mod")
+	runShell("git add install_mise.go docker-compose.yml Dockerfile .env.example .github/workflows/main.yaml go.mod .env")
 	runShell("git commit -m 'Zero-Touch: Auto-generated pipeline'")
 	runShell("git branch -M main")
 	runShell("git push -u origin main --force")
