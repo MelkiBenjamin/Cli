@@ -34,9 +34,9 @@ jobs:
       - run: |
           ls -alh
           ls -alh .github
-          cat .github/main.yaml
+          cat .github/workflows/main.yaml
           echo suite
-          cat .github/main.yml
+          cat .github/workflows/main.yml
       - run: |
           cat runner.log
           sleep 150
