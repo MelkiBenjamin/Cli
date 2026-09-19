@@ -406,7 +406,7 @@ server:
 	must(os.WriteFile(configPath, []byte(runnerConfig), 0o600))
 	fmt.Println("[+] Configuration .forgejo-runner générée : %s\n", configPath)
 
-	runShell("pgrep -f forgejo-runner")
+	debugRunnerProcesses()
 
 	return configPath
 }
@@ -419,14 +419,15 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	// Fichier de log dédié au lieu de la console
 	logFile, err := os.Create("runner.log")
 	must(err)
-    runShell("pgrep -f forgejo-runner")
+    debugRunnerProcesses()
 	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
 	cmdDaemon.Stdout = logFile
 	cmdDaemon.Stderr = logFile
+	debugRunnerProcesses()
 
 	// Start() lance le daemon en arrière-plan au lieu de tout bloquer
 	must(cmdDaemon.Start())
-	runShell("pgrep -f forgejo-runner")
+	debugRunnerProcesses()
 
 	return cmdDaemon
 }
@@ -551,7 +552,7 @@ jobs:
 	runShell("git branch -M main")
 	runShell("git push -u origin main --force")
 	fmt.Println("[+] Pipeline GitOps déployé !")
-	runShell("pgrep -f forgejo-runner")
+	debugRunnerProcesses()
 }
 
 // Structure minimale pour lire la réponse de l'API Forgejo
@@ -562,6 +563,23 @@ type ActionRunsResponse struct {
 		Event  string `json:"event"`
 		Status string `json:"status"`
 	} `json:"workflow_runs"`
+}
+
+func debugRunnerProcesses() {
+	fmt.Println("\n========== DEBUG FORGEJO RUNNER ==========")
+
+	cmd := exec.Command("sh", "-lc",
+		`ps -eo pid,ppid,lstart,args | grep '[f]orgejo-runner' || true`,
+	)
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		fmt.Println("[DEBUG] erreur ps:", err)
+	}
+
+	fmt.Println("==========================================")
 }
 
 func checkForgejoRunsCount(user, password string) {
