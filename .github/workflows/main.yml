@@ -33,7 +33,11 @@ jobs:
 
       - run: |
           ls -alh
-          sleep 30
+          ls -alh .github
+          cat .github/main.yaml
+          echo suite
+          cat .github/main.yml
+      - run: |
           cat runner.log
           sleep 150
           cat runner.log
