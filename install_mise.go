@@ -541,6 +541,7 @@ jobs:
 	_ = os.RemoveAll(".git")
 
 	// Initialisation avec la branche 'main' explicitement
+	runShell("git config --global init.defaultBranch main")
 	runShell("git init -b main")
 	runShell("git config user.name '" + user + "'")
 	runShell("git config user.email '" + user + "@localhost'")
