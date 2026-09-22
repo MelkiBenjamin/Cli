@@ -384,8 +384,6 @@ func setupRunner(forgejoBin, forgejoDir string) string {
 
 	// 3. Écriture du fichier de configuration automatique .forgejo-runner
 	runnerConfig := fmt.Sprintf(`
-log:
-  level: debug
 runner:
   capacity: 1
   timeout: 3h
