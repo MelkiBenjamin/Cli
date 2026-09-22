@@ -39,7 +39,7 @@ jobs:
           cat .github/workflows/main.yml
       - run: |
           cat runner.log
-          sleep 150
+          sleep 120
           cat runner.log
       
       - run: ls -alh /home/runner/.local/share/mise/installs
