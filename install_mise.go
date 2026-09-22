@@ -183,9 +183,8 @@ var cmdDockerizer = `
     sed -i '1,5d' Dockerfile && \
     sed -i '1,3d' docker-compose.yml && \
 	cp .env.example .env && \
-    sed -i "s|build:.*|image: app-prod:${GITHUB_SHA:-latest}|" docker-compose.yml && \
-    sed -i '/context:/d; /dockerfile:/d' docker-compose.yml && \
-	{ find . -name "*.go" -exec grep -qE "http\.ListenAndServe|http\.Serve|Listen\(" {} + || \
+    sed -i "s|.*build:.*|    image: app-prod|" docker-compose.yml && \
+    sed -i '/context:/d; /dockerfile:/d' docker-compose.yml && \	{ find . -name "*.go" -exec grep -qE "http\.ListenAndServe|http\.Serve|Listen\(" {} + || \
     sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile; }
 `
 
