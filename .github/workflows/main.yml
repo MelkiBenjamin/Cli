@@ -119,6 +119,12 @@ jobs:
           ls -alh .github
 
       - run: |
+          sleep 120
+          grep -v 'debug' runner.log > test.log
+          cat test.log
+      
+
+      - run: |
           cat runner.log
           sleep 150
           cat runner.log
