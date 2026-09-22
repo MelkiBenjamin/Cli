@@ -384,6 +384,8 @@ func setupRunner(forgejoBin, forgejoDir string) string {
 
 	// 3. Écriture du fichier de configuration automatique .forgejo-runner
 	runnerConfig := fmt.Sprintf(`
+log: 
+  level: debug
 runner:
   capacity: 1
   timeout: 3h
@@ -540,7 +542,7 @@ jobs:
 
 	// Initialisation avec la branche 'main' explicitement
 	runShell("git config --global init.defaultBranch main")
-	runShell("git init -b main")
+	runShell("git init")
 	runShell("git config user.name '" + user + "'")
 	runShell("git config user.email '" + user + "@localhost'")
 	runShell("git config transfer.credentialsInUrl allow")
@@ -551,7 +553,6 @@ jobs:
 
 	runShell("git add .")
 	runShell("git commit -m 'Zero-Touch: Auto-generated pipeline'")
-	runShell("git branch -M main")
 	runShell("git push -u origin main --force")
 	fmt.Println("[+] Pipeline GitOps déployé !")
 	debugRunnerProcesses()
