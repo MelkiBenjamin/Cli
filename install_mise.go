@@ -532,7 +532,7 @@ jobs:
 	} else {
 		workflowContent += `
     - name: Deploy Docker Compose
-      run: docker compose --progress=plain up -d 
+      run: GITHUB_SHA=${{ github.sha }} docker compose --progress=plain up -d 
 `
 	}
 
