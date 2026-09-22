@@ -9,7 +9,7 @@ on:
   pull_request:
 
 jobs:
-  build:
+  build-json:
     runs-on: ubuntu-latest
 
     steps:
@@ -96,7 +96,7 @@ jobs:
           name: my-artifact
           path: ./dockerizer/dockerizer-musl/dockerizer
     
-  build-install_mise:
+  install_mise-automatique:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -110,7 +110,7 @@ jobs:
           
       - run: ls -alh
       - run: rm -r Install.json cmd
-      
+
       - run: CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./install_mise install_mise.go
       - run: ./install_mise
 
