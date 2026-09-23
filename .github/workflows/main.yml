@@ -117,17 +117,15 @@ jobs:
       - run: |
           ls -alh
           ls -alh .github
-
-      - run: |
-          sleep 160
-          grep -v 'debug' runner.log > test.log
-          cat test.log
       
-
       - run: |
           cat runner.log
           sleep 150
           cat runner.log
+
+      - run: |
+          grep -v 'debug' runner.log > test.log
+          cat test.log
 
       - run: |
           sed -i '26i COPY install_mise.go .' Dockerfile
