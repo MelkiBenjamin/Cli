@@ -122,6 +122,10 @@ jobs:
           cat runner.log
           sleep 150
           cat runner.log
+          wc -l log.txt
+          tr '\r' '\n' < log.txt | wc -l
+
+          
 
       - run: |
           grep -v 'debug' runner.log > test.log
