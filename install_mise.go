@@ -423,13 +423,31 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	logFile, err := os.Create("runner.log")
 	must(err)
     debugRunnerProcesses()
+
+	// 1. Création du Pipe Go pour sérialiser Stdout et Stderr
+	pr, pw := io.Pipe()
+	
 	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
-	cmdDaemon.Stdout = logFile
-	cmdDaemon.Stderr = logFile
+	cmdDaemon.Stdout = pw
+	cmdDaemon.Stderr = pw
+
+	// 2. Goroutine qui lit le pipe et écrit au fur et à mesure dans runner.log
+	go func() {
+		defer logFile.Close()
+		_, _ = io.Copy(logFile, pr)
+	}()
+	
 	debugRunnerProcesses()
 
 	// Start() lance le daemon en arrière-plan au lieu de tout bloquer
 	must(cmdDaemon.Start())
+
+	// 4. Goroutine pour fermer proprement le pipe et le fichier quand le processus s'arrête
+	go func() {
+		_ = cmdDaemon.Wait()
+		_ = pw.Close() // Informe io.Copy que le flux est terminé
+	}()
+	
 	debugRunnerProcesses()
 
 	return cmdDaemon
