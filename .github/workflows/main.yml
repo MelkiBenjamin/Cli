@@ -122,8 +122,8 @@ jobs:
           cat runner.log
           sleep 150
           cat runner.log
-          wc -l log.txt
-          tr '\r' '\n' < log.txt | wc -l
+          wc -l runner.log
+          tr '\r' '\n' < runner.log | wc -l
 
           
 
