@@ -426,7 +426,7 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	
 	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
 	cmdDaemon.Stdout = logFile // On jette Stdout pour ne pas avoir de doublon
-	cmdDaemon.Stderr = io.Discard  // Stderr contient TOUT (logs + debug + erreurs)
+	cmdDaemon.Stderr = logFile  // Stderr contient TOUT (logs + debug + erreurs)
 	
 	debugRunnerProcesses()
 
