@@ -119,7 +119,7 @@ jobs:
           ls -alh .github
 
       - run: |
-          sleep 120
+          sleep 160
           grep -v 'debug' runner.log > test.log
           cat test.log
       
