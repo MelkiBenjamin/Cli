@@ -409,7 +409,7 @@ server:
 	must(os.WriteFile(configPath, []byte(runnerConfig), 0o600))
 	fmt.Println("[+] Configuration .forgejo-runner générée : %s\n", configPath)
 
-	debugRunnerProcesses()
+	//debugRunnerProcesses()
 
 	return configPath
 }
@@ -422,16 +422,16 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	// Fichier de log dédié au lieu de la console
 	logFile, err := os.Create("runner.log")
 	must(err)
-    debugRunnerProcesses()
+    //debugRunnerProcesses()
 	
 	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
 	cmdDaemon.Stdout = logFile
 	cmdDaemon.Stderr = logFile
-	debugRunnerProcesses()
+	//debugRunnerProcesses()
 
 	// Start() lance le daemon en arrière-plan au lieu de tout bloquer
 	must(cmdDaemon.Start())
-	debugRunnerProcesses()
+	//debugRunnerProcesses()
 
 	return cmdDaemon
 }
@@ -556,7 +556,7 @@ jobs:
 	runShell("git commit -m 'Zero-Touch: Auto-generated pipeline'")
 	runShell("git push -u origin main --force")
 	fmt.Println("[+] Pipeline GitOps déployé !")
-	debugRunnerProcesses()
+	//debugRunnerProcesses()
 }
 
 // Structure minimale pour lire la réponse de l'API Forgejo
@@ -637,11 +637,11 @@ func main() {
     // 2. Push GitOps
 	time.Sleep(2 * time.Second)
 	deployGitOps(isMicro, adminUser, adminPass)
-    checkForgejoRunsCount(adminUser, adminPass)
+    //checkForgejoRunsCount(adminUser, adminPass)
 	
 	// 3. Attente du résultat du pipeline
 	waitForJobCompletion(adminUser, adminPass)
-	checkForgejoRunsCount(adminUser, adminPass)
+	//checkForgejoRunsCount(adminUser, adminPass)
 	//fiBefore, _ := os.Stat("runner.log")
    // fmt.Printf("\n[DEBUG] Taille runner.log AVANT arrêt du daemon : %d octets\n", fiBefore.Size())
 
@@ -671,7 +671,7 @@ func main() {
 	}
 	//fiBefore, _ = os.Stat("runner.log")
    // fmt.Printf("\n[DEBUG] Taille runner.log APRÈS arrêt du daemon : %d octets\n", fiBefore.Size())
-	checkForgejoRunsCount(adminUser, adminPass)
+	//checkForgejoRunsCount(adminUser, adminPass)
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
-	checkForgejoRunsCount(adminUser, adminPass)
+	//checkForgejoRunsCount(adminUser, adminPass)
 }
