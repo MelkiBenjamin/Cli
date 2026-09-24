@@ -420,18 +420,17 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
 
 	// Fichier de log dédié au lieu de la console
-	//logFile, err := os.Create("runner.log")
-//	must(err)
+	logFile, err := os.Create("runner.log")
+	must(err)
     debugRunnerProcesses()
 	
 	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
-	cmdDaemon.Stdout = os.Stdout
-	cmdDaemon.Stderr = os.Stderr	
+	cmdDaemon.Stdout = logFile
+	cmdDaemon.Stderr = logFile
 	debugRunnerProcesses()
 
 	// Start() lance le daemon en arrière-plan au lieu de tout bloquer
 	must(cmdDaemon.Start())
-	
 	debugRunnerProcesses()
 
 	return cmdDaemon
