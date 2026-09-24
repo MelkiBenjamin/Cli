@@ -38,10 +38,9 @@ jobs:
           echo suite
           cat .github/workflows/main.yml
       - run: |
+          sleep 180
           cat runner.log
-          sleep 120
-          cat runner.log
-      
+          
       - run: ls -alh /home/runner/.local/share/mise/installs
       - run: |
           ls -alh /home/runner/.local/share/mise/installs/terraform 
@@ -119,14 +118,12 @@ jobs:
           ls -alh .github
       
       - run: |
+          sleep 180
           cat runner.log
           sleep 150
           cat runner.log
           wc -l runner.log
           tr '\r' '\n' < runner.log | wc -l
-
-          
-
       - run: |
           grep -v 'debug' runner.log > test.log
           cat test.log
