@@ -640,7 +640,7 @@ func main() {
     //checkForgejoRunsCount(adminUser, adminPass)
 	
 	// 3. Attente du résultat du pipeline
-	waitForJobCompletion(adminUser, adminPass)
+	//waitForJobCompletion(adminUser, adminPass)
 	//checkForgejoRunsCount(adminUser, adminPass)
 	//fiBefore, _ := os.Stat("runner.log")
    // fmt.Printf("\n[DEBUG] Taille runner.log AVANT arrêt du daemon : %d octets\n", fiBefore.Size())
