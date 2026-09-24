@@ -647,7 +647,27 @@ func main() {
 
 	/// 4. On arrête le daemon du runner pour fermer le script Go
 	if cmdDaemon != nil && cmdDaemon.Process != nil {
-		_ = cmdDaemon.Process.Kill()
+		fmt.Println("\n[INFO] Arrêt propre du runner...")
+		
+		// Envoi de SIGINT (Ctrl+C) pour une fermeture propre des buffers
+		if err := cmdDaemon.Process.Signal(os.Interrupt); err != nil {
+			_ = cmdDaemon.Process.Kill()
+		} else {
+			// canal pour attendre la fin du process
+			done := make(chan error, 1)
+			go func() {
+				done <- cmdDaemon.Wait()
+			}()
+
+			// On laisse 3 secondes max au runner pour se fermer proprement
+			select {
+			case <-time.After(3 * time.Second):
+				fmt.Println("[WARN] Le runner ne répond pas, arrêt forcé.")
+				_ = cmdDaemon.Process.Kill()
+			case <-done:
+				fmt.Println("[INFO] Runner arrêté et fichiers de logs fermés.")
+			}
+		}
 	}
 	checkForgejoRunsCount(adminUser, adminPass)
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
