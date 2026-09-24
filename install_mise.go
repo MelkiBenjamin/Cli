@@ -425,9 +425,8 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
     debugRunnerProcesses()
 	
 	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
-//	cmdDaemon.Stdout = logFile // On jette Stdout pour ne pas avoir de doublon
-//	cmdDaemon.Stderr = io.Discard  // Stderr contient TOUT (logs + debug + erreurs)
-	
+	cmdDaemon.Stdout = os.Stdout
+	cmdDaemon.Stderr = os.Stderr	
 	debugRunnerProcesses()
 
 	// Start() lance le daemon en arrière-plan au lieu de tout bloquer
