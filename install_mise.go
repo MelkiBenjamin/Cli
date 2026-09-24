@@ -420,8 +420,8 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
 
 	// Fichier de log dédié au lieu de la console
-	logFile, err := os.Create("runner.log")
-	must(err)
+	//logFile, err := os.Create("runner.log")
+//	must(err)
     debugRunnerProcesses()
 	
 	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
@@ -644,8 +644,8 @@ func main() {
 	// 3. Attente du résultat du pipeline
 	waitForJobCompletion(adminUser, adminPass)
 	checkForgejoRunsCount(adminUser, adminPass)
-	fiBefore, _ := os.Stat("runner.log")
-    fmt.Printf("\n[DEBUG] Taille runner.log AVANT arrêt du daemon : %d octets\n", fiBefore.Size())
+	//fiBefore, _ := os.Stat("runner.log")
+   // fmt.Printf("\n[DEBUG] Taille runner.log AVANT arrêt du daemon : %d octets\n", fiBefore.Size())
 
 	/// 4. On arrête le daemon du runner pour fermer le script Go
 	if cmdDaemon != nil && cmdDaemon.Process != nil {
@@ -671,8 +671,8 @@ func main() {
 			}
 		}
 	}
-	fiBefore, _ = os.Stat("runner.log")
-    fmt.Printf("\n[DEBUG] Taille runner.log APRÈS arrêt du daemon : %d octets\n", fiBefore.Size())
+	//fiBefore, _ = os.Stat("runner.log")
+   // fmt.Printf("\n[DEBUG] Taille runner.log APRÈS arrêt du daemon : %d octets\n", fiBefore.Size())
 	checkForgejoRunsCount(adminUser, adminPass)
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
 	checkForgejoRunsCount(adminUser, adminPass)
