@@ -671,7 +671,7 @@ func main() {
 			}
 		}
 	}
-	fiBefore, _ := os.Stat("runner.log")
+	
     fmt.Printf("\n[DEBUG] Taille runner.log APRÈS arrêt du daemon : %d octets\n", fiBefore.Size())
 	checkForgejoRunsCount(adminUser, adminPass)
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
