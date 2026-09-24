@@ -38,7 +38,7 @@ jobs:
           echo suite
           cat .github/workflows/main.yml
       - run: |
-          sleep 180
+          sleep 300
           cat runner.log
           
       - run: ls -alh /home/runner/.local/share/mise/installs
@@ -120,7 +120,8 @@ jobs:
       - run: |
           sleep 180
           cat runner.log
-          sleep 150
+      - run: |
+          sleep 160
           cat runner.log
           wc -l runner.log
           tr '\r' '\n' < runner.log | wc -l
