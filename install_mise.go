@@ -646,29 +646,10 @@ func main() {
    // fmt.Printf("\n[DEBUG] Taille runner.log AVANT arrêt du daemon : %d octets\n", fiBefore.Size())
 
 	/// 4. On arrête le daemon du runner pour fermer le script Go
-	if cmdDaemon != nil && cmdDaemon.Process != nil {
-		fmt.Println("\n[INFO] Arrêt propre du runner...")
-		
-		// Envoi de SIGINT (Ctrl+C) pour une fermeture propre des buffers
-		if err := cmdDaemon.Process.Signal(os.Interrupt); err != nil {
-			_ = cmdDaemon.Process.Kill()
-		} else {
-			// canal pour attendre la fin du process
-			done := make(chan error, 1)
-			go func() {
-				done <- cmdDaemon.Wait()
-			}()
-
-			// On laisse 3 secondes max au runner pour se fermer proprement
-			select {
-			case <-time.After(3 * time.Second):
-				fmt.Println("[WARN] Le runner ne répond pas, arrêt forcé.")
-				_ = cmdDaemon.Process.Kill()
-			case <-done:
-				fmt.Println("[INFO] Runner arrêté et fichiers de logs fermés.")
-			}
-		}
-	}
+	// Avant (Brutal et direct)
+    if cmdDaemon != nil && cmdDaemon.Process != nil {
+      _ = cmdDaemon.Process.Kill()
+    }
 	//fiBefore, _ = os.Stat("runner.log")
    // fmt.Printf("\n[DEBUG] Taille runner.log APRÈS arrêt du daemon : %d octets\n", fiBefore.Size())
 	//checkForgejoRunsCount(adminUser, adminPass)
