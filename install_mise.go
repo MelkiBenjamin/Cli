@@ -647,9 +647,9 @@ func main() {
 
 	/// 4. On arrête le daemon du runner pour fermer le script Go
 	// Avant (Brutal et direct)
-    if cmdDaemon != nil && cmdDaemon.Process != nil {
-      _ = cmdDaemon.Process.Kill()
-    }
+   // if cmdDaemon != nil && cmdDaemon.Process != nil {
+   //   _ = cmdDaemon.Process.Kill()
+   // }
 	//fiBefore, _ = os.Stat("runner.log")
    // fmt.Printf("\n[DEBUG] Taille runner.log APRÈS arrêt du daemon : %d octets\n", fiBefore.Size())
 	//checkForgejoRunsCount(adminUser, adminPass)
