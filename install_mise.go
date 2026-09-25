@@ -409,8 +409,6 @@ server:
 	must(os.WriteFile(configPath, []byte(runnerConfig), 0o600))
 	fmt.Println("[+] Configuration .forgejo-runner générée : %s\n", configPath)
 
-	//debugRunnerProcesses()
-
 	return configPath
 }
 
@@ -422,53 +420,15 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	// Fichier de log dédié au lieu de la console
 	logFile, err := os.Create("runner.log")
 	must(err)
-    //debugRunnerProcesses()
 	
 	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
 	cmdDaemon.Stdout = logFile
 	cmdDaemon.Stderr = logFile
-	//debugRunnerProcesses()
 
 	// Start() lance le daemon en arrière-plan au lieu de tout bloquer
 	must(cmdDaemon.Start())
-	//debugRunnerProcesses()
 
 	return cmdDaemon
-}
-
-func waitForJobCompletion(user, pass string) {
-	fmt.Println("[*] En attente de la fin du pipeline CI/CD...")
-	client := &http.Client{Timeout: 5 * time.Second}
-	url := fmt.Sprintf("http://127.0.0.1:3000/api/v1/repos/%s/app-repo/actions/runs", user)
-
-	for i := 0; i < 60; i++ { // Attend jusqu'à 2 minutes max
-		time.Sleep(2 * time.Second)
-
-		req, _ := http.NewRequest("GET", url, nil)
-		req.SetBasicAuth(user, pass)
-
-		resp, err := client.Do(req)
-		if err != nil {
-			continue
-		}
-
-		var result struct {
-			WorkflowRuns []struct {
-				Status     string `json:"status"`
-				Conclusion string `json:"conclusion"`
-			} `json:"workflow_runs"`
-		}
-
-		if err := json.NewDecoder(resp.Body).Decode(&result); err == nil && len(result.WorkflowRuns) > 0 {
-			run := result.WorkflowRuns[0]
-			if run.Status == "completed" {
-				fmt.Printf("[+] Pipeline terminé (Statut : %s)\n", run.Conclusion)
-				resp.Body.Close()
-				return
-			}
-		}
-		resp.Body.Close()
-	}
 }
 
 func createAdminAndRepo(forgejoBin, forgejoDir string) (string, string) {
@@ -556,71 +516,7 @@ jobs:
 	runShell("git commit -m 'Zero-Touch: Auto-generated pipeline'")
 	runShell("git push -u origin main --force")
 	fmt.Println("[+] Pipeline GitOps déployé !")
-	//debugRunnerProcesses()
 }
-
-// Structure minimale pour lire la réponse de l'API Forgejo
-type ActionRunsResponse struct {
-	TotalCount int `json:"total_count"`
-	Runs       []struct {
-		ID     int64  `json:"id"`
-		Event  string `json:"event"`
-		Status string `json:"status"`
-	} `json:"workflow_runs"`
-}
-
-func debugRunnerProcesses() {
-	fmt.Println("\n========== DEBUG FORGEJO RUNNER ==========")
-
-	cmd := exec.Command("sh", "-lc",
-		`ps -eo pid,ppid,lstart,args | grep '[f]orgejo-runner' || true`,
-	)
-
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
-		fmt.Println("[DEBUG] erreur ps:", err)
-	}
-
-	fmt.Println("==========================================")
-}
-
-func checkForgejoRunsCount(user, password string) {
-	// Petite pause de 1-2s pour laisser à Forgejo le temps d'enregistrer l'événement Git
-	time.Sleep(2 * time.Second)
-
-	url := fmt.Sprintf("http://localhost:3000/api/v1/repos/%s/app-repo/actions/runs", user)
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		fmt.Printf("[DEBUG] Erreur création requête API : %v\n", err)
-		return
-	}
-
-	req.SetBasicAuth(user, password)
-	req.Header.Set("Accept", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		fmt.Printf("[DEBUG] Erreur appel API Forgejo : %v\n", err)
-		return
-	}
-	defer resp.Body.Close()
-
-	var data ActionRunsResponse
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		fmt.Printf("[DEBUG] Erreur décodage JSON API : %v\n", err)
-		return
-	}
-
-	fmt.Printf("----------------------------------------\n")
-	fmt.Printf("[DIAGNOSTIC API] Nombre de runs détectés dans Forgejo : %d\n", len(data.Runs))
-	for i, run := range data.Runs {
-		fmt.Printf(" -> Run #%d : ID=%d | Event=%s | Status=%s\n", i+1, run.ID, run.Event, run.Status)
-	}
-	fmt.Printf("----------------------------------------\n")
-}
-
 
 func main() {
 	// Étape 1 : Préparer l'exécutable 'mise' (Téléchargement + Extraction)
@@ -633,27 +529,10 @@ func main() {
 	adminUser, adminPass := createAdminAndRepo(forgejoBin, forgejoDir)
 	configPath := setupRunner(forgejoBin, forgejoDir)
 	runRunnerDaemon(configPath)
-	//cmdDaemon := runRunnerDaemon(configPath)
 	
     // 2. Push GitOps
 	time.Sleep(2 * time.Second)
 	deployGitOps(isMicro, adminUser, adminPass)
-    //checkForgejoRunsCount(adminUser, adminPass)
-	
-	// 3. Attente du résultat du pipeline
-	//waitForJobCompletion(adminUser, adminPass)
-	//checkForgejoRunsCount(adminUser, adminPass)
-	//fiBefore, _ := os.Stat("runner.log")
-   // fmt.Printf("\n[DEBUG] Taille runner.log AVANT arrêt du daemon : %d octets\n", fiBefore.Size())
 
-	/// 4. On arrête le daemon du runner pour fermer le script Go
-	// Avant (Brutal et direct)
-   // if cmdDaemon != nil && cmdDaemon.Process != nil {
-   //   _ = cmdDaemon.Process.Kill()
-   // }
-	//fiBefore, _ = os.Stat("runner.log")
-   // fmt.Printf("\n[DEBUG] Taille runner.log APRÈS arrêt du daemon : %d octets\n", fiBefore.Size())
-	//checkForgejoRunsCount(adminUser, adminPass)
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
-	//checkForgejoRunsCount(adminUser, adminPass)
 }
