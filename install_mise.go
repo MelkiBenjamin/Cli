@@ -96,6 +96,9 @@ type Tool struct {
 }
 
 var bundles = map[string][]Tool{
+	"forgejo-runner": {
+		{Name: "forgejo-runner", Version: "13"},
+	},
 	"helm": {
 		{Name: "helm", Version: "3.14.0"},
 		{Name: "aqua:arttor/helmify", Version: "0.4.19"},
@@ -206,7 +209,11 @@ func startGenerate(tools []Tool) {
 
 func installAutoDocker(misePath string) []Tool {
     fmt.Println("🤖 Aucun Install.json. Lancement du mode automatique...")	// On récupère le bundle docker
-	tools := bundles["docker"]
+	tools := append(
+		[]Tool{},
+		bundles["docker"]...,
+		bundles["forgejo-runner"]...,
+	)
 	runMise(misePath, tools)
 	
 	return tools
@@ -242,7 +249,7 @@ func startMode(misePath string) {
 		runMise(misePath, expanded) // install des outils du json
 		startGenerate(expanded)     // lancement des outils générateur
 	} else {
-		// --- MODE 2 : AUTOMATIQUE ---
+		// --- MODE 2 : AUTOMATIQUE --- 
 		dockerTools := installAutoDocker(misePath) // install de docker dockerizer
 		startGenerate(dockerTools) // lancement des outils générateur
         microservicesk8s(misePath) // inspecte si microservices et si oui, install outils k8s et lance générateur 
@@ -356,11 +363,11 @@ func setupRunner(forgejoBin, forgejoDir string) string {
 	home, _ := os.UserHomeDir()
 	runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
 
-	if _, err := os.Stat(runnerBin); err != nil {
-		fmt.Println("[*] Téléchargement du binaire Forgejo Runner...")
-		must(downloadFile(runnerURL, runnerBin))
-		must(os.Chmod(runnerBin, 0o755))
-	}
+	//if _, err := os.Stat(runnerBin); err != nil {
+	//	fmt.Println("[*] Téléchargement du binaire Forgejo Runner...")
+	//	must(downloadFile(runnerURL, runnerBin))
+	//	must(os.Chmod(runnerBin, 0o755))
+	//}
 
 	// 1. Génération d'un secret hexadécimal de 40 caractères
 	secretBytes := make([]byte, 20)
