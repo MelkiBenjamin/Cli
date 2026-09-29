@@ -394,8 +394,6 @@ runner:
   fetch_interval: 2s
   labels:
     - "self-hosted:host"
-host:
-  workdir_parent: "/tmp/forgejo_runner_work"
 server:
   connections:
     local-forgejo:
