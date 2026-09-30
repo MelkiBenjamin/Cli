@@ -422,8 +422,8 @@ server:
 
 func runRunnerDaemon(configPath string) *exec.Cmd {
 	fmt.Println("\n[*] Démarrage du runner Forgejo (logs redirigés dans runner.log)...")
-	home, _ := os.UserHomeDir()
-	runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
+	//home, _ := os.UserHomeDir()
+	//runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
 
 	// Fichier de log dédié au lieu de la console
 	logFile, err := os.Create("runner.log")
