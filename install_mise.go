@@ -432,7 +432,7 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	//log test
 	runShell("ls -alh /$HOME/.local/bin")
 	
-	cmdDaemon := exec.Command(forgejo-runner, "daemon", "-c", configPath)
+	cmdDaemon := exec.Command("forgejo-runner", "daemon", "-c", configPath)
 	cmdDaemon.Stdout = logFile
 	cmdDaemon.Stderr = logFile
 
