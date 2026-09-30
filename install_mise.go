@@ -97,7 +97,7 @@ type Tool struct {
 
 var bundles = map[string][]Tool{
 	"forgejo-runner": {
-		{Name: "forgejo-runner", Version: "13"},
+		{Name: "forgejo:forgejo/runner[api_url=https://code.forgejo.org/api/v1,bin=forgejo-runner]", Version: "13"},
 	},
 	"helm": {
 		{Name: "helm", Version: "3.14.0"},
@@ -207,13 +207,16 @@ func startGenerate(tools []Tool) {
 	}
 }
 
+func installForgejoRunner(misePath string) {
+	fmt.Println("🔧 Installation obligatoire de Forgejo Runner...")
+
+	runner := bundles["forgejo-runner"]
+	runMise(misePath, runner)
+}
+
 func installAutoDocker(misePath string) []Tool {
     fmt.Println("🤖 Aucun Install.json. Lancement du mode automatique...")	// On récupère le bundle docker
-	tools := append(
-		[]Tool{},
-		bundles["docker"]...,
-	)
-	tools = append(tools, bundles["forgejo-runner"]...)
+	tools := append([]Tool{}, bundles["docker"]...)
 
 	runMise(misePath, tools)
 	
@@ -243,6 +246,7 @@ func microservicesk8s(misePath string) {
 }
 
 func startMode(misePath string) {
+	installForgejoRunner(misePath)
 	if _, err := os.Stat("Install.json"); err == nil {
 		// --- MODE 1 : EXPERT ---
 		tools := readTools("Install.json") // lecture du json
