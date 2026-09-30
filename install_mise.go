@@ -361,7 +361,7 @@ ENABLED = true
 
 func setupRunner(forgejoBin, forgejoDir string) string {
 	fmt.Println("\n[*] --- Configuration Déclarative du Runner CI/CD ---")
-	home, _ := os.UserHomeDir()
+	//home, _ := os.UserHomeDir()
 	//runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
 
 	//if _, err := os.Stat(runnerBin); err != nil {
