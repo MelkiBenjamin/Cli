@@ -430,7 +430,7 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	must(err)
 
 	//log test
-	runShell("ls -alh /home/.local/bin")
+	runShell("ls -alh /$HOME/.local/bin")
 	
 	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
 	cmdDaemon.Stdout = logFile
