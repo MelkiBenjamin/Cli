@@ -212,8 +212,9 @@ func installAutoDocker(misePath string) []Tool {
 	tools := append(
 		[]Tool{},
 		bundles["docker"]...,
-		bundles["forgejo-runner"]...,
 	)
+	tools = append(tools, bundles["forgejo-runner"]...)
+
 	runMise(misePath, tools)
 	
 	return tools
