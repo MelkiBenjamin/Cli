@@ -210,7 +210,7 @@ func startGenerate(tools []Tool) {
 func installForgejoRunner(misePath string) {
 	fmt.Println(" Installation de Forgejo Runner...")
 
-	runner := bundles["forgejo-runner"]
+	runner := bundles["forgejo"]
 	runMise(misePath, runner)
 }
 
