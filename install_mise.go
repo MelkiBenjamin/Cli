@@ -173,12 +173,11 @@ func hasTool(tools []Tool, name string) bool {
 }
 
 func runShell(command string, args ...string) { // Pour lancer des commandes shell
-	fullCommand := command
     if len(args) > 0 {
         fullCommand += " " + strings.Join(args, " ")
     }
 	fmt.Println("Avant commande:", fullCommand)
-	cmd := exec.Command("sh", "-lc", `export PATH="$HOME/.local/bin:$PATH" && eval "$(mise activate bash --shims)" && `+fullCommand)
+	cmd := exec.Command("sh", "-lc", command)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	must(cmd.Run())
