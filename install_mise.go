@@ -174,7 +174,7 @@ func hasTool(tools []Tool, name string) bool {
 
 func runShell(command string, args ...string) { // Pour lancer des commandes shell
     if len(args) > 0 {
-        fullCommand += " " + strings.Join(args, " ")
+        fullCommand := " " + strings.Join(args, " ")
     }
 	fmt.Println("Avant commande:", fullCommand)
 	cmd := exec.Command("sh", "-lc", command)
