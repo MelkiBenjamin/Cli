@@ -173,11 +173,12 @@ func hasTool(tools []Tool, name string) bool {
 }
 
 func runShell(command string, args ...string) { // Pour lancer des commandes shell
-    if len(args) > 0 {
-        fullCommand := " " + strings.Join(args, " ")
+    fullCommand := command
+	if len(args) > 0 {
+        fullCommand += " " + strings.Join(args, " ")
     }
 	fmt.Println("Avant commande:", fullCommand)
-	cmd := exec.Command("sh", "-lc", command)
+	cmd := exec.Command("sh", "-lc", fullCommand)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	must(cmd.Run())
