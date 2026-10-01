@@ -75,6 +75,15 @@ func installMise() string {
     dir := localBin()
 	misePath := extractMiseFromURL(latestURL, dir)
 	fmt.Println("mise installé dans", misePath)
+
+	home, err := os.UserHomeDir()
+	must(err)
+	miseShims := filepath.Join(home, ".local", "share", "mise", "shims")
+
+	// Injection des shims et de ~/.local/bin dans le PATH de Go
+	newPath := fmt.Sprintf("%s:%s:%s", miseShims, dir, os.Getenv("PATH"))
+	must(os.Setenv("PATH", newPath))
+
 	return misePath
 }
 
