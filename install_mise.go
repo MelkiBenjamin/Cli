@@ -96,8 +96,8 @@ type Tool struct {
 }
 
 var bundles = map[string][]Tool{
-	"forgejo-runner": {
-		{Name: "forgejo:forgejo/runner[api_url=https://code.forgejo.org/api/v1,bin=forgejo-runner]", Version: "13"},
+	"forgejo": {
+		{Name: "forgejo-runner", Version: "13", URL: "https://code.forgejo.org/forgejo/runner/releases/download/v12.13.0/forgejo-runner-12.13.0-linux-amd64"},
 	},
 	"helm": {
 		{Name: "helm", Version: "3.14.0"},
@@ -208,7 +208,7 @@ func startGenerate(tools []Tool) {
 }
 
 func installForgejoRunner(misePath string) {
-	fmt.Println("🔧 Installation obligatoire de Forgejo Runner...")
+	fmt.Println(" Installation de Forgejo Runner...")
 
 	runner := bundles["forgejo-runner"]
 	runMise(misePath, runner)
@@ -422,8 +422,8 @@ server:
 
 func runRunnerDaemon(configPath string) *exec.Cmd {
 	fmt.Println("\n[*] Démarrage du runner Forgejo (logs redirigés dans runner.log)...")
-	//home, _ := os.UserHomeDir()
-	//runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
+	home, _ := os.UserHomeDir()
+	runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
 
 	// Fichier de log dédié au lieu de la console
 	logFile, err := os.Create("runner.log")
@@ -432,7 +432,7 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	//log test
 	runShell("mise ls")
 	
-	cmdDaemon := exec.Command("runner", "daemon", "-c", configPath)
+	cmdDaemon := exec.Command(runnerBin, "daemon", "-c", configPath)
 	cmdDaemon.Stdout = logFile
 	cmdDaemon.Stderr = logFile
 
