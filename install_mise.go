@@ -359,7 +359,9 @@ ENABLED = true
 
 	// Démarrage du démon Forgejo
 	fmt.Println("[*] Démarrage du démon Forgejo...")
-	must(startDaemon("forgejo.log", forgejoBin, "web", "--work-path", forgejoDir))
+	//log test
+	runShell("mise ls")
+	must(startDaemon("forgejo.log", "forgejo", "web", "--work-path", forgejoDir))
 
 	for i := 0; i < 10; i++ {
 	if conn, err := net.DialTimeout("tcp", "127.0.0.1:3000", 500*time.Millisecond); err == nil {
@@ -370,7 +372,7 @@ ENABLED = true
     }
 
 	fmt.Println("[+] Forgejo est prêt sur http://localhost:3000.")
-	return forgejoBin, forgejoDir
+	return forgejoBin forgejoDir
 }
 
 func setupRunner(forgejoBin, forgejoDir string) string {
