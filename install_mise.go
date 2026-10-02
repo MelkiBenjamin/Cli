@@ -393,7 +393,7 @@ func setupRunner(forgejoBin, forgejoDir string) string {
 	sharedSecret := hex.EncodeToString(secretBytes)
 
 	// 2. Enregistrement côté Forgejo (serveur CLI) et récupération de l'UUID
-	cmdRegister := exec.Command(forgejoBin, "forgejo-cli", "actions", "register",
+	cmdRegister := exec.Command(forgejo, "forgejo-cli", "actions", "register",
 		"--name", "runner-zero-touch",
 		"--secret", sharedSecret,
 		"--work-path", forgejoDir)
@@ -468,7 +468,7 @@ func createAdminAndRepo(forgejoBin, forgejoDir string) (string, string) {
     adminPass := hex.EncodeToString(passBytes)
 	adminEmail := adminUser + "@localhost"
 	
-	cmd := exec.Command(forgejoBin, "admin", "user", "create",
+	cmd := exec.Command(forgejo, "admin", "user", "create",
 		"--username", adminUser,
 		"--password", adminPass,
 		"--email", adminEmail,
