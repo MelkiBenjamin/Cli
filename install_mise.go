@@ -372,7 +372,7 @@ ENABLED = true
     }
 
 	fmt.Println("[+] Forgejo est prêt sur http://localhost:3000.")
-	return forgejoBin forgejoDir
+	return forgejoBin, forgejoDir
 }
 
 func setupRunner(forgejoBin, forgejoDir string) string {
