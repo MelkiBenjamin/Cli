@@ -322,10 +322,10 @@ func setupForgejo() (string, string) {
 	forgejoBin := filepath.Join(binDir, "forgejo")
 	forgejoDir := filepath.Join(home, "forgejo")
 
-	if _, err := os.Stat(forgejoBin); err != nil {
-		fmt.Println("[*] Téléchargement du binaire Forgejo...")
-		must(downloadFile(forgejoURL, forgejoBin))
-	}
+	//if _, err := os.Stat(forgejoBin); err != nil {
+	//	fmt.Println("[*] Téléchargement du binaire Forgejo...")
+	//	must(downloadFile(forgejoURL, forgejoBin))
+	//}
 
 	// Création explicite du dossier custom/conf et du fichier app.ini AVANT le démarrage
 	confDir := filepath.Join(forgejoDir, "custom", "conf")
