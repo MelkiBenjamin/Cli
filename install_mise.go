@@ -106,7 +106,8 @@ type Tool struct {
 
 var bundles = map[string][]Tool{
 	"forgejo": {
-		{Name: "forgejo-runner", Version: "13", URL: "https://code.forgejo.org/forgejo/runner/releases/download/v12.13.0/forgejo-runner-12.13.0-linux-amd64"},
+		{Name: "forgejo-runner", Version: "12.13", URL: "https://code.forgejo.org/forgejo/runner/releases/download/v12.13.0/forgejo-runner-12.13.0-linux-amd64"},
+	    {Name: "forgejo", Version: "15.0.3", URL: "https://codeberg.org/forgejo/forgejo/releases/download/v15.0.3/forgejo-15.0.3-linux-amd64"},
 	},
 	"helm": {
 		{Name: "helm", Version: "3.14.0"},
@@ -217,7 +218,7 @@ func startGenerate(tools []Tool) {
 }
 
 func installForgejoRunner(misePath string) {
-	fmt.Println(" Installation de Forgejo Runner...")
+	fmt.Println(" Installation de Forgejo et de sont Runner...")
 
 	runner := bundles["forgejo"]
 	runMise(misePath, runner)
