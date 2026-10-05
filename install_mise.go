@@ -444,7 +444,7 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	//log test
 	runShell("mise ls")
 	
-	cmdDaemon := exec.Command("forgejo-runner", "daemon", "-c", configPath)
+	//cmdDaemon := exec.Command("forgejo-runner", "daemon", "-c", configPath)
 	//fullCommand := fmt.Sprintf("forgejo-runner daemon -c %s", configPath)
 	//cmdDaemon := exec.Command("sh", "-lc", `export PATH="$HOME/.local/bin:$PATH" && eval "$(mise activate bash --shims)" && `+fullCommand)
 	//cmdDaemon.Stdout = logFile
