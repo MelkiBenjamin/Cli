@@ -451,7 +451,7 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	//cmdDaemon.Stderr = logFile
 
 	// Start() lance le daemon en arrière-plan au lieu de tout bloquer
-	must(startDaemon("runner.log", "forgejo-runner", "daemon", "-c", configPath)
+	must(startDaemon("runner.log", "forgejo-runner", "daemon", "-c", configPath))
 
 }
 
