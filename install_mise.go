@@ -318,8 +318,8 @@ func startDaemon(logPath string, command string, args ...string) error {
 func setupForgejo() (string, string) {
 	fmt.Println("\n[*] --- Démarrage de Forgejo ---")
 	home, _ := os.UserHomeDir()
-	binDir := filepath.Join(home, ".local", "bin")
-	forgejoBin := filepath.Join(binDir, "forgejo")
+	//binDir := filepath.Join(home, ".local", "bin")
+	//forgejoBin := filepath.Join(binDir, "forgejo")
 	forgejoDir := filepath.Join(home, "forgejo")
 
 	//if _, err := os.Stat(forgejoBin); err != nil {
@@ -372,10 +372,10 @@ ENABLED = true
     }
 
 	fmt.Println("[+] Forgejo est prêt sur http://localhost:3000.")
-	return forgejoBin, forgejoDir
+	return forgejoDir
 }
 
-func setupRunner(forgejoBin, forgejoDir string) string {
+func setupRunner(forgejoDir string) string {
 	fmt.Println("\n[*] --- Configuration Déclarative du Runner CI/CD ---")
 	//home, _ := os.UserHomeDir()
 	//runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
@@ -456,7 +456,7 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	return cmdDaemon
 }
 
-func createAdminAndRepo(forgejoBin, forgejoDir string) (string, string) {
+func createAdminAndRepo(forgejoDir string) (string, string) {
 	fmt.Println("\n[*] --- Création de l'administrateur et du dépôt ---")
 
 	userBytes := make([]byte, 8)
