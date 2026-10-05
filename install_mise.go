@@ -438,8 +438,8 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	//runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
 
 	// Fichier de log dédié au lieu de la console
-	logFile, err := os.Create("runner.log")
-	must(err)
+	//logFile, err := os.Create("runner.log")
+	//must(err)
 
 	//log test
 	runShell("mise ls")
@@ -447,13 +447,12 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 	cmdDaemon := exec.Command("forgejo-runner", "daemon", "-c", configPath)
 	//fullCommand := fmt.Sprintf("forgejo-runner daemon -c %s", configPath)
 	//cmdDaemon := exec.Command("sh", "-lc", `export PATH="$HOME/.local/bin:$PATH" && eval "$(mise activate bash --shims)" && `+fullCommand)
-	cmdDaemon.Stdout = logFile
-	cmdDaemon.Stderr = logFile
+	//cmdDaemon.Stdout = logFile
+	//cmdDaemon.Stderr = logFile
 
 	// Start() lance le daemon en arrière-plan au lieu de tout bloquer
-	must(cmdDaemon.Start())
+	must(startDaemon("runner.log", "forgejo-runner", "daemon", "-c", configPath)
 
-	return cmdDaemon
 }
 
 func createAdminAndRepo(forgejoDir string) (string, string) {
