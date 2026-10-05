@@ -315,7 +315,7 @@ func startDaemon(logPath string, command string, args ...string) error {
 	return cmd.Start()
 }
 
-func setupForgejo() (string, string) {
+func setupForgejo() (string) {
 	fmt.Println("\n[*] --- Démarrage de Forgejo ---")
 	home, _ := os.UserHomeDir()
 	//binDir := filepath.Join(home, ".local", "bin")
@@ -550,9 +550,9 @@ func main() {
     startMode(misePath)
 	// étape 3
 	isMicro := AutoIsMicroservice()
-	forgejoBin, forgejoDir := setupForgejo()
-	adminUser, adminPass := createAdminAndRepo(forgejoBin, forgejoDir)
-	configPath := setupRunner(forgejoBin, forgejoDir)
+	forgejoDir := setupForgejo()
+	adminUser, adminPass := createAdminAndRepo(forgejoDir)
+	configPath := setupRunner(forgejoDir)
 	runRunnerDaemon(configPath)
 	
     // 2. Push GitOps
