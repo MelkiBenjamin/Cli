@@ -294,15 +294,7 @@ func setupForgejo() (string) {
 	appIniPath := filepath.Join(confDir, "app.ini")
 
 	if _, err := os.Stat(appIniPath); os.IsNotExist(err) {
-		initialConfig := fmt.Sprintf(`[DEFAULT]
-RUN_MODE = prod
-
-[server]
-HTTP_PORT = 3000
-ROOT_URL  = http://localhost:3000/
-DOMAIN    = localhost
-HTTP_ADDR = 127.0.0.1
-
+		initialConfig := fmt.Sprintf(`
 [security]
 INSTALL_LOCK = true
 
