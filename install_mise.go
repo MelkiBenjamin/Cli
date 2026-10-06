@@ -299,7 +299,6 @@ func setupForgejo() (string) {
 INSTALL_LOCK = true
 
 [database]
-DB_TYPE = sqlite3
 PATH    = %s
 
 [actions]
