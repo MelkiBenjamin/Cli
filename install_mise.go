@@ -474,7 +474,7 @@ func main() {
 	isMicro := AutoIsMicroservice()
 	forgejoDir := setupForgejo()
 	adminUser, adminPass := createAdmin(forgejoDir)
-	configPath := setupRunner(forgejoDir)
+	setupRunner(forgejoDir)
 	//runRunnerDaemon(configPath)
 	
     // 2. Push GitOps
