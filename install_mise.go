@@ -378,7 +378,7 @@ server:
 `, runnerUUID, sharedSecret)
 
 	must(os.WriteFile(configPath, []byte(runnerConfig), 0o600))
-	fmt.Println("[+] Configuration .forgejo-runner générée : %s\n", configPath)
+	fmt.Printf("[+] Configuration .forgejo-runner générée : %s\n", configPath)
 
 	fmt.Println("\n[*] Démarrage du runner Forgejo (logs redirigés dans runner.log)...")
 	must(startDaemon("runner.log", "forgejo-runner", "daemon", "-c", configPath))
