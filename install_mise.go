@@ -475,7 +475,7 @@ func main() {
 	forgejoDir := setupForgejo()
 	adminUser, adminPass := createAdmin(forgejoDir)
 	configPath := setupRunner(forgejoDir)
-	runRunnerDaemon(configPath)
+	//runRunnerDaemon(configPath)
 	
     // 2. Push GitOps
 	time.Sleep(2 * time.Second)
