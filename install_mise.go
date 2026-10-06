@@ -432,7 +432,9 @@ server:
 	return configPath
 }
 
-func runRunnerDaemon(configPath string) *exec.Cmd {
+func runRunnerDaemon(configPath string) 
+//*exec.Cmd 
+    {
 	fmt.Println("\n[*] Démarrage du runner Forgejo (logs redirigés dans runner.log)...")
 	//home, _ := os.UserHomeDir()
 	//runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
@@ -452,7 +454,7 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 
 	// Start() lance le daemon en arrière-plan au lieu de tout bloquer
 	must(startDaemon("runner.log", "forgejo-runner", "daemon", "-c", configPath))
-    return cmd
+    //return cmd
 }
 
 func createAdminAndRepo(forgejoDir string) (string, string) {
