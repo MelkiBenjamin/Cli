@@ -337,13 +337,16 @@ func setupRunner(forgejoDir string) string {
 	sharedSecret := hex.EncodeToString(secretBytes)
 
 	// 2. Enregistrement côté Forgejo (serveur CLI) et récupération de l'UUID
-	runShell("forgejo", "forgejo-cli", "actions", "register",
+	cmd := exec.Command("forgejo", "forgejo-cli", "actions", "register",
 		"--name", "runner-zero-touch",
 		"--secret", sharedSecret,
 		"--work-path", forgejoDir)
 
-	//out, err := cmdRegister.Output()
-	//must(err)
+    out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("Erreur lors de l'enregistrement: %s\n", string(out))
+		must(err)
+	}
 	runnerUUID := strings.TrimSpace(string(out))
 
 	fmt.Printf("[+] Runner enregistré. UUID : %s\n", runnerUUID)
