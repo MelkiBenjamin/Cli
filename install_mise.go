@@ -387,13 +387,13 @@ func createAdmin(forgejoDir string) (string, string) {
     adminPass := hex.EncodeToString(passBytes)
 	adminEmail := adminUser + "@localhost"
 	
-	cmd := exec.Command("forgejo", "admin", "user", "create",
+	runShell("forgejo", "admin", "user", "create",
 		"--username", adminUser,
 		"--password", adminPass,
 		"--email", adminEmail,
 		"--admin",
 		"--work-path", forgejoDir)
-	_ = cmd.Run()
+	
 
 	return adminUser, adminPass
 }
