@@ -367,10 +367,6 @@ log:
   level: debug
 runner:
   capacity: 1
-  timeout: 3h
-  shutdown_timeout: 0s
-  fetch_timeout: 5s
-  fetch_interval: 2s
   labels:
     - "self-hosted:host"
 server:
