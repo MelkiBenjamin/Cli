@@ -351,6 +351,10 @@ PATH    = %s
 
 [actions]
 ENABLED = true
+
+[repository]
+ENABLE_PUSH_CREATE_USER = true
+ENABLE_PUSH_CREATE_ORG = true
 `, filepath.Join(forgejoDir, "data", "forgejo.db"))
 
 		must(os.WriteFile(appIniPath, []byte(initialConfig), 0o644))
@@ -476,22 +480,22 @@ func createAdminAndRepo(forgejoDir string) (string, string) {
 		"--work-path", forgejoDir)
 	_ = cmd.Run()
 
-	repoName := "app-repo"
-	reqBody, _ := json.Marshal(map[string]interface{}{
-		"name":    repoName,
-		"private": false,
-	})
+//	repoName := "app-repo"
+//	reqBody, _ := json.Marshal(map[string]interface{}{
+//		"name":    repoName,
+//		"private": false,
+//	})
 
-	client := &http.Client{Timeout: 10 * time.Second}
-	req, _ := http.NewRequest("POST", "http://127.0.0.1:3000/api/v1/user/repos", bytes.NewBuffer(reqBody))
-	req.SetBasicAuth(adminUser, adminPass)
-	req.Header.Set("Content-Type", "application/json")
+//	client := &http.Client{Timeout: 10 * time.Second}
+//	req, _ := http.NewRequest("POST", "http://127.0.0.1:3000/api/v1/user/repos", bytes.NewBuffer(reqBody))
+//	req.SetBasicAuth(adminUser, adminPass)
+//	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := client.Do(req)
-	if err == nil {
-		defer resp.Body.Close()
-		fmt.Printf("[+] Compte '%s' et dépôt '%s' créés.\n", adminUser, repoName)
-	}
+//	resp, err := client.Do(req)
+//	if err == nil {
+//		defer resp.Body.Close()
+//		fmt.Printf("[+] Compte '%s' et dépôt '%s' créés.\n", adminUser, repoName)
+//	}
 
 	return adminUser, adminPass
 }
