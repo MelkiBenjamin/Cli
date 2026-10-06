@@ -432,9 +432,8 @@ server:
 	return configPath
 }
 
-func runRunnerDaemon(configPath string) 
-//*exec.Cmd 
-    {
+func runRunnerDaemon(configPath string) {
+    //*exec.Cmd  
 	fmt.Println("\n[*] Démarrage du runner Forgejo (logs redirigés dans runner.log)...")
 	//home, _ := os.UserHomeDir()
 	//runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
