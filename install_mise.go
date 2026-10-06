@@ -390,11 +390,6 @@ server:
 	return configPath
 }
 
-//func runRunnerDaemon(configPath string) {
-//	fmt.Println("\n[*] Démarrage du runner Forgejo (logs redirigés dans runner.log)...")
-//	must(startDaemon("runner.log", "forgejo-runner", "daemon", "-c", configPath))
-//}
-
 func createAdmin(forgejoDir string) (string, string) {
 	fmt.Println("\n[*] --- Création de user administrateur")
 
