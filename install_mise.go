@@ -13,7 +13,6 @@ import (
 	"path/filepath"
 	"strings"
 	"net"
-//	"bytes"
 	"time"
 	"encoding/hex"
 	crand "crypto/rand"
@@ -385,16 +384,19 @@ server:
 	must(os.WriteFile(configPath, []byte(runnerConfig), 0o600))
 	fmt.Println("[+] Configuration .forgejo-runner générée : %s\n", configPath)
 
+	fmt.Println("\n[*] Démarrage du runner Forgejo (logs redirigés dans runner.log)...")
+	must(startDaemon("runner.log", "forgejo-runner", "daemon", "-c", configPath))
+
 	return configPath
 }
 
-func runRunnerDaemon(configPath string) {
-	fmt.Println("\n[*] Démarrage du runner Forgejo (logs redirigés dans runner.log)...")
-	must(startDaemon("runner.log", "forgejo-runner", "daemon", "-c", configPath))
-}
+//func runRunnerDaemon(configPath string) {
+//	fmt.Println("\n[*] Démarrage du runner Forgejo (logs redirigés dans runner.log)...")
+//	must(startDaemon("runner.log", "forgejo-runner", "daemon", "-c", configPath))
+//}
 
-func createAdminAndRepo(forgejoDir string) (string, string) {
-	fmt.Println("\n[*] --- Création de l'administrateur et du dépôt ---")
+func createAdmin(forgejoDir string) (string, string) {
+	fmt.Println("\n[*] --- Création de user administrateur")
 
 	userBytes := make([]byte, 8)
     passBytes := make([]byte, 16)
@@ -452,7 +454,7 @@ jobs:
 	runShell("git config user.name '" + user + "'")
 	runShell("git config user.email '" + user + "@localhost'")
 	runShell("git config transfer.credentialsInUrl allow")
-
+    // création de dépôt a la volée avec fonction 
 	remoteURL := fmt.Sprintf("http://%s:%s@localhost:3000/%s/app-repo.git", user, password, user)
 	runShell("git remote remove origin || true")
 	runShell("git remote add origin " + remoteURL)
@@ -471,7 +473,7 @@ func main() {
 	// étape 3
 	isMicro := AutoIsMicroservice()
 	forgejoDir := setupForgejo()
-	adminUser, adminPass := createAdminAndRepo(forgejoDir)
+	adminUser, adminPass := createAdmin(forgejoDir)
 	configPath := setupRunner(forgejoDir)
 	runRunnerDaemon(configPath)
 	
