@@ -452,7 +452,7 @@ func runRunnerDaemon(configPath string) *exec.Cmd {
 
 	// Start() lance le daemon en arrière-plan au lieu de tout bloquer
 	must(startDaemon("runner.log", "forgejo-runner", "daemon", "-c", configPath))
-
+    return cmd
 }
 
 func createAdminAndRepo(forgejoDir string) (string, string) {
