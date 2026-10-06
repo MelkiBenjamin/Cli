@@ -308,7 +308,7 @@ ENABLE_PUSH_CREATE_ORG = true
 `, filepath.Join(forgejoDir, "data", "forgejo.db"))
 
 		must(os.WriteFile(appIniPath, []byte(initialConfig), 0o644))
-		fmt.Println("[+] Fichier app.ini initialisé avec INSTALL_LOCK = true et [actions] ENABLED = true")
+		fmt.Println("[+] Fichier app.ini initialisé.")
 	}
 
 	// Démarrage du démon Forgejo
@@ -337,7 +337,7 @@ func setupRunner(forgejoDir string) string {
 	sharedSecret := hex.EncodeToString(secretBytes)
 
 	// 2. Enregistrement côté Forgejo (serveur CLI) et récupération de l'UUID
-	cmdRegister := exec.Command("forgejo", "forgejo-cli", "actions", "register",
+	cmdRegister := runShell("forgejo", "forgejo-cli", "actions", "register",
 		"--name", "runner-zero-touch",
 		"--secret", sharedSecret,
 		"--work-path", forgejoDir)
