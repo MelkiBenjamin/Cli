@@ -302,9 +302,6 @@ INSTALL_LOCK = true
 DB_TYPE = sqlite3
 PATH    = %s
 
-[actions]
-ENABLED = true
-
 [repository]
 ENABLE_PUSH_CREATE_USER = true
 ENABLE_PUSH_CREATE_ORG = true
