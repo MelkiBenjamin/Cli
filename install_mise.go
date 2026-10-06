@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 	"net"
-	"bytes"
+//	"bytes"
 	"time"
 	"encoding/hex"
 	crand "crypto/rand"
