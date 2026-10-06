@@ -275,37 +275,6 @@ func startMode(misePath string) {
 // --- AJOUTS : CONSTANTES & FONCTIONS D'EXÉCUTION (EX-PYTHON) ---
 // ============================================================================
 
-const (
-	forgejoURL = "https://codeberg.org/forgejo/forgejo/releases/download/v15.0.3/forgejo-15.0.3-linux-amd64"
-	runnerURL  = "https://code.forgejo.org/forgejo/runner/releases/download/v12.13.0/forgejo-runner-12.13.0-linux-amd64"
-)
-
-func downloadFile(url, dest string) error {
-	if _, err := os.Stat(dest); err == nil {
-		return nil
-	}
-	must(os.MkdirAll(filepath.Dir(dest), 0o755))
-
-	resp, err := http.Get(url)
-	must(err)
-	defer resp.Body.Close()
-
-	// Intercepte les pages 404 / redirections HTML avant d'écrire le fichier
-	if resp.StatusCode != http.StatusOK {
-		panic(fmt.Sprintf("Échec téléchargement HTTP %d pour : %s", resp.StatusCode, url))
-	}
-
-	out, err := os.OpenFile(dest, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
-	must(err)
-	defer out.Close()
-
-	_, err = io.Copy(out, resp.Body)
-	must(err)
-
-	// S'assure que les droits d'exécution +x sont bien appliqués
-	return os.Chmod(dest, 0o755)
-}
-
 func startDaemon(logPath string, command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	logFile, err := os.Create(logPath)
@@ -318,14 +287,7 @@ func startDaemon(logPath string, command string, args ...string) error {
 func setupForgejo() (string) {
 	fmt.Println("\n[*] --- Démarrage de Forgejo ---")
 	home, _ := os.UserHomeDir()
-	//binDir := filepath.Join(home, ".local", "bin")
-	//forgejoBin := filepath.Join(binDir, "forgejo")
 	forgejoDir := filepath.Join(home, "forgejo")
-
-	//if _, err := os.Stat(forgejoBin); err != nil {
-	//	fmt.Println("[*] Téléchargement du binaire Forgejo...")
-	//	must(downloadFile(forgejoURL, forgejoBin))
-	//}
 
 	// Création explicite du dossier custom/conf et du fichier app.ini AVANT le démarrage
 	confDir := filepath.Join(forgejoDir, "custom", "conf")
@@ -363,8 +325,6 @@ ENABLE_PUSH_CREATE_ORG = true
 
 	// Démarrage du démon Forgejo
 	fmt.Println("[*] Démarrage du démon Forgejo...")
-	//log test
-	runShell("mise ls")
 	must(startDaemon("forgejo.log", "forgejo", "web", "--work-path", forgejoDir))
 
 	for i := 0; i < 10; i++ {
@@ -381,14 +341,6 @@ ENABLE_PUSH_CREATE_ORG = true
 
 func setupRunner(forgejoDir string) string {
 	fmt.Println("\n[*] --- Configuration Déclarative du Runner CI/CD ---")
-	//home, _ := os.UserHomeDir()
-	//runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
-
-	//if _, err := os.Stat(runnerBin); err != nil {
-	//	fmt.Println("[*] Téléchargement du binaire Forgejo Runner...")
-	//	must(downloadFile(runnerURL, runnerBin))
-	//	must(os.Chmod(runnerBin, 0o755))
-	//}
 
 	// 1. Génération d'un secret hexadécimal de 40 caractères
 	secretBytes := make([]byte, 20)
@@ -437,27 +389,8 @@ server:
 }
 
 func runRunnerDaemon(configPath string) {
-    //*exec.Cmd  
 	fmt.Println("\n[*] Démarrage du runner Forgejo (logs redirigés dans runner.log)...")
-	//home, _ := os.UserHomeDir()
-	//runnerBin := filepath.Join(home, ".local", "bin", "forgejo-runner")
-
-	// Fichier de log dédié au lieu de la console
-	//logFile, err := os.Create("runner.log")
-	//must(err)
-
-	//log test
-	runShell("mise ls")
-	
-	//cmdDaemon := exec.Command("forgejo-runner", "daemon", "-c", configPath)
-	//fullCommand := fmt.Sprintf("forgejo-runner daemon -c %s", configPath)
-	//cmdDaemon := exec.Command("sh", "-lc", `export PATH="$HOME/.local/bin:$PATH" && eval "$(mise activate bash --shims)" && `+fullCommand)
-	//cmdDaemon.Stdout = logFile
-	//cmdDaemon.Stderr = logFile
-
-	// Start() lance le daemon en arrière-plan au lieu de tout bloquer
 	must(startDaemon("runner.log", "forgejo-runner", "daemon", "-c", configPath))
-    //return cmd
 }
 
 func createAdminAndRepo(forgejoDir string) (string, string) {
@@ -479,23 +412,6 @@ func createAdminAndRepo(forgejoDir string) (string, string) {
 		"--admin",
 		"--work-path", forgejoDir)
 	_ = cmd.Run()
-
-//	repoName := "app-repo"
-//	reqBody, _ := json.Marshal(map[string]interface{}{
-//		"name":    repoName,
-//		"private": false,
-//	})
-
-//	client := &http.Client{Timeout: 10 * time.Second}
-//	req, _ := http.NewRequest("POST", "http://127.0.0.1:3000/api/v1/user/repos", bytes.NewBuffer(reqBody))
-//	req.SetBasicAuth(adminUser, adminPass)
-//	req.Header.Set("Content-Type", "application/json")
-
-//	resp, err := client.Do(req)
-//	if err == nil {
-//		defer resp.Body.Close()
-//		fmt.Printf("[+] Compte '%s' et dépôt '%s' créés.\n", adminUser, repoName)
-//	}
 
 	return adminUser, adminPass
 }
