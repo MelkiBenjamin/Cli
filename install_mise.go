@@ -271,6 +271,7 @@ func startMode(misePath string) {
 		startGenerate(dockerTools) // lancement des outils générateur
         microservicesk8s(misePath) // inspecte si microservices et si oui, install outils k8s et lance générateur 
 	}
+	return adminUser, adminPass
 }
 
 func startDaemon(logPath string, command string, args ...string) error {
@@ -449,7 +450,8 @@ func main() {
 	// Étape 1 : Préparer l'exécutable 'mise' (Téléchargement + Extraction)
     misePath := installMise()
     // Étape 2 : Décider s'il faut utiliser le mode avec JSON (Expert) ou mode de l'Auto-détection (Automatique)
-    startMode(misePath)
+    adminUser, adminPass := startMode(misePath)
+	//startMode(misePath)
 	//forgejoDir := ConfigForgejo()
 	//adminUser, adminPass := createAdmin(forgejoDir)
 	//ConfigRunner(forgejoDir)
