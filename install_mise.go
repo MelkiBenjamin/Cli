@@ -255,10 +255,10 @@ func microservicesk8s(misePath string) {
 }
 
 func startMode(misePath string) (string, string) {
-	installForgejoRunner(misePath)
-	forgejoDir := ConfigForgejo()
-	adminUser, adminPass := createAdmin(forgejoDir)
-	ConfigRunner(forgejoDir)
+	installForgejoRunner(misePath)  // install de forgejo et de son runner
+	forgejoDir := ConfigForgejo()  // config forgejo
+	adminUser, adminPass := createAdmin(forgejoDir) // creer user de forgejo 
+	ConfigRunner(forgejoDir) // config runner
 	if _, err := os.Stat("Install.json"); err == nil {
 		// --- MODE 1 : EXPERT ---
 		tools := readTools("Install.json") // lecture du json
