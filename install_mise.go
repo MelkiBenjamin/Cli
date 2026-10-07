@@ -451,10 +451,6 @@ func main() {
     misePath := installMise()
     // Étape 2 : Décider s'il faut utiliser le mode avec JSON (Expert) ou mode de l'Auto-détection (Automatique)
     adminUser, adminPass := startMode(misePath)
-	//startMode(misePath)
-	//forgejoDir := ConfigForgejo()
-	//adminUser, adminPass := createAdmin(forgejoDir)
-	//ConfigRunner(forgejoDir)
     // Étape 3 : Push GitOps
 	isMicro := AutoIsMicroservice()
 	deployGitOps(isMicro, adminUser, adminPass)
