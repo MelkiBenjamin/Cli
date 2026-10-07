@@ -451,7 +451,7 @@ func main() {
 	adminUser, adminPass := createAdmin(forgejoDir)
 	ConfigRunner(forgejoDir)
     // Étape 3 : Push GitOps
-	deployGitOps(isMicro, adminUser, adminPass)
+	deployGitOps(adminUser, adminPass)
 
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
 }
