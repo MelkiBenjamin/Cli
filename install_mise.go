@@ -225,7 +225,7 @@ func startGenerate(tools []Tool) {
 
 func installAutoDocker(misePath string) []Tool {
     fmt.Println("🤖 Aucun Install.json. Lancement du mode automatique...")	// On récupère le bundle docker
-	append(bundles["forgejo"], bundles["docker"]...)
+	tools := append(bundles["forgejo"], bundles["docker"]...)
 
 	runMise(misePath, tools)
 	
