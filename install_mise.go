@@ -254,7 +254,7 @@ func microservicesk8s(misePath string) {
     }
 }
 
-func startMode(misePath string) {
+func startMode(misePath string) (string, string) {
 	installForgejoRunner(misePath)
 	forgejoDir := ConfigForgejo()
 	adminUser, adminPass := createAdmin(forgejoDir)
