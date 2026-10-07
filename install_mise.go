@@ -279,7 +279,7 @@ func startDaemon(logPath string, command string, args ...string) error {
 	return cmd.Start()
 }
 
-func setupForgejo() (string) {
+func ConfigForgejo() (string) {
 	fmt.Println("\n[*] --- Démarrage de Forgejo ---")
 	home, _ := os.UserHomeDir()
 	forgejoDir := filepath.Join(home, "forgejo")
@@ -322,7 +322,7 @@ ENABLE_PUSH_CREATE_USER = true
 	return forgejoDir
 }
 
-func setupRunner(forgejoDir string) string {
+func ConfigRunner(forgejoDir string) string {
 	fmt.Println("\n[*] --- Configuration Déclarative du Runner CI/CD ---")
 
 	// 1. Génération d'un secret hexadécimal de 40 caractères
@@ -447,12 +447,10 @@ func main() {
     misePath := installMise()
     // Étape 2 : Décider s'il faut utiliser le mode avec JSON (Expert) ou mode de l'Auto-détection (Automatique)
     startMode(misePath)
-	forgejoDir := setupForgejo()
+	forgejoDir := ConfigForgejo()
 	adminUser, adminPass := createAdmin(forgejoDir)
-	setupRunner(forgejoDir)
-	// étape 3
-	isMicro := AutoIsMicroservice()
-    // 2. Push GitOps
+	ConfigRunner(forgejoDir)
+    // Étape 3 : Push GitOps
 	deployGitOps(isMicro, adminUser, adminPass)
 
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
