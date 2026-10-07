@@ -270,10 +270,6 @@ func startMode(misePath string) {
 	}
 }
 
-// ============================================================================
-// --- AJOUTS : CONSTANTES & FONCTIONS D'EXÉCUTION (EX-PYTHON) ---
-// ============================================================================
-
 func startDaemon(logPath string, command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	logFile, err := os.Create(logPath)
@@ -304,7 +300,6 @@ PATH    = %s
 
 [repository]
 ENABLE_PUSH_CREATE_USER = true
-ENABLE_PUSH_CREATE_ORG = true
 `, filepath.Join(forgejoDir, "data", "forgejo.db"))
 
 		must(os.WriteFile(appIniPath, []byte(initialConfig), 0o644))
@@ -396,7 +391,6 @@ func createAdmin(forgejoDir string) (string, string) {
 		"--email", adminEmail,
 		"--admin",
 		"--work-path", forgejoDir)
-	
 
 	return adminUser, adminPass
 }
@@ -437,7 +431,7 @@ jobs:
 	runShell("git config user.name '" + user + "'")
 	runShell("git config user.email '" + user + "@localhost'")
 	runShell("git config transfer.credentialsInUrl allow")
-    // création de dépôt a la volée avec fonction 
+    // création de dépôt a la volée avec fonction push to create Forgejo 
 	remoteURL := fmt.Sprintf("http://%s:%s@localhost:3000/%s/app-repo.git", user, password, user)
 	runShell("git remote remove origin || true")
 	runShell("git remote add origin " + remoteURL)
@@ -453,15 +447,12 @@ func main() {
     misePath := installMise()
     // Étape 2 : Décider s'il faut utiliser le mode avec JSON (Expert) ou mode de l'Auto-détection (Automatique)
     startMode(misePath)
-	// étape 3
-	isMicro := AutoIsMicroservice()
 	forgejoDir := setupForgejo()
 	adminUser, adminPass := createAdmin(forgejoDir)
 	setupRunner(forgejoDir)
-	//runRunnerDaemon(configPath)
-	
+	// étape 3
+	isMicro := AutoIsMicroservice()
     // 2. Push GitOps
-	time.Sleep(2 * time.Second)
 	deployGitOps(isMicro, adminUser, adminPass)
 
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
