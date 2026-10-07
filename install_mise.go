@@ -256,9 +256,6 @@ func microservicesk8s(misePath string) {
 
 func startMode(misePath string) (string, string) {
 	//installForgejoRunner(misePath)  // install de forgejo et de son runner
-	forgejoDir := ConfigForgejo()  // config forgejo
-	adminUser, adminPass := createAdmin(forgejoDir) // creer user de forgejo 
-	ConfigRunner(forgejoDir) // config runner
 	if _, err := os.Stat("Install.json"); err == nil {
 		// --- MODE 1 : EXPERT ---
 		tools := readTools("Install.json") // lecture du json
@@ -271,6 +268,9 @@ func startMode(misePath string) (string, string) {
 		startGenerate(dockerTools) // lancement des outils générateur
         microservicesk8s(misePath) // inspecte si microservices et si oui, install outils k8s et lance générateur 
 	}
+	forgejoDir := ConfigForgejo()  // config forgejo
+	adminUser, adminPass := createAdmin(forgejoDir) // creer user de forgejo 
+	ConfigRunner(forgejoDir) // config runner
 	return adminUser, adminPass
 }
 
