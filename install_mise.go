@@ -451,7 +451,8 @@ func main() {
 	adminUser, adminPass := createAdmin(forgejoDir)
 	ConfigRunner(forgejoDir)
     // Étape 3 : Push GitOps
-	deployGitOps(isMicroservice, adminUser, adminPass)
+	isMicro := AutoIsMicroservice()
+	deployGitOps(isMicro, adminUser, adminPass)
 
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
 }
