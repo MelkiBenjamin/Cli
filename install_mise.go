@@ -395,7 +395,7 @@ func createAdmin(forgejoDir string) (string, string) {
 	return adminUser, adminPass
 }
 
-func deployGitOps(isMicroservice bool, user, password string) {
+func deployGitOps(user, password string) {
 	fmt.Println("\n[*] --- Génération CI/CD et Déploiement Git ---")
 	must(os.MkdirAll(".github/workflows", 0o755))
 
