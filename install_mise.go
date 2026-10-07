@@ -216,13 +216,6 @@ func startGenerate(tools []Tool) {
 	}
 }
 
-//func installForgejoRunner(misePath string) {
-//	fmt.Println(" Installation de Forgejo et de sont Runner...")
-
-//	runner := bundles["forgejo"]
-//	runMise(misePath, runner)
-//}
-
 func installAutoDocker(misePath string) []Tool {
     fmt.Println("🤖 Aucun Install.json. Lancement du mode automatique...")	// On récupère le bundle docker
 	tools := append(bundles["forgejo"], bundles["docker"]...)
@@ -255,12 +248,11 @@ func microservicesk8s(misePath string) {
 }
 
 func startMode(misePath string) (string, string) {
-	//installForgejoRunner(misePath)  // install de forgejo et de son runner
 	if _, err := os.Stat("Install.json"); err == nil {
 		// --- MODE 1 : EXPERT ---
 		tools := readTools("Install.json") // lecture du json
         expanded := append(bundles["forgejo"], expand(tools)...)
-		runMise(misePath, expanded) // install des outils du json
+		runMise(misePath, expanded) // install des outils du json et de forgejo et son runner
 		startGenerate(expanded)     // lancement des outils générateur
 	} else {
 		// --- MODE 2 : AUTOMATIQUE --- 
