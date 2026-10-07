@@ -177,12 +177,12 @@ func runShell(command string, args ...string) { // Pour lancer des commandes she
 	if len(args) > 0 {
         fullCommand += " " + strings.Join(args, " ")
     }
-	fmt.Println("Avant commande:", fullCommand)
+	//fmt.Println("Avant commande:", fullCommand)
 	cmd := exec.Command("sh", "-lc", fullCommand)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	must(cmd.Run())
-	fmt.Println("Après commande:", fullCommand)
+	//fmt.Println("Après commande:", fullCommand)
 }
 
 func runMise(misePath string, tools []Tool) { // pour installer les outils
@@ -256,6 +256,9 @@ func microservicesk8s(misePath string) {
 
 func startMode(misePath string) {
 	installForgejoRunner(misePath)
+	forgejoDir := ConfigForgejo()
+	adminUser, adminPass := createAdmin(forgejoDir)
+	ConfigRunner(forgejoDir)
 	if _, err := os.Stat("Install.json"); err == nil {
 		// --- MODE 1 : EXPERT ---
 		tools := readTools("Install.json") // lecture du json
@@ -447,9 +450,9 @@ func main() {
     misePath := installMise()
     // Étape 2 : Décider s'il faut utiliser le mode avec JSON (Expert) ou mode de l'Auto-détection (Automatique)
     startMode(misePath)
-	forgejoDir := ConfigForgejo()
-	adminUser, adminPass := createAdmin(forgejoDir)
-	ConfigRunner(forgejoDir)
+	//forgejoDir := ConfigForgejo()
+	//adminUser, adminPass := createAdmin(forgejoDir)
+	//ConfigRunner(forgejoDir)
     // Étape 3 : Push GitOps
 	isMicro := AutoIsMicroservice()
 	deployGitOps(isMicro, adminUser, adminPass)
