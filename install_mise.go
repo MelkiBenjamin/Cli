@@ -405,7 +405,7 @@ jobs:
   build-deploy:
     runs-on: self-hosted
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7.0.1
     - name: Build Docker Image
       run: docker build --network=host --progress=plain -t app-prod .
 `
