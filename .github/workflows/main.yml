@@ -125,7 +125,7 @@ jobs:
           cat runner.log
 
       - run: |
-          grep -vE 'debug|command' runner.log > test.log
+          grep -vE 'debug|command|endgroup' runner.log > test.log
           cat test.log
 
       - run: |
