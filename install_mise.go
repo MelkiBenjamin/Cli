@@ -445,9 +445,7 @@ func main() {
 	startGenerate(tools)
 	if _, err := os.Stat("Install.json"); err != nil {
 		microservicesk8s(misePath) // Traitement k8s propre au mode auto
-	}
-	return adminUser, adminPass
-   }    
+	}   
 	// Étape 3 : Push GitOps
 	isMicro := AutoIsMicroservice()
 	deployGitOps(isMicro, adminUser, adminPass)
