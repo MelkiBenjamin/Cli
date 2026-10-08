@@ -247,27 +247,6 @@ func microservicesk8s(misePath string) {
     }
 }
 
-func startMode(misePath string) (string, string) {
-	var tools []Tool
-	// 1. INSTALLATION & CONFIGURATION
-	if _, err := os.Stat("Install.json"); err == nil {
-		tools = append(bundles["forgejo"], expand(readTools("Install.json"))...)
-		runMise(misePath, tools)
-	} else {
-		tools = installAutoDocker(misePath) // Installe forgejo + docker en mode auto
-	}
-	forgejoDir := ConfigForgejo()
-	adminUser, adminPass := createAdmin(forgejoDir)
-	ConfigRunner(forgejoDir)
-	// 2. GÉNÉRATION
-	startGenerate(tools)
-	if _, err := os.Stat("Install.json"); err != nil {
-		microservicesk8s(misePath) // Traitement k8s propre au mode auto
-	}
-	// 3. RETOUR DES IDENTIFIANTS POUR GITOPS
-	return adminUser, adminPass
-}
-
 func startDaemon(logPath string, command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	logFile, err := os.Create(logPath)
@@ -440,12 +419,36 @@ jobs:
 	fmt.Println("[+] Pipeline GitOps déployé !")
 }
 
+func stepInstallAndConfig(misePath string) ([]Tool, string, string) {
+	fmt.Println("\n=== ÉTAPE 1 : INSTALLATION ET CONFIGURATION ===")
+	var tools []Tool
+	if _, err := os.Stat("Install.json"); err == nil {
+		// Mode Expert
+		tools = append(bundles["forgejo"], expand(readTools("Install.json"))...)
+		runMise(misePath, tools)
+	} else {
+		// Mode Automatique
+		tools = installAutoDocker(misePath)
+	}
+	forgejoDir := ConfigForgejo()
+	adminUser, adminPass := createAdmin(forgejoDir)
+	ConfigRunner(forgejoDir)
+
+	return tools, adminUser, adminPass
+}
+
 func main() {
-	// Étape 1 : Préparer l'exécutable 'mise' (Téléchargement + Extraction)
+	// Étape 1 : install des outils et config
     misePath := installMise()
-    // Étape 2 : Décider s'il faut utiliser le mode avec JSON (Expert) ou mode de l'Auto-détection (Automatique)
-    adminUser, adminPass := startMode(misePath)
-    // Étape 3 : Push GitOps
+    tools, adminUser, adminPass := stepInstallAndConfig(misePath)
+	// Étape 2 : Generation
+	startGenerate(tools)
+	if _, err := os.Stat("Install.json"); err != nil {
+		microservicesk8s(misePath) // Traitement k8s propre au mode auto
+	}
+	return adminUser, adminPass
+   }    
+	// Étape 3 : Push GitOps
 	isMicro := AutoIsMicroservice()
 	deployGitOps(isMicro, adminUser, adminPass)
 
