@@ -248,26 +248,23 @@ func microservicesk8s(misePath string) {
 }
 
 func startMode(misePath string) (string, string) {
-	var adminUser, adminPass string
+	var tools []Tool
+	// 1. INSTALLATION & CONFIGURATION
 	if _, err := os.Stat("Install.json"); err == nil {
-		// --- MODE 1 : EXPERT ---
-		tools := readTools("Install.json") // lecture du json
-        expanded := append(bundles["forgejo"], expand(tools)...)
-		runMise(misePath, expanded) // install des outils du json et de forgejo et son runner
-		forgejoDir := ConfigForgejo()  // config forgejo
-	    adminUser, adminPass = createAdmin(forgejoDir) // creer user de forgejo 
-	    ConfigRunner(forgejoDir)
-		startGenerate(expanded)     // lancement des outils générateur
+		tools = append(bundles["forgejo"], expand(readTools("Install.json"))...)
+		runMise(misePath, tools)
 	} else {
-		// --- MODE 2 : AUTOMATIQUE --- 
-		dockerTools := installAutoDocker(misePath) // install de docker dockerizer + forgejo avec runner
-		forgejoDir := ConfigForgejo()  // config forgejo
-	    adminUser, adminPass = createAdmin(forgejoDir) // creer user de forgejo 
-	    ConfigRunner(forgejoDir) 
-		startGenerate(dockerTools) // lancement des outils générateur
-        microservicesk8s(misePath) // inspecte si microservices et si oui, install outils k8s et lance générateur 
+		tools = installAutoDocker(misePath) // Installe forgejo + docker en mode auto
 	}
-
+	forgejoDir := ConfigForgejo()
+	adminUser, adminPass := createAdmin(forgejoDir)
+	ConfigRunner(forgejoDir)
+	// 2. GÉNÉRATION
+	startGenerate(tools)
+	if _, err := os.Stat("Install.json"); err != nil {
+		microservicesk8s(misePath) // Traitement k8s propre au mode auto
+	}
+	// 3. RETOUR DES IDENTIFIANTS POUR GITOPS
 	return adminUser, adminPass
 }
 
