@@ -438,15 +438,15 @@ func stepInstallAndConfig(misePath string) ([]Tool, string, string) {
 }
 
 func main() {
-	// Étape 1 : install des outils et config
+	// Étape 1 : install outils et config selon 2 modes "expert" (outils dans json+forgejo) ou "automatique" (outils docker fogejo et selon regle k8s ou non)
     misePath := installMise()
     tools, adminUser, adminPass := stepInstallAndConfig(misePath)
-	// Étape 2 : Generation
+	// Étape 2 : Generation des yaml et fichier devops (dockerfile docker compose manifest k8s helm workflows git
 	startGenerate(tools)
 	if _, err := os.Stat("Install.json"); err != nil {
 		microservicesk8s(misePath) // Traitement k8s propre au mode auto
 	}   
-	// Étape 3 : Push GitOps
+	// Étape 3 : Push
 	isMicro := AutoIsMicroservice()
 	deployGitOps(isMicro, adminUser, adminPass)
 
