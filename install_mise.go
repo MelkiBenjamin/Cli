@@ -441,16 +441,21 @@ func stepInstallAndConfig(misePath string) []Tool {
 	return tools
 }
 
+func stepGenerate(misePath string, tools []Tool) {
+	fmt.Println("\n=== ÉTAPE 2 : GÉNÉRATION DES ARTÉFACTS ===")
+	startGenerate(tools)
+	if _, err := os.Stat("Install.json"); err != nil {
+		microservicesk8s(misePath)
+	}
+}
+
 func main() { 
 	// Headless IDP : prepare, generate and publish a deployable project.
 	// Étape 1 : prerequis, install et config outils selon 2 modes "expert" (outils dans json+forgejo) ou "automatique" (outils docker fogejo et selon regle k8s ou non)
     misePath := installMise()
     tools := stepInstallAndConfig(misePath)
 	// Étape 2 : principale metier DevOps Generation des yaml et fichier DevOps (dockerfile, docker compose, manifest k8s, helm, workflows actions git)
-	startGenerate(tools)
-	if _, err := os.Stat("Install.json"); err != nil {
-		microservicesk8s(misePath) // Traitement k8s propre au mode auto
-	}   
+    stepGenerate(misePath, tools)
 	// Étape 3 : deploiement Push
 	gitAddCommitPush()
 
