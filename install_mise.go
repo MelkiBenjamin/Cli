@@ -453,7 +453,7 @@ func main() {
 	// Étape 3 : deploiement Push
 	isMicro := AutoIsMicroservice()
 	deployGitOps(isMicro)
-	configureGit(adminUser, adminPass)
+	configGit(adminUser, adminPass)
 	gitAddCommitPush()
 
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
