@@ -203,7 +203,7 @@ var cmdDockerizer = `
 
 func startGenerate(tools []Tool) {
 	if hasTool(tools, "docker") {
-		runShell(cmdDockerizer)	// lance dockerizer.dev et corrige dockerfile 
+		runShell(cmdDockerizer)	// lance dockerizer.dev et corrige dockerfile 	
 	}
 
 	if hasTool(tools, "kompose") {
@@ -214,6 +214,7 @@ func startGenerate(tools []Tool) {
 	if hasTool(tools, "helm") {
 		runShell("kompose convert -c") // lance kompose pour helm chart
 	}
+	WorflowsGit(AutoIsMicroservice())
 }
 
 func installAutoDocker(misePath string) []Tool {
@@ -372,7 +373,7 @@ func createAdmin(forgejoDir string) (string, string) {
 	return adminUser, adminPass
 }
 
-func deployGitOps(isMicroservice bool) {
+func WorflowsGit(isMicroservice bool) {
 	fmt.Println("\n[*] --- Génération CI/CD et Déploiement Git ---")
 	must(os.MkdirAll(".github/workflows", 0o755))
 
@@ -403,7 +404,7 @@ jobs:
 
 func configGit(user, password string) {
 	_ = os.RemoveAll(".git")
-	// Initialisation avec la branche 'main' explicitement
+	fmt.Println("Config de Git...")
 	runShell("git config --global init.defaultBranch main")
 	runShell("git init")
 	runShell("git config user.name '" + user + "'")
@@ -452,9 +453,8 @@ func main() {
 		microservicesk8s(misePath) // Traitement k8s propre au mode auto
 	}   
 	// Étape 3 : deploiement Push
-	isMicro := AutoIsMicroservice()
-	deployGitOps(isMicro)
-	//configGit(adminUser, adminPass)
+//	isMicro := AutoIsMicroservice()
+//	deployGitOps(isMicro)
 	gitAddCommitPush()
 
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
