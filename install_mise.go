@@ -436,6 +436,7 @@ func stepInstallAndConfig(misePath string) ([]Tool, string, string) {
 	forgejoDir := ConfigForgejo()
 	adminUser, adminPass := createAdmin(forgejoDir)
 	ConfigRunner(forgejoDir)
+	configGit(adminUser, adminPass)
 
 	return tools, adminUser, adminPass
 }
@@ -453,7 +454,7 @@ func main() {
 	// Étape 3 : deploiement Push
 	isMicro := AutoIsMicroservice()
 	deployGitOps(isMicro)
-	configGit(adminUser, adminPass)
+	//configGit(adminUser, adminPass)
 	gitAddCommitPush()
 
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
