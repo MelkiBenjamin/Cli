@@ -372,7 +372,7 @@ func createAdmin(forgejoDir string) (string, string) {
 	return adminUser, adminPass
 }
 
-func deployGitOps(isMicroservice bool, user, password string) {
+func deployGitOps(isMicroservice bool) {
 	fmt.Println("\n[*] --- Génération CI/CD et Déploiement Git ---")
 	must(os.MkdirAll(".github/workflows", 0o755))
 
@@ -399,9 +399,10 @@ jobs:
 	}
 
 	must(os.WriteFile(".github/workflows/main.yaml", []byte(workflowContent), 0o644))
+}
 
+func configGit(user, password string) {
 	_ = os.RemoveAll(".git")
-
 	// Initialisation avec la branche 'main' explicitement
 	runShell("git config --global init.defaultBranch main")
 	runShell("git init")
@@ -412,7 +413,9 @@ jobs:
 	remoteURL := fmt.Sprintf("http://%s:%s@localhost:3000/%s/app-repo.git", user, password, user)
 	runShell("git remote remove origin || true")
 	runShell("git remote add origin " + remoteURL)
+}
 
+func gitAddCommitPush() {
 	runShell("git add .")
 	runShell("git commit -m 'Zero-Touch: Auto-generated pipeline'")
 	runShell("git push -u origin main --force")
@@ -449,7 +452,9 @@ func main() {
 	}   
 	// Étape 3 : deploiement Push
 	isMicro := AutoIsMicroservice()
-	deployGitOps(isMicro, adminUser, adminPass)
+	deployGitOps(isMicro)
+	configureGit(user, password)
+	gitAddCommitPush()
 
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
 }
