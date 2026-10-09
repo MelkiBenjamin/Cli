@@ -422,7 +422,7 @@ func gitAddCommitPush() {
 	fmt.Println("[+] Pipeline GitOps déployé !")
 }
 
-func stepInstallAndConfig(misePath string) ([]Tool, string, string) {
+func stepInstallAndConfig(misePath string) []Tool {
 	fmt.Println("\n=== ÉTAPE 1 : INSTALLATION ET CONFIGURATION ===")
 	var tools []Tool
 	if _, err := os.Stat("Install.json"); err == nil {
@@ -438,14 +438,14 @@ func stepInstallAndConfig(misePath string) ([]Tool, string, string) {
 	ConfigRunner(forgejoDir)
 	configGit(adminUser, adminPass)
 
-	return tools, adminUser, adminPass
+	return tools
 }
 
 func main() { 
 	// Headless IDP : prepare, generate and publish a deployable project.
 	// Étape 1 : prerequis, install et config outils selon 2 modes "expert" (outils dans json+forgejo) ou "automatique" (outils docker fogejo et selon regle k8s ou non)
     misePath := installMise()
-    tools, adminUser, adminPass := stepInstallAndConfig(misePath)
+    tools := stepInstallAndConfig(misePath)
 	// Étape 2 : principale metier DevOps Generation des yaml et fichier DevOps (dockerfile, docker compose, manifest k8s, helm, workflows actions git)
 	startGenerate(tools)
 	if _, err := os.Stat("Install.json"); err != nil {
