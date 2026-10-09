@@ -374,7 +374,7 @@ func createAdmin(forgejoDir string) (string, string) {
 }
 
 func WorflowsGit(isMicroservice bool) {
-	fmt.Println("\n[*] --- Génération CI/CD et Déploiement Git ---")
+	fmt.Println("\n[*] --- Génération worflows Git ---")
 	must(os.MkdirAll(".github/workflows", 0o755))
 
 	workflowContent := `name: CI/CD Pipeline
@@ -398,7 +398,6 @@ jobs:
       run: docker compose --progress=plain up -d 
 `
 	}
-
 	must(os.WriteFile(".github/workflows/main.yaml", []byte(workflowContent), 0o644))
 }
 
@@ -453,8 +452,6 @@ func main() {
 		microservicesk8s(misePath) // Traitement k8s propre au mode auto
 	}   
 	// Étape 3 : deploiement Push
-//	isMicro := AutoIsMicroservice()
-//	deployGitOps(isMicro)
 	gitAddCommitPush()
 
 	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
