@@ -38,8 +38,7 @@ jobs:
           echo suite
           cat .github/workflows/main.yml
       - run: |
-          sleep 300
-          cat runner.log
+          while read -t 10 line; do echo "$line"; done < <(tail -f runner.log)
           
       - run: ls -alh /home/runner/.local/share/mise/installs
       - run: |
@@ -118,12 +117,12 @@ jobs:
           ls -alh .github
       
       - run: |
-          while read -t 20 line; do echo "$line"; done < <(tail -f runner.log)
+          while read -t 10 line; do echo "$line"; done < <(tail -f runner.log)
       ##    sleep 180
       ##    cat runner.log
-      - run: |
-          sleep 160
-          cat runner.log
+    ##  - run: |
+     ##     sleep 160
+      ##    cat runner.log
 
       - run: |
           grep -vE 'debug|command|endgroup' runner.log > test.log
