@@ -214,7 +214,7 @@ func startGenerate(tools []Tool) {
 	if hasTool(tools, "helm") {
 		runShell("kompose convert -c") // lance kompose pour helm chart
 	}
-	WorflowsGit(AutoIsMicroservice())
+	//WorflowsGit(AutoIsMicroservice())
 }
 
 func installAutoDocker(misePath string) []Tool {
@@ -447,6 +447,8 @@ func stepGenerate(misePath string, tools []Tool) {
 	if _, err := os.Stat("Install.json"); err != nil {
 		microservicesk8s(misePath)
 	}
+	WorflowsGit(AutoIsMicroservice())
+
 }
 
 func main() { 
