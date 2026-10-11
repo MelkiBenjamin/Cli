@@ -455,7 +455,7 @@ func stepGenerate(misePath string, tools []Tool) {
 	if _, err := os.Stat("Install.json"); err != nil {
 		microservicesk8s(misePath)
 	}
-	WorflowsGit(AutoIsMicroservice())
+	WorflowsGit(tools)
 
 }
 
