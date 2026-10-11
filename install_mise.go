@@ -373,7 +373,7 @@ func createAdmin(forgejoDir string) (string, string) {
 	return adminUser, adminPass
 }
 
-func WorflowsGit(isMicroservice bool) {
+func WorflowsGit(tools []Tool) {
 	fmt.Println("\n[*] --- Génération worflows Git ---")
 	must(os.MkdirAll(".github/workflows", 0o755))
 	isMicro := false
