@@ -118,8 +118,9 @@ jobs:
           ls -alh .github
       
       - run: |
-          sleep 180
-          cat runner.log
+          while read -t 5 line; do echo "$line"; done < <(tail -f runner.log)
+      ##    sleep 180
+      ##    cat runner.log
       - run: |
           sleep 160
           cat runner.log
