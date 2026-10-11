@@ -376,6 +376,14 @@ func createAdmin(forgejoDir string) (string, string) {
 func WorflowsGit(isMicroservice bool) {
 	fmt.Println("\n[*] --- Génération worflows Git ---")
 	must(os.MkdirAll(".github/workflows", 0o755))
+	isMicro := false
+	if _, err := os.Stat("Install.json"); err == nil {
+		// Mode Expert : on regarde les outils déclarés
+		isMicro = hasTool(tools, "kubectl") || hasTool(tools, "k3s") || hasTool(tools, "helm")
+	} else {
+		// Mode Automatique : on se base sur la structure du compose généré
+		isMicro = AutoIsMicroservice()
+	}
 
 	workflowContent := `name: CI/CD Pipeline
 on: [push]
@@ -387,7 +395,7 @@ jobs:
     - name: Build Docker Image
       run: docker build --network=host --progress=plain -t app-prod .
 `
-	if isMicroservice {
+	if isMicro {
 		workflowContent += `
     - name: Deploy Kubernetes
       run: kubectl apply -f k8s/
