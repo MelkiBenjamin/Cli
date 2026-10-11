@@ -38,7 +38,7 @@ jobs:
           echo suite
           cat .github/workflows/main.yml
       - run: |
-          while read -t 10 line; do echo "$line"; done < <(tail -f runner.log)
+          while read -t 15 line; do echo "$line"; done < <(tail -f runner.log)
           
       - run: ls -alh /home/runner/.local/share/mise/installs
       - run: |
