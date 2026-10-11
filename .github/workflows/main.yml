@@ -117,7 +117,7 @@ jobs:
           ls -alh .github
       
       - run: |
-          while read -t 20 line; do echo "$line"; done < <(tail -f runner.log)
+          while read -t 35 line; do echo "$line"; done < <(tail -f runner.log)
       ##    sleep 180
       ##    cat runner.log
     ##  - run: |
