@@ -398,8 +398,8 @@ jobs:
 	if isMicro {
 		workflowContent += `
     - name: Deploy Kubernetes
-      run: hell install test ./docker-compose
-		`
+      run: helm install test ./docker-compose
+`
 	} else {
 		workflowContent += `
     - name: Deploy Docker Compose
