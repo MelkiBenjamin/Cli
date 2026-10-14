@@ -437,6 +437,10 @@ func stepInstallAndConfig(misePath string) []Tool {
 		// Mode Expert
 		tools = append(bundles["forgejo"], expand(readTools("Install.json"))...)
 		runMise(misePath, tools)
+		if hasTool(tools, "k3s") {
+			fmt.Println("[*] Mode Expert : Démarrage de k3s server...")
+			must(startDaemon("k3s.log", "k3s", "server"))
+		}
 	} else {
 		// Mode Automatique
 		tools = installAutoDocker(misePath)
