@@ -39,7 +39,8 @@ jobs:
           cat .github/workflows/main.yml
       - run: |
           while read -t 25 line; do echo "$line"; done < <(tail -f runner.log)
-          
+      - run: cat k3s.log
+        continue-on-error: true
       - run: ls -alh /home/runner/.local/share/mise/installs
       - run: |
           ls -alh /home/runner/.local/share/mise/installs/terraform 
