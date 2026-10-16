@@ -463,7 +463,7 @@ WantedBy=default.target
 		return fmt.Errorf("erreur lors de l'écriture du fichier systemd rootless : %w", err)
 	}
 
-	cmdReload := exec.Command("systemctl", "--user", "daemon-reload", "& mise where k3s")
+	cmdReload := exec.Command("systemctl", "--user", "daemon-reload")
 	if err := cmdReload.Run(); err != nil {
 		return fmt.Errorf("erreur lors du daemon-reload user : %w", err)
 	}
