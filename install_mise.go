@@ -473,6 +473,16 @@ WantedBy=default.target
 		return fmt.Errorf("erreur lors du démarrage du service k3s-rootless : %w", err)
 	}
 
+	// Lecture et affichage du statut du service
+	cmdStatus := exec.Command("systemctl", "--user", "status", "k3s-rootless")
+	output, err := cmdStatus.CombinedOutput()
+	// systemctl status renvoie un code de sortie non nul si le service n'est pas "active (running)", 
+	// donc on affiche la sortie dans tous les cas pour le diagnostic.
+	fmt.Printf("--- Statut du service K3s Rootless ---\n%s\n", string(output))
+	if err != nil {
+		return fmt.Errorf("le service ne tourne pas correctement : %w", err)
+	}
+
 	return nil
 }
 
