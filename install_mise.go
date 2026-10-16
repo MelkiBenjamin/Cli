@@ -455,9 +455,13 @@ TimeoutStartSec=0
 Restart=always
 RestartSec=5s
 
+# Capture des sorties Stdout et Stderr directement dans un fichier
+StandardOutput=file:%s
+StandardError=file:%s
+
 [Install]
 WantedBy=default.target
-`
+`, logPath, logPath)
 
 	if err := os.WriteFile(servicePath, []byte(serviceContent), 0644); err != nil {
 		return fmt.Errorf("erreur lors de l'écriture du fichier systemd rootless : %w", err)
@@ -483,8 +487,6 @@ WantedBy=default.target
 	if err != nil {
 		return fmt.Errorf("le service ne tourne pas correctement : %w", err)
 	}
-	runShell("echo log-a-avoir")
-	runShell("journalctl --user -u k3s -e --no-pager")
 
 	return nil
 }
