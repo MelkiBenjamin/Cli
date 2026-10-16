@@ -436,7 +436,7 @@ func configK3sRootless() error {
 		return fmt.Errorf("erreur lors de la création du dossier systemd utilisateur : %w", err)
 	}
 
-	serviceContent := `[Unit]
+	serviceContent := fmt.Sprintf(`[Unit]
 Description=Lightweight Kubernetes (Rootless)
 Documentation=https://k3s.io
 Wants=network-online.target
