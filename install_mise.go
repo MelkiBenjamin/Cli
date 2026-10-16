@@ -444,7 +444,7 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/k3s server --rootless
+ExecStart=k3s server --rootless
 Delegate=yes
 KillMode=process
 LimitNOFILE=1048576
