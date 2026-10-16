@@ -472,6 +472,7 @@ WantedBy=default.target
 	if err := cmdEnableStart.Run(); err != nil {
 		return fmt.Errorf("erreur lors du démarrage du service k3s-rootless : %w", err)
 	}
+	runShell("sleep 5")
 
 	// Lecture et affichage du statut du service
 	cmdStatus := exec.Command("systemctl", "--user", "status", "k3s-rootless")
