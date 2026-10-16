@@ -423,6 +423,59 @@ func configGit(user, password string) {
 	runShell("git remote add origin " + remoteURL)
 }
 
+func configK3sRootless() error {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("impossible de récupérer le dossier home : %w", err)
+	}
+
+	systemdUserDir := filepath.Join(homeDir, ".config", "systemd", "user")
+	servicePath := filepath.Join(systemdUserDir, "k3s-rootless.service")
+
+	if err := os.MkdirAll(systemdUserDir, 0755); err != nil {
+		return fmt.Errorf("erreur lors de la création du dossier systemd utilisateur : %w", err)
+	}
+
+	serviceContent := `[Unit]
+Description=Lightweight Kubernetes (Rootless)
+Documentation=https://k3s.io
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/k3s server --rootless
+Delegate=yes
+KillMode=process
+LimitNOFILE=1048576
+LimitNPROC=infinity
+LimitCORE=infinity
+TasksMax=infinity
+TimeoutStartSec=0
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=default.target
+`
+
+	if err := os.WriteFile(servicePath, []byte(serviceContent), 0644); err != nil {
+		return fmt.Errorf("erreur lors de l'écriture du fichier systemd rootless : %w", err)
+	}
+
+	cmdReload := exec.Command("systemctl", "--user", "daemon-reload")
+	if err := cmdReload.Run(); err != nil {
+		return fmt.Errorf("erreur lors du daemon-reload user : %w", err)
+	}
+
+	cmdEnableStart := exec.Command("systemctl", "--user", "enable", "--now", "k3s-rootless")
+	if err := cmdEnableStart.Run(); err != nil {
+		return fmt.Errorf("erreur lors du démarrage du service k3s-rootless : %w", err)
+	}
+
+	return nil
+}
+
 func gitAddCommitPush() {
 	runShell("git add .")
 	runShell("git commit -m 'Zero-Touch: Auto-generated pipeline'")
@@ -439,7 +492,7 @@ func stepInstallAndConfig(misePath string) []Tool {
 		runMise(misePath, tools)
 		if hasTool(tools, "k3s") {
 			fmt.Println("[*] Mode Expert : Démarrage de k3s server...")
-			must(startDaemon("k3s.log", "sudo", "k3s", "server", "--rootless"))
+			configK3sRootless() 
 		}
 	} else {
 		// Mode Automatique
