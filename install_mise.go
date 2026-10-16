@@ -429,6 +429,8 @@ func configK3sRootless() error {
 		return fmt.Errorf("impossible de récupérer le dossier home : %w", err)
 	}
 
+	logPath := "./k3s.log
+
 	systemdUserDir := filepath.Join(homeDir, ".config", "systemd", "user")
 	servicePath := filepath.Join(systemdUserDir, "k3s-rootless.service")
 
@@ -437,23 +439,23 @@ func configK3sRootless() error {
 	}
 
 	serviceContent := fmt.Sprintf(`[Unit]
-Description=Lightweight Kubernetes (Rootless)
-Documentation=https://k3s.io
+Description=K3s Rootless
 Wants=network-online.target
 After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/home/runner/.local/share/mise/installs/k3s/1.35.3+k3s1/k3s server --rootless
+ExecStart=/home/runner/.local/share/mise/installs/k3s/1.35.3+k3s1/k3s server --rootless --snapshotter=fuse-overlayfs
 Delegate=yes
-KillMode=process
-LimitNOFILE=1048576
+KillMode=mixed
+LimitNOFILE=infinity
 LimitNPROC=infinity
 LimitCORE=infinity
 TasksMax=infinity
 TimeoutStartSec=0
 Restart=always
-RestartSec=5s
+RestartSec=2
+TimeoutSec=0
 
 # Capture des sorties Stdout et Stderr directement dans un fichier
 StandardOutput=file:%s
