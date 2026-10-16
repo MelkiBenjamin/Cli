@@ -444,7 +444,7 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=k3s server --rootless
+ExecStart=/home/runner/.local/share/mise/installs/k3s/1.35.3+k3s1 server --rootless
 Delegate=yes
 KillMode=process
 LimitNOFILE=1048576
