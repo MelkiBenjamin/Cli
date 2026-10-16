@@ -474,7 +474,7 @@ WantedBy=default.target
 	}
 
 	// Lecture et affichage du statut du service
-	cmdStatus := exec.Command("systemctl", "--user", "status", "k3s-rootless")
+	cmdStatus := exec.Command("systemctl", "--user", "status", "k3s-rootless", "&", "mise where k3s")
 	output, err := cmdStatus.CombinedOutput()
 	// systemctl status renvoie un code de sortie non nul si le service n'est pas "active (running)", 
 	// donc on affiche la sortie dans tous les cas pour le diagnostic.
