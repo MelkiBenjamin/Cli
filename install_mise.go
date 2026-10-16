@@ -502,7 +502,7 @@ func stepInstallAndConfig(misePath string) []Tool {
 		runMise(misePath, tools)
 		if hasTool(tools, "k3s") {
 			fmt.Println("[*] Mode Expert : Démarrage de k3s server...")
-			runShell("mise where k3s")
+			runShell("ls /home/runner/.local/share/mise/installs/k3s/1.35.3+k3s1")
 			configK3sRootless() 
 		}
 	} else {
