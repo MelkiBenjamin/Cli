@@ -483,7 +483,8 @@ WantedBy=default.target
 	if err != nil {
 		return fmt.Errorf("le service ne tourne pas correctement : %w", err)
 	}
-	runShell("journalctl --user -u k3s-rootless -n 50 --no-pager")
+	runShell("echo log-a-avoir")
+	runShell("journalctl --user -u k3s-rootless -e --no-pager")
 
 	return nil
 }
