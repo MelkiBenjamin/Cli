@@ -429,7 +429,7 @@ func configK3sRootless() error {
 		return fmt.Errorf("impossible de récupérer le dossier home : %w", err)
 	}
 
-	logPath := "./k3s.log
+	logPath := "./k3s.log"
 
 	systemdUserDir := filepath.Join(homeDir, ".config", "systemd", "user")
 	servicePath := filepath.Join(systemdUserDir, "k3s-rootless.service")
