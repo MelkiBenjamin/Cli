@@ -423,7 +423,7 @@ func configGit(user, password string) {
 	runShell("git remote add origin " + remoteURL)
 }
 
-func configK3sRootless() error {
+func configK3sRootless22() error {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return fmt.Errorf("impossible de récupérer le dossier home : %w", err)
@@ -533,6 +533,79 @@ func stepGenerate(misePath string, tools []Tool) {
 	WorflowsGit(tools)
 
 }
+
+func configK3sRootless() error {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("impossible de récupérer le dossier home : %w", err)
+	}
+
+	logPath := filepath.Join(homeDir, "k3s.log")
+	systemdUserDir := filepath.Join(homeDir, ".config", "systemd", "user")
+	servicePath := filepath.Join(systemdUserDir, "k3s-rootless.service")
+
+	if err := os.MkdirAll(systemdUserDir, 0755); err != nil {
+		return fmt.Errorf("erreur lors de la création du dossier systemd utilisateur : %w", err)
+	}
+
+	// Astuce : on encapsule l'appel dans un shell (`/bin/sh -c`) pour rediriger stdout/stderr 
+	// directement dans le fichier de log, contournant les limitations de systemd sur les runners CI.
+	k3sCmd := fmt.Sprintf("/bin/sh -c '/home/runner/.local/share/mise/installs/k3s/1.35.3+k3s1/k3s server --rootless --snapshotter=fuse-overlayfs >> %s 2>&1'", logPath)
+
+	serviceContent := fmt.Sprintf(`[Unit]
+Description=K3s Rootless
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=%s
+Delegate=yes
+KillMode=mixed
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+TasksMax=infinity
+TimeoutStartSec=0
+Restart=always
+RestartSec=2
+TimeoutSec=0
+
+[Install]
+WantedBy=default.target
+`, k3sCmd)
+
+	if err := os.WriteFile(servicePath, []byte(serviceContent), 0644); err != nil {
+		return fmt.Errorf("erreur lors de l'écriture du fichier systemd rootless : %w", err)
+	}
+
+	// Forcer l'export de XDG_RUNTIME_DIR au cas où pour systemctl
+	os.Setenv("XDG_RUNTIME_DIR", fmt.Sprintf("/run/user/%d", os.Getuid()))
+
+	exec.Command("systemctl", "--user", "daemon-reload").Run()
+	
+	if err := exec.Command("systemctl", "--user", "enable", "--now", "k3s-rootless").Run(); err != nil {
+		return fmt.Errorf("erreur lors du démarrage du service : %w", err)
+	}
+
+	// Pause pour laisser K3s s'initialiser ou crasher
+	time.Sleep(5 * time.Second)
+
+	// Lecture directe et infaillible du fichier de log physique !
+	if logBytes, err := os.ReadFile(logPath); err == nil && len(logBytes) > 0 {
+		fmt.Printf("--- CONTENU DE K3S.LOG ---\n%s\n", string(logBytes))
+	} else {
+		fmt.Println("[!] Le fichier k3s.log est vide ou introuvable.")
+	}
+
+	// Statut final
+	cmdStatus := exec.Command("systemctl", "--user", "status", "k3s-rootless")
+	output, _ := cmdStatus.CombinedOutput()
+	fmt.Printf("--- Statut du service K3s Rootless ---\n%s\n", string(output))
+
+	return nil
+}
+
 
 func main() { 
 	// Headless IDP : prepare, generate and publish a deployable project.
