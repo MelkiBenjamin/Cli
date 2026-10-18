@@ -468,13 +468,15 @@ func configK3sRootless() error {
 	must(err)
 
 	fmt.Println("[*] Configuration d'AppArmor pour K3s Rootless...")
+    miseK3sBin := filepath.Join(homeDir, ".local", "share", "mise", "installs", "k3s", "1.35.3+k3s1", "k3s")
+
 	// Création et application du profil AppArmor officiel
-	appArmorConfig := `abi <abi/4.0>,
+	appArmorConfig := fmt.Sprintf(`abi <abi/4.0>,
 include <tunables/global>
 
-/home/runner/.local/share/mise/installs/k3s/1.35.3+k3s1/k3s flags=(unconfined) {
+%s flags=(unconfined) {
   userns,
-  }`
+}`, miseK3sBin)
 	
 	profileFileName := "home.runner..local.share.mise.installs.k3s.1.35.3+k3s1.k3s"
 	cmdEcho := fmt.Sprintf("echo '%s' | sudo tee /etc/apparmor.d/%s > /dev/null", appArmorConfig, profileFileName)
@@ -492,7 +494,7 @@ Delegate=cpu memory io cpuset pids`
 	runShell("sudo systemctl daemon-reload")
 	runShell(fmt.Sprintf("sudo systemctl restart user@%d.service", os.Getuid()))
 
-	miseK3sBin := filepath.Join(homeDir, ".local", "share", "mise", "installs", "k3s", "1.35.3+k3s1", "k3s")
+	//miseK3sBin := filepath.Join(homeDir, ".local", "share", "mise", "installs", "k3s", "1.35.3+k3s1", "k3s")
 	logPath := filepath.Join(homeDir, "k3s.log")
 	
 	systemdUserDir := filepath.Join(homeDir, ".config", "systemd", "user")
