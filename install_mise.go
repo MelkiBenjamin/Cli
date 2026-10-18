@@ -555,6 +555,15 @@ include <tunables/global>
 	runShell(cmdEcho)
 	runShell("sudo systemctl restart apparmor.service")
 
+	// 2. CONFIGURATION DES CGROUPS v2 (Délégation systemd pour le cpuset)
+	runShell("sudo mkdir -p /etc/systemd/system/user@.service.d")
+	delegateConfig := `[Service]
+Delegate=cpu memory io cpuset pids`
+	
+	cmdDelegate := fmt.Sprintf("echo '%s' | sudo tee /etc/systemd/system/user@.service.d/delegate.conf > /dev/null", delegateConfig)
+	runShell(cmdDelegate)
+	runShell("sudo systemctl daemon-reload")
+
 	logPath := filepath.Join(homeDir, "k3s.log")
 	
 	systemdUserDir := filepath.Join(homeDir, ".config", "systemd", "user")
