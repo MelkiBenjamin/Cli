@@ -541,10 +541,7 @@ WantedBy=default.target
 	os.Setenv("XDG_RUNTIME_DIR", fmt.Sprintf("/run/user/%d", os.Getuid()))
 
 	runShell("systemctl", "--user", "daemon-reload")
-	
-	if err := exec.Command("systemctl", "--user", "enable", "--now", "k3s-rootless").Run(); err != nil {
-		return fmt.Errorf("erreur lors du démarrage du service : %w", err)
-	}
+	runShell("systemctl", "--user", "enable", "--now", "k3s-rootless")
 
 	// Pause pour laisser K3s s'initialiser ou crasher
 	time.Sleep(5 * time.Second)
