@@ -423,76 +423,6 @@ func configGit(user, password string) {
 	runShell("git remote add origin " + remoteURL)
 }
 
-func configK3sRootless22() error {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("impossible de récupérer le dossier home : %w", err)
-	}
-
-    logPath := filepath.Join(homeDir, "k3s.log")
-	
-	systemdUserDir := filepath.Join(homeDir, ".config", "systemd", "user")
-	servicePath := filepath.Join(systemdUserDir, "k3s-rootless.service")
-
-	if err := os.MkdirAll(systemdUserDir, 0755); err != nil {
-		return fmt.Errorf("erreur lors de la création du dossier systemd utilisateur : %w", err)
-	}
-
-	serviceContent := fmt.Sprintf(`[Unit]
-Description=K3s Rootless
-Wants=network-online.target
-After=network-online.target
-
-[Service]
-Type=simple
-ExecStart=/home/runner/.local/share/mise/installs/k3s/1.35.3+k3s1/k3s server --rootless --snapshotter=fuse-overlayfs
-Delegate=yes
-KillMode=mixed
-LimitNOFILE=infinity
-LimitNPROC=infinity
-LimitCORE=infinity
-TasksMax=infinity
-TimeoutStartSec=0
-Restart=always
-RestartSec=2
-TimeoutSec=0
-
-# Capture des sorties Stdout et Stderr directement dans un fichier
-StandardOutput=file:%s
-StandardError=file:%s
-
-[Install]
-WantedBy=default.target
-`, logPath, logPath)
-
-	if err := os.WriteFile(servicePath, []byte(serviceContent), 0644); err != nil {
-		return fmt.Errorf("erreur lors de l'écriture du fichier systemd rootless : %w", err)
-	}
-
-	cmdReload := exec.Command("systemctl", "--user", "daemon-reload")
-	if err := cmdReload.Run(); err != nil {
-		return fmt.Errorf("erreur lors du daemon-reload user : %w", err)
-	}
-
-	cmdEnableStart := exec.Command("systemctl", "--user", "enable", "--now", "k3s-rootless")
-	if err := cmdEnableStart.Run(); err != nil {
-		return fmt.Errorf("erreur lors du démarrage du service k3s-rootless : %w", err)
-	}
-	runShell("sleep 5")
-
-	// Lecture et affichage du statut du service
-	cmdStatus := exec.Command("systemctl", "--user", "status", "k3s-rootless")
-	output, err := cmdStatus.CombinedOutput()
-	// systemctl status renvoie un code de sortie non nul si le service n'est pas "active (running)", 
-	// donc on affiche la sortie dans tous les cas pour le diagnostic.
-	fmt.Printf("--- Statut du service K3s Rootless ---\n%s\n", string(output))
-	if err != nil {
-		return fmt.Errorf("le service ne tourne pas correctement : %w", err)
-	}
-
-	return nil
-}
-
 func gitAddCommitPush() {
 	runShell("git add .")
 	runShell("git commit -m 'Zero-Touch: Auto-generated pipeline'")
@@ -509,7 +439,6 @@ func stepInstallAndConfig(misePath string) []Tool {
 		runMise(misePath, tools)
 		if hasTool(tools, "k3s") {
 			fmt.Println("[*] Mode Expert : Démarrage de k3s server...")
-			runShell("ls /home/runner/.local/share/mise/installs/k3s/1.35.3+k3s1/k3s")
 			configK3sRootless() 
 		}
 	} else {
@@ -539,8 +468,6 @@ func configK3sRootless() error {
 	must(err)
 
 	fmt.Println("[*] Configuration d'AppArmor pour K3s Rootless...")
-	//miseK3sBin := "/home/runner/.local/share/mise/installs/k3s/1.35.3+k3s1/k3s"
-
 	// Création et application du profil AppArmor officiel
 	appArmorConfig := `abi <abi/4.0>,
 include <tunables/global>
