@@ -540,7 +540,7 @@ WantedBy=default.target
 	// Forcer l'export de XDG_RUNTIME_DIR au cas où pour systemctl
 	os.Setenv("XDG_RUNTIME_DIR", fmt.Sprintf("/run/user/%d", os.Getuid()))
 
-	exec.Command("systemctl", "--user", "daemon-reload").Run()
+	runShell("systemctl", "--user", "daemon-reload")
 	
 	if err := exec.Command("systemctl", "--user", "enable", "--now", "k3s-rootless").Run(); err != nil {
 		return fmt.Errorf("erreur lors du démarrage du service : %w", err)
