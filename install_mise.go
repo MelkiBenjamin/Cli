@@ -500,9 +500,8 @@ Delegate=cpu memory io cpuset pids`
 	systemdUserDir := filepath.Join(homeDir, ".config", "systemd", "user")
 	servicePath := filepath.Join(systemdUserDir, "k3s-rootless.service")
 
-	if err := os.MkdirAll(systemdUserDir, 0755); err != nil {
-		return fmt.Errorf("erreur lors de la création du dossier systemd utilisateur : %w", err)
-	}
+	//if err := os.MkdirAll(systemdUserDir, 0755)
+	must(os.MkdirAll(systemdUserDir, 0755))
 
 	// Astuce : on encapsule l'appel dans un shell (`/bin/sh -c`) pour rediriger stdout/stderr 
 	// directement dans le fichier de log, contournant les limitations de systemd sur les runners CI.
