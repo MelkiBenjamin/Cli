@@ -535,10 +535,11 @@ func stepGenerate(misePath string, tools []Tool) {
 }
 
 func configK3sRootless() error {
-	homeDir, err := os.UserHomeDir()
+	home, err := os.UserHomeDir()
+	must(err)
 
 	fmt.Println("[*] Configuration d'AppArmor pour K3s Rootless...")
-	miseK3sBin := "/home/runner/.local/share/mise/installs/k3s/1.35.3+k3s1/k3s"
+	//miseK3sBin := "/home/runner/.local/share/mise/installs/k3s/1.35.3+k3s1/k3s"
 
 	// Création et application du profil AppArmor officiel
 	appArmorConfig := `abi <abi/4.0>,
@@ -554,6 +555,7 @@ include <tunables/global>
 	if err := runShell(cmdEcho); err != nil {
 		return fmt.Errorf("échec de l'écriture du profil AppArmor : %w", err)
 	}
+	
 	if err := runShell("sudo systemctl restart apparmor.service"); err != nil {
 		return fmt.Errorf("échec du redémarrage d'AppArmor : %w", err)
 	}
