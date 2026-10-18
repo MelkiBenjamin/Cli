@@ -549,7 +549,7 @@ WantedBy=default.target
 	}
 
 	// Statut final
-	cmdStatus := runShell("systemctl", "--user", "status", "k3s-rootless")
+	cmdStatus := exec.Command("systemctl", "--user", "status", "k3s-rootless")
 	output, _ := cmdStatus.CombinedOutput()
 	fmt.Printf("--- Statut du service K3s Rootless ---\n%s\n", string(output))
 
