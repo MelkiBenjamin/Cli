@@ -563,6 +563,7 @@ Delegate=cpu memory io cpuset pids`
 	cmdDelegate := fmt.Sprintf("echo '%s' | sudo tee /etc/systemd/system/user@.service.d/delegate.conf > /dev/null", delegateConfig)
 	runShell(cmdDelegate)
 	runShell("sudo systemctl daemon-reload")
+	runShell(fmt.Sprintf("sudo systemctl restart user@%d.service", os.Getuid()))
 
 	logPath := filepath.Join(homeDir, "k3s.log")
 	
