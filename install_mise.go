@@ -631,8 +631,8 @@ WantedBy=default.target
 	output, _ := cmdStatus.CombinedOutput()
 	fmt.Printf("--- Statut du service K3s Rootless ---\n%s\n", string(output))
 
-    runShell("KUBECONFIG=/home/runner/.kube/k3s.yaml")
-
+    os.Setenv("KUBECONFIG", filepath.Join(homeDir, ".kube", "k3s.yaml"))
+	
 	return nil
 }
 
