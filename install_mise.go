@@ -549,7 +549,7 @@ include <tunables/global>
   userns,
   }`
 	
-	profileFileName := ".home.runner..local.share.mise.installs.k3s.1.35.3+k3s1.k3s"
+	profileFileName := "home.runner..local.share.mise.installs.k3s.1.35.3+k3s1.k3s"
 	cmdEcho := fmt.Sprintf("echo '%s' | sudo tee /etc/apparmor.d/%s > /dev/null", appArmorConfig, profileFileName)
 	
 	runShell(cmdEcho)
