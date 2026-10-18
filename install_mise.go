@@ -492,6 +492,7 @@ Delegate=cpu memory io cpuset pids`
 	runShell("sudo systemctl daemon-reload")
 	runShell(fmt.Sprintf("sudo systemctl restart user@%d.service", os.Getuid()))
 
+	miseK3sBin := filepath.Join(homeDir, ".local", "share", "mise", "installs", "k3s", "1.35.3+k3s1", "k3s")
 	logPath := filepath.Join(homeDir, "k3s.log")
 	
 	systemdUserDir := filepath.Join(homeDir, ".config", "systemd", "user")
@@ -503,7 +504,7 @@ Delegate=cpu memory io cpuset pids`
 
 	// Astuce : on encapsule l'appel dans un shell (`/bin/sh -c`) pour rediriger stdout/stderr 
 	// directement dans le fichier de log, contournant les limitations de systemd sur les runners CI.
-	k3sCmd := fmt.Sprintf("/bin/sh -c '/home/runner/.local/share/mise/installs/k3s/1.35.3+k3s1/k3s server --rootless --snapshotter=fuse-overlayfs >> %s 2>&1'", logPath)
+	k3sCmd := fmt.Sprintf("/bin/sh -c '%s server --rootless --snapshotter=fuse-overlayfs >> %s 2>&1'", miseK3sBin, logPath)
 
 	serviceContent := fmt.Sprintf(`[Unit]
 Description=K3s Rootless
