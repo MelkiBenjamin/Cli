@@ -535,7 +535,7 @@ func stepGenerate(misePath string, tools []Tool) {
 }
 
 func configK3sRootless() error {
-	home, err := os.UserHomeDir()
+	homeDir, err := os.UserHomeDir()
 	must(err)
 
 	fmt.Println("[*] Configuration d'AppArmor pour K3s Rootless...")
