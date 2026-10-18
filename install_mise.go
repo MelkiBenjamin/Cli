@@ -536,11 +536,30 @@ func stepGenerate(misePath string, tools []Tool) {
 
 func configK3sRootless() error {
 	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("impossible de récupérer le dossier home : %w", err)
+
+	fmt.Println("[*] Configuration d'AppArmor pour K3s Rootless...")
+	miseK3sBin := "/home/runner/.local/share/mise/installs/k3s/1.35.3+k3s1/k3s"
+
+	// Création et application du profil AppArmor officiel
+	appArmorConfig := `abi <abi/4.0>,
+include <tunables/global>
+
+/home/runner/.local/share/mise/installs/k3s/1.35.3+k3s1/k3s flags=(unconfined) {
+  userns,
+  }`
+	
+	profileFileName := ".home.runner..local.share.mise.installs.k3s.1.35.3+k3s1.k3s"
+	cmdEcho := fmt.Sprintf("echo '%s' | sudo tee /etc/apparmor.d/%s > /dev/null", appArmorConfig, profileFileName)
+	
+	if err := runShell(cmdEcho); err != nil {
+		return fmt.Errorf("échec de l'écriture du profil AppArmor : %w", err)
+	}
+	if err := runShell("sudo systemctl restart apparmor.service"); err != nil {
+		return fmt.Errorf("échec du redémarrage d'AppArmor : %w", err)
 	}
 
 	logPath := filepath.Join(homeDir, "k3s.log")
+	
 	systemdUserDir := filepath.Join(homeDir, ".config", "systemd", "user")
 	servicePath := filepath.Join(systemdUserDir, "k3s-rootless.service")
 
