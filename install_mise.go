@@ -552,13 +552,8 @@ include <tunables/global>
 	profileFileName := ".home.runner..local.share.mise.installs.k3s.1.35.3+k3s1.k3s"
 	cmdEcho := fmt.Sprintf("echo '%s' | sudo tee /etc/apparmor.d/%s > /dev/null", appArmorConfig, profileFileName)
 	
-	if err := runShell(cmdEcho); err != nil {
-		return fmt.Errorf("échec de l'écriture du profil AppArmor : %w", err)
-	}
-	
-	if err := runShell("sudo systemctl restart apparmor.service"); err != nil {
-		return fmt.Errorf("échec du redémarrage d'AppArmor : %w", err)
-	}
+	runShell(cmdEcho)
+	runShell("sudo systemctl restart apparmor.service")
 
 	logPath := filepath.Join(homeDir, "k3s.log")
 	
