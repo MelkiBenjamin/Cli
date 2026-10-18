@@ -535,7 +535,7 @@ WantedBy=default.target
 	//if err := os.WriteFile(servicePath, []byte(serviceContent), 0644); err != nil {
 	//	return fmt.Errorf("erreur lors de l'écriture du fichier systemd rootless : %w", err)
 	//}
-	must(os.WriteFile(servicePath, []byte(serviceContent), 0644)
+	must(os.WriteFile(servicePath, []byte(serviceContent), 0644))
 
 	// Forcer l'export de XDG_RUNTIME_DIR au cas où pour systemctl
 	os.Setenv("XDG_RUNTIME_DIR", fmt.Sprintf("/run/user/%d", os.Getuid()))
