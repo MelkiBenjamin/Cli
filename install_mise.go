@@ -494,13 +494,11 @@ Delegate=cpu memory io cpuset pids`
 	runShell("sudo systemctl daemon-reload")
 	runShell(fmt.Sprintf("sudo systemctl restart user@%d.service", os.Getuid()))
 
-	//miseK3sBin := filepath.Join(homeDir, ".local", "share", "mise", "installs", "k3s", "1.35.3+k3s1", "k3s")
 	logPath := filepath.Join(homeDir, "k3s.log")
 	
 	systemdUserDir := filepath.Join(homeDir, ".config", "systemd", "user")
 	servicePath := filepath.Join(systemdUserDir, "k3s-rootless.service")
 
-	//if err := os.MkdirAll(systemdUserDir, 0755)
 	must(os.MkdirAll(systemdUserDir, 0755))
 
 	// Astuce : on encapsule l'appel dans un shell (`/bin/sh -c`) pour rediriger stdout/stderr 
@@ -532,9 +530,6 @@ TimeoutSec=0
 WantedBy=default.target
 `, k3sCmd)
 
-	//if err := os.WriteFile(servicePath, []byte(serviceContent), 0644); err != nil {
-	//	return fmt.Errorf("erreur lors de l'écriture du fichier systemd rootless : %w", err)
-	//}
 	must(os.WriteFile(servicePath, []byte(serviceContent), 0644))
 
 	// Forcer l'export de XDG_RUNTIME_DIR au cas où pour systemctl
