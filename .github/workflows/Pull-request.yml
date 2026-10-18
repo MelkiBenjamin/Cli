@@ -112,7 +112,7 @@ jobs:
           git push --set-upstream origin "$BRANCH" --force
 
       - name: Create PR1 if missing
-        uses: actions/github-script@v6
+        uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.PAT_TOKEN }}
           script: |
@@ -228,7 +228,7 @@ jobs:
           git push --set-upstream origin "$BRANCH" --force
 
       - name: Create PR2 if missing
-        uses: actions/github-script@v6
+        uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.PAT_TOKEN }}
           script: |
