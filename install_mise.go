@@ -558,7 +558,7 @@ WantedBy=default.target
 	return nil
 }
 
-func configK3sRootless() error {
+func configK3sRootless345() error {
 	homeDir, err := os.UserHomeDir()
 
 	fmt.Println("[*] Démarrage de K3s Rootless via systemd-run...")
@@ -586,6 +586,13 @@ func configK3sRootless() error {
 		cmd.Stderr = logFile
 	}
 
+	// Lecture directe et infaillible du fichier de log physique !
+	if logBytes, err := os.ReadFile(logPath); err == nil && len(logBytes) > 0 {
+		fmt.Printf("--- CONTENU DE K3S.LOG ---\n%s\n", string(logBytes))
+	} else {
+		fmt.Println("[!] Le fichier k3s.log est vide ou introuvable.")
+	}
+
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("échec du lancement de systemd-run : %w", err)
 	}
@@ -596,6 +603,67 @@ func configK3sRootless() error {
 	// Configuration propre de la variable KUBECONFIG
 	os.Setenv("KUBECONFIG", filepath.Join(homeDir, ".kube", "k3s.yaml"))
 	fmt.Println("[*] K3s Rootless est lancé et opérationnel !")
+
+	return nil
+}
+
+func configK3sRootless() error {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("impossible de récupérer le dossier utilisateur : %w", err)
+	}
+
+	fmt.Println("[*] Démarrage de K3s Rootless via systemd-run...")
+
+	miseK3sBin := filepath.Join(homeDir, ".local", "share", "mise", "installs", "k3s", "1.35.3+k3s1", "k3s")
+	logPath := filepath.Join(homeDir, "k3s.log")
+
+	// Forcer XDG_RUNTIME_DIR pour systemd utilisateur
+	os.Setenv("XDG_RUNTIME_DIR", fmt.Sprintf("/run/user/%d", os.Getuid()))
+
+	// Préparation du fichier de log
+	logFile, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return fmt.Errorf("impossible de créer le fichier de log : %w", err)
+	}
+	defer logFile.Close()
+
+	// Lancement via systemd-run avec --no-block (OBLIGATOIRE pour un serveur)
+	cmd := exec.Command("systemd-run", "--user",
+		"--unit=k3s-rootless",
+		"--no-block", // <-- Empêche Go de bloquer en attendant la fin de K3s
+		"-p", "Delegate=yes",
+		"-p", "KillMode=mixed",
+		"-p", "Restart=always",
+		"-p", "RestartSec=2",
+		miseK3sBin, "server", "--rootless", "--snapshotter=fuse-overlayfs",
+	)
+
+	cmd.Stdout = logFile
+	cmd.Stderr = logFile
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("échec du lancement de systemd-run : %w", err)
+	}
+
+	fmt.Println("[*] Service enregistré. Attente de l'initialisation de K3s (5 secondes)...")
+	time.Sleep(5 * time.Second)
+
+	// RETOUR DE L'AFFICHAGE DES LOGS pour voir si K3s démarre bien ou s'il plante
+	if logBytes, err := os.ReadFile(logPath); err == nil && len(logBytes) > 0 {
+		fmt.Printf("--- CONTENU DE K3S.LOG ---\n%s\n", string(logBytes))
+	} else {
+		fmt.Println("[!] Le fichier de log est vide ou inaccessible pour le moment.")
+	}
+
+	// Affichage du statut systemd utilisateur
+	statusCmd := exec.Command("systemctl", "--user", "status", "k3s-rootless")
+	output, _ := statusCmd.CombinedOutput()
+	fmt.Printf("--- Statut du service K3s Rootless ---\n%s\n", string(output))
+
+	// Configuration de KUBECONFIG
+	os.Setenv("KUBECONFIG", filepath.Join(homeDir, ".kube", "k3s.yaml"))
+	fmt.Println("[*] Orchestration terminée !")
 
 	return nil
 }
