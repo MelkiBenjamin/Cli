@@ -657,6 +657,17 @@ func configK3sRootless() error {
 	// Configuration de KUBECONFIG
 	os.Setenv("KUBECONFIG", filepath.Join(homeDir, ".kube", "k3s.yaml"))
 	fmt.Println("[*] Orchestration terminée !")
+	fmt.Println("[*] Service enregistré. Vérification des logs systemd...")
+	time.Sleep(3 * time.Second)
+
+	// Récupérer les 50 dernières lignes des logs de l'unité systemd utilisateur
+	logCmd := exec.Command("journalctl", "--user", "-u", "k3s-rootless", "-n", "50", "--no-pager")
+	logOutput, err := logCmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("[!] Impossible de lire les logs journalctl : %v\n", err)
+	} else {
+		fmt.Printf("--- VRAIS LOGS DE K3S (Journalctl) ---\n%s\n", string(logOutput))
+	}
 
 	return nil
 }
