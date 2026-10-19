@@ -463,7 +463,7 @@ func stepGenerate(misePath string, tools []Tool) {
 
 }
 
-func configK3sRootless() error {
+func configK3sRootless1() error {
 	homeDir, err := os.UserHomeDir()
 	must(err)
 
@@ -558,6 +558,47 @@ WantedBy=default.target
 	return nil
 }
 
+func configK3sRootless() error {
+	homeDir, err := os.UserHomeDir()
+
+	fmt.Println("[*] Démarrage de K3s Rootless via systemd-run...")
+
+	// Chemin dynamique sans hardcoder le nom d'utilisateur
+	miseK3sBin := filepath.Join(homeDir, ".local", "share", "mise", "installs", "k3s", "1.35.3+k3s1", "k3s")
+
+	// Forcer XDG_RUNTIME_DIR pour systemd utilisateur
+	os.Setenv("XDG_RUNTIME_DIR", fmt.Sprintf("/run/user/%d", os.Getuid()))
+
+	// Commande systemd-run pour lancer k3s en service éphémère/géré sans fichier physique
+	cmd := exec.Command("systemd-run", "--user",
+		"--unit=k3s-rootless",
+		"-p", "Delegate=yes",
+		"-p", "KillMode=mixed",
+		"-p", "Restart=always",
+		"-p", "RestartSec=2",
+		miseK3sBin, "server", "--rootless", "--snapshotter=fuse-overlayfs",
+	)
+
+	// Optionnel : rediriger la sortie standard/erreur vers un log si besoin
+	logFile, err := os.Create(filepath.Join(homeDir, "k3s.log"))
+	if err == nil {
+		cmd.Stdout = logFile
+		cmd.Stderr = logFile
+	}
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("échec du lancement de systemd-run : %w", err)
+	}
+
+	// Pause pour laisser le temps à K3s de s'initialiser
+	time.Sleep(5 * time.Second)
+
+	// Configuration propre de la variable KUBECONFIG
+	os.Setenv("KUBECONFIG", filepath.Join(homeDir, ".kube", "k3s.yaml"))
+	fmt.Println("[*] K3s Rootless est lancé et opérationnel !")
+
+	return nil
+}
 
 func main() { 
 	// Headless IDP : prepare, generate and publish a deployable project.
