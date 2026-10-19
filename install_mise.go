@@ -586,13 +586,6 @@ func configK3sRootless345() error {
 		cmd.Stderr = logFile
 	}
 
-	// Lecture directe et infaillible du fichier de log physique !
-	if logBytes, err := os.ReadFile(logPath); err == nil && len(logBytes) > 0 {
-		fmt.Printf("--- CONTENU DE K3S.LOG ---\n%s\n", string(logBytes))
-	} else {
-		fmt.Println("[!] Le fichier k3s.log est vide ou introuvable.")
-	}
-
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("échec du lancement de systemd-run : %w", err)
 	}
