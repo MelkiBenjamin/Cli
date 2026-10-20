@@ -602,14 +602,25 @@ func configK3sRootless345() error {
 
 func configK3sRootless() error {
 	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("impossible de récupérer le dossier utilisateur : %w", err)
-	}
 
 	fmt.Println("[*] Démarrage de K3s Rootless via systemd-run...")
 
 	miseK3sBin := filepath.Join(homeDir, ".local", "share", "mise", "installs", "k3s", "1.35.3+k3s1", "k3s")
 	logPath := filepath.Join(homeDir, "k3s.log")
+
+	// Création et application du profil AppArmor officiel
+	appArmorConfig := fmt.Sprintf(`abi <abi/4.0>,
+include <tunables/global>
+
+%s flags=(unconfined) {
+  userns,
+}`, miseK3sBin)
+	
+	profileFileName := "home.runner..local.share.mise.installs.k3s.1.35.3+k3s1.k3s"
+	cmdEcho := fmt.Sprintf("echo '%s' | sudo tee /etc/apparmor.d/%s > /dev/null", appArmorConfig, profileFileName)
+	
+	runShell(cmdEcho)
+	runShell("sudo systemctl restart apparmor.service")
 
 	// Forcer XDG_RUNTIME_DIR pour systemd utilisateur
 	os.Setenv("XDG_RUNTIME_DIR", fmt.Sprintf("/run/user/%d", os.Getuid()))
