@@ -623,14 +623,14 @@ include <tunables/global>
 	runShell("sudo systemctl restart apparmor.service")
 
 	// 2. CONFIGURATION DES CGROUPS v2 (Délégation systemd pour le cpuset)
-//	runShell("sudo mkdir -p /etc/systemd/system/user@.service.d")
-//	delegateConfig := `[Service]
-//Delegate=cpu memory io cpuset pids`
+	runShell("sudo mkdir -p /etc/systemd/system/user@.service.d")
+	delegateConfig := `[Service]
+Delegate=cpu memory io cpuset pids`
 	
-//	cmdDelegate := fmt.Sprintf("echo '%s' | sudo tee /etc/systemd/system/user@.service.d/delegate.conf > /dev/null", delegateConfig)
-//	runShell(cmdDelegate)
-//	runShell("sudo systemctl daemon-reload")
-//	runShell(fmt.Sprintf("sudo systemctl restart user@%d.service", os.Getuid()))
+	cmdDelegate := fmt.Sprintf("echo '%s' | sudo tee /etc/systemd/system/user@.service.d/delegate.conf > /dev/null", delegateConfig)
+	runShell(cmdDelegate)
+	runShell("sudo systemctl daemon-reload")
+	runShell(fmt.Sprintf("sudo systemctl restart user@%d.service", os.Getuid()))
 	
 	// Forcer XDG_RUNTIME_DIR pour systemd utilisateur
 	os.Setenv("XDG_RUNTIME_DIR", fmt.Sprintf("/run/user/%d", os.Getuid()))
@@ -646,7 +646,7 @@ include <tunables/global>
 	cmd := exec.Command("systemd-run", "--user",
 		"--unit=k3s-rootless",
 		"--no-block", // <-- Empêche Go de bloquer en attendant la fin de K3s
-		"-p", "Delegate=io cpuset pids",
+		"-p", "Delegate=yes",
 		"-p", "KillMode=mixed",
 		"-p", "Restart=always",
 		"-p", "RestartSec=2",
