@@ -616,7 +616,7 @@ include <tunables/global>
   userns,
 }`, miseK3sBin)
 	
-	profileFileName := "home.runner..local.share.mise.installs.k3s.1.35.3+k3s1.k3s"
+    profileFileName := strings.ReplaceAll(strings.TrimPrefix(miseK3sBin, "/"), "/", ".")
 	cmdEcho := fmt.Sprintf("echo '%s' | sudo tee /etc/apparmor.d/%s > /dev/null", appArmorConfig, profileFileName)
 	
 	runShell(cmdEcho)
