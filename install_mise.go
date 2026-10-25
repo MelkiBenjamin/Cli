@@ -619,7 +619,7 @@ Delegate=cpu memory io cpuset pids`
 	}
 
 	fmt.Println("[*] Service enregistré. Attente de l'initialisation de K3s (5 secondes)...")
-	time.Sleep(5 * time.Second)
+	time.Sleep(20 * time.Second)
 
 	// RETOUR DE L'AFFICHAGE DES LOGS pour voir si K3s démarre bien ou s'il plante
 	if logBytes, err := os.ReadFile(logPath); err == nil && len(logBytes) > 0 {
