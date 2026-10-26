@@ -629,14 +629,15 @@ Delegate=cpu memory io cpuset pids`
 	}
 
 	// Affichage du statut systemd utilisateur
-	statusCmd := exec.Command("systemctl", "--user", "status", "k3s-rootless")
-	output, _ := statusCmd.CombinedOutput()
-	fmt.Printf("--- Statut du service K3s Rootless ---\n%s\n", string(output))
+	//statusCmd := exec.Command("systemctl", "--user", "status", "k3s-rootless")
+	runShell("systemctl", "--user", "status", "k3s-rootless")
+	//output, _ := statusCmd.CombinedOutput()
+	//fmt.Printf("--- Statut du service K3s Rootless ---\n%s\n", string(output))
 
 	// Configuration de KUBECONFIG
 	os.Setenv("KUBECONFIG", filepath.Join(homeDir, ".kube", "k3s.yaml"))
 	//fmt.Println("[*] Orchestration terminée !")
-	fmt.Println("[*] Service enregistré. Vérification des logs systemd...")
+	//fmt.Println("[*] Service enregistré. Vérification des logs systemd...")
 	//time.Sleep(3 * time.Second)
 
 	// Récupérer les 50 dernières lignes des logs de l'unité systemd utilisateur
