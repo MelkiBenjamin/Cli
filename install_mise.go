@@ -560,6 +560,7 @@ WantedBy=default.target
 
 func configK3sRootless() error {
 	homeDir, err := os.UserHomeDir()
+	must(err)
 
 	fmt.Println("[*] Démarrage de K3s Rootless via systemd-run...")
 
