@@ -539,7 +539,7 @@ WantedBy=default.target
 	runShell("systemctl", "--user", "enable", "--now", "k3s-rootless")
 
 	// Pause pour laisser K3s s'initialiser ou crasher
-	time.Sleep(5 * time.Second)
+	time.Sleep(20 * time.Second)
 
 	// Lecture directe et infaillible du fichier de log physique !
 	if logBytes, err := os.ReadFile(logPath); err == nil && len(logBytes) > 0 {
@@ -595,14 +595,14 @@ Delegate=cpu memory io cpuset pids`
 	os.Setenv("XDG_RUNTIME_DIR", fmt.Sprintf("/run/user/%d", os.Getuid()))
 
 	// Préparation du fichier de log
-	logFile, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	//logFile, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	//if err != nil {
 	//	return fmt.Errorf("impossible de créer le fichier de log : %w", err)
 	//}
-	defer logFile.Close()
+	//defer logFile.Close()
 
 	// Lancement via systemd-run avec --no-block (OBLIGATOIRE pour un serveur)
-	cmd := exec.Command("systemd-run", "--user",
+	runShell("systemd-run", "--user",
 		"--unit=k3s-rootless",
 		"--no-block", // <-- Empêche Go de bloquer en attendant la fin de K3s
 		"-p", "Delegate=yes",
@@ -612,22 +612,21 @@ Delegate=cpu memory io cpuset pids`
 		miseK3sBin, "server", "--rootless", "--snapshotter=fuse-overlayfs",
 	)
 
-	cmd.Stdout = logFile
-	cmd.Stderr = logFile
+	//cmd.Stdout = logFile
+	//cmd.Stderr = logFile
 
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("échec du lancement de systemd-run : %w", err)
-	}
+	//if err := cmd.Run()
+	//must(err)
 
-	fmt.Println("[*] Service enregistré. Attente de l'initialisation de K3s (5 secondes)...")
+	fmt.Println("[*] Service enregistré. Attente de l'initialisation de K3s (20 secondes)...")
 	time.Sleep(20 * time.Second)
 
 	// RETOUR DE L'AFFICHAGE DES LOGS pour voir si K3s démarre bien ou s'il plante
-	if logBytes, err := os.ReadFile(logPath); err == nil && len(logBytes) > 0 {
-		fmt.Printf("--- CONTENU DE K3S.LOG ---\n%s\n", string(logBytes))
-	} else {
-		fmt.Println("[!] Le fichier de log est vide ou inaccessible pour le moment.")
-	}
+	//if logBytes, err := os.ReadFile(logPath); err == nil && len(logBytes) > 0 {
+	//	fmt.Printf("--- CONTENU DE K3S.LOG ---\n%s\n", string(logBytes))
+	//} else {
+	//	fmt.Println("[!] Le fichier de log est vide ou inaccessible pour le moment.")
+	//}
 
 	// Affichage du statut systemd utilisateur
 	//statusCmd := exec.Command("systemctl", "--user", "status", "k3s-rootless")
@@ -643,7 +642,7 @@ Delegate=cpu memory io cpuset pids`
 
 	// Récupérer les 50 dernières lignes des logs de l'unité systemd utilisateur
 	//logCmd := exec.Command("journalctl", "--user", "-u", "k3s-rootless", "-n", "50", "--no-pager")
-	runShell("journalctl", "--user", "-u", "k3s-rootless", "-n", "150", "--no-pager")
+	//runShell("journalctl", "--user", "-u", "k3s-rootless", "-n", "150", "--no-pager")
 	//logOutput, err := logCmd.CombinedOutput()
 	//if err != nil {
 	//	fmt.Printf("[!] Impossible de lire les logs journalctl : %v\n", err)
