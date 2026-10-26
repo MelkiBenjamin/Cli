@@ -641,13 +641,14 @@ Delegate=cpu memory io cpuset pids`
 	//time.Sleep(3 * time.Second)
 
 	// Récupérer les 50 dernières lignes des logs de l'unité systemd utilisateur
-	logCmd := exec.Command("journalctl", "--user", "-u", "k3s-rootless", "-n", "50", "--no-pager")
-	logOutput, err := logCmd.CombinedOutput()
-	if err != nil {
-		fmt.Printf("[!] Impossible de lire les logs journalctl : %v\n", err)
-	} else {
-		fmt.Printf("--- VRAIS LOGS DE K3S (Journalctl) ---\n%s\n", string(logOutput))
-	}
+	//logCmd := exec.Command("journalctl", "--user", "-u", "k3s-rootless", "-n", "50", "--no-pager")
+	runShell("journalctl", "--user", "-u", "k3s-rootless", "-n", "150", "--no-pager")
+	//logOutput, err := logCmd.CombinedOutput()
+	//if err != nil {
+	//	fmt.Printf("[!] Impossible de lire les logs journalctl : %v\n", err)
+	//} else {
+	//	fmt.Printf("--- VRAIS LOGS DE K3S (Journalctl) ---\n%s\n", string(logOutput))
+	//}
 
 	return nil
 }
