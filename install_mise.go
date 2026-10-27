@@ -610,7 +610,7 @@ Delegate=cpu memory io cpuset pids`
 	startDaemon(logPath, "systemctl", "--user", "status", "k3s-rootless", "-n", "200")
 
 	// Configuration de KUBECONFIG
-	os.Setenv("KUBECONFIG", filepath.Join(homeDir, ".kube", "k3s.yaml")
+	os.Setenv("KUBECONFIG", filepath.Join(homeDir, ".kube", "k3s.yaml"))
 
 	return nil
 }
