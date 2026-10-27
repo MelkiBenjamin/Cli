@@ -602,7 +602,7 @@ Delegate=cpu memory io cpuset pids`
 	//defer logFile.Close()
 
 	// Lancement via systemd-run avec --no-block (OBLIGATOIRE pour un serveur)
-	startDaemon(logpath, "systemd-run", "--user",
+	startDaemon(logPath, "systemd-run", "--user",
 		"--unit=k3s-rootless",
 		"--no-block", // <-- Empêche Go de bloquer en attendant la fin de K3s
 		"-p", "Delegate=yes",
