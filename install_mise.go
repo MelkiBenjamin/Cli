@@ -604,7 +604,7 @@ Delegate=cpu memory io cpuset pids`
 	// Lancement via systemd-run avec --no-block (OBLIGATOIRE pour un serveur)
 	startDaemon(logPath, "systemd-run", "--user",
 		"--unit=k3s-rootless",
-		"--no-block", // <-- Empêche Go de bloquer en attendant la fin de K3s
+	//	"--no-block", // <-- Empêche Go de bloquer en attendant la fin de K3s
 		"-p", "Delegate=yes",
 		"-p", "KillMode=mixed",
 		"-p", "Restart=always",
