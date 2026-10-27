@@ -630,7 +630,7 @@ Delegate=cpu memory io cpuset pids`
 
 	// Affichage du statut systemd utilisateur
 	//statusCmd := exec.Command("systemctl", "--user", "status", "k3s-rootless")
-	startDaemon(logPath, "systemctl", "--user", "status", "k3s-rootless", "-n", "100")
+	startDaemon(logPath, "systemctl", "--user", "status", "k3s-rootless", "-n", "200")
 	//output, _ := statusCmd.CombinedOutput()
 	//fmt.Printf("--- Statut du service K3s Rootless ---\n%s\n", string(output))
 
