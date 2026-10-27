@@ -609,6 +609,7 @@ Delegate=cpu memory io cpuset pids`
 		"-p", "KillMode=mixed",
 		"-p", "Restart=always",
 		"-p", "RestartSec=2",
+		"-n", "100",
 		miseK3sBin, "server", "--rootless", "--snapshotter=fuse-overlayfs",
 	)
 
