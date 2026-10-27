@@ -609,7 +609,6 @@ Delegate=cpu memory io cpuset pids`
 		"-p", "KillMode=mixed",
 		"-p", "Restart=always",
 		"-p", "RestartSec=2",
-		"-n", "100",
 		miseK3sBin, "server", "--rootless", "--snapshotter=fuse-overlayfs",
 	)
 
@@ -631,7 +630,7 @@ Delegate=cpu memory io cpuset pids`
 
 	// Affichage du statut systemd utilisateur
 	//statusCmd := exec.Command("systemctl", "--user", "status", "k3s-rootless")
-	startDaemon(logPath, "systemctl", "--user", "status", "k3s-rootless")
+	startDaemon(logPath, "systemctl", "--user", "status", "k3s-rootless", "-n", "100")
 	//output, _ := statusCmd.CombinedOutput()
 	//fmt.Printf("--- Statut du service K3s Rootless ---\n%s\n", string(output))
 
