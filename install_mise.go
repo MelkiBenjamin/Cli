@@ -397,9 +397,9 @@ jobs:
 `
 	if isMicro {
 		workflowContent += `
-	- name: install argocd
+    - name: install argocd
 	  run: kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.7/manifests/core-install.yaml
-    - name: Deploy Kubernetes 
+    - name: Deploy Kubernetes
       run: helm install test ./docker-compose
 `
 	} else {
