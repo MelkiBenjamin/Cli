@@ -398,10 +398,7 @@ jobs:
 	if isMicro {
 		workflowContent += `
 	- name: install argocd
-	  run: |
-	    export ARGOCD_VERSION=v3.5.6
-        kubectl create namespace argocd
-        kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/$ARGOCD_VERSION/manifests/core-install.yaml
+	  run: kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.7/manifests/core-install.yaml
     - name: Deploy Kubernetes 
       run: helm install test ./docker-compose
 `
