@@ -399,7 +399,7 @@ jobs:
 		workflowContent += `
 	- name: install argocd
 	  run: |
-	    export ARGOCD_VERSION=v2.7.0
+	    export ARGOCD_VERSION=v3.5.6
         kubectl create namespace argocd
         kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/$ARGOCD_VERSION/manifests/core-install.yaml
     - name: Deploy Kubernetes 
