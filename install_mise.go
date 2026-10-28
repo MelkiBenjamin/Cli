@@ -540,20 +540,7 @@ WantedBy=default.target
 
 	// Pause pour laisser K3s s'initialiser ou crasher
 	time.Sleep(20 * time.Second)
-
-	// Lecture directe et infaillible du fichier de log physique !
-	//if logBytes, err := os.ReadFile(logPath); err == nil && len(logBytes) > 0 {
-	//	fmt.Printf("--- CONTENU DE K3S.LOG ---\n%s\n", string(logBytes))
-	//} else {
-	//	fmt.Println("[!] Le fichier k3s.log est vide ou introuvable.")
-	//}
-
-	// Statut final
-	//cmdStatus := exec.Command("systemctl", "--user", "status", "k3s-rootless")
 	runShell("systemctl", "--user", "status", "k3s-rootless")
-	//output, _ := cmdStatus.CombinedOutput()
-	//fmt.Printf("--- Statut du service K3s Rootless ---\n%s\n", string(output))
-
     os.Setenv("KUBECONFIG", filepath.Join(homeDir, ".kube", "k3s.yaml"))
 	
 	return nil
