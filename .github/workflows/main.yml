@@ -38,7 +38,7 @@ jobs:
           echo suite
           cat .github/workflows/main.yml
 
-      - run: cat /home/runner/k3s.log
+     ## - run: cat /home/runner/k3s.log
       - run: |
           while read -t 25 line; do echo "$line"; done < <(tail -f runner.log)
 
