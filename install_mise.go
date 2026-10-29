@@ -546,10 +546,7 @@ WantedBy=default.target
 	time.Sleep(20 * time.Second)
 	runShell("systemctl", "--user", "status", "k3s-rootless")
     os.Setenv("KUBECONFIG", filepath.Join(homeDir, ".kube", "k3s.yaml"))
-	err := CreateArgoCDAppRaw("application.yaml", username, pass)
-	if err != nil {
-		log.Fatalf("Erreur : %v", err)
-	}
+	err = CreateArgoCDAppRaw("application.yaml", username, pass)
 	
 	return nil
 }
