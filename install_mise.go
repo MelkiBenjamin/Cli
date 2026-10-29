@@ -607,6 +607,41 @@ Delegate=cpu memory io cpuset pids`
 	return nil
 }
 
+func CreateArgoCDAppRaw(filename, user, password string) error {
+	// Construction dynamique de l'URL du dépôt avec les identifiants
+	repoURL := fmt.Sprintf("http://%s:%s@localhost:3000/%s/app-repo.git", user, password, user)
+
+	yamlContent := fmt.Sprintf(`apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+    name: appli 
+    namespace: argocd
+spec:
+    project: default
+    source:
+        repoURL: '%s'
+        targetRevision: HEAD
+        path: docker-compose
+    destination:
+        server: 'https://kubernetes.default.svc'
+        namespace: appli
+    syncPolicy:
+        automated:
+            prune: true
+            selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+`, repoURL)
+
+	err := os.WriteFile(filename, []byte(yamlContent), 0644)
+	if err != nil {
+		return fmt.Errorf("erreur lors de la création du fichier : %v", err)
+	}
+
+	fmt.Printf("Fichier '%s' créé avec succès avec l'URL : %s\n", filename, repoURL)
+	return nil
+}
+
 func main() { 
 	// Headless IDP : prepare, generate and publish a deployable project.
 	// Étape 1 : prerequis, install et config outils selon 2 modes "expert" (outils dans json+forgejo) ou "automatique" (outils docker fogejo et selon regle k8s ou non)
