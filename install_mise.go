@@ -403,7 +403,7 @@ jobs:
         kubectl create namespace argocd 
         kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.6/manifests/core-install.yaml
     - name: Deploy Kubernetes
-      run: helm install test ./docker-compose
+      run: kubectl apply -f application.yaml
 `
 	} else {
 		workflowContent += `
