@@ -453,7 +453,7 @@ func stepInstallAndConfig(misePath string) []Tool {
 	ConfigRunner(forgejoDir)
 	configGit(adminUser, adminPass)
 
-	return tools
+	return tools, adminPass, adminUser
 }
 
 func stepGenerate(misePath string, tools []Tool, adminUser, adminPass string) {
