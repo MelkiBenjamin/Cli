@@ -433,7 +433,7 @@ func gitAddCommitPush() {
 	fmt.Println("[+] Pipeline GitOps déployé !")
 }
 
-func stepInstallAndConfig(misePath string) []Tool {
+func stepInstallAndConfig(misePath string) ([]Tool, string, string) {
 	fmt.Println("\n=== ÉTAPE 1 : INSTALLATION ET CONFIGURATION ===")
 	var tools []Tool
 	if _, err := os.Stat("Install.json"); err == nil {
@@ -453,7 +453,7 @@ func stepInstallAndConfig(misePath string) []Tool {
 	ConfigRunner(forgejoDir)
 	configGit(adminUser, adminPass)
 
-	return tools, adminPass, adminUser
+	return tools, adminUser, adminPass
 }
 
 func stepGenerate(misePath string, tools []Tool, adminUser, adminPass string) {
@@ -461,7 +461,7 @@ func stepGenerate(misePath string, tools []Tool, adminUser, adminPass string) {
 	startGenerate(tools)
 	if _, err := os.Stat("Install.json"); err != nil {
 		microservicesk8s(misePath)
-		CreateArgoCDAppRaw("application.yaml", username, pass)
+		CreateArgoCDAppRaw("application.yaml", adminUser, adminPass)
 	}
 	WorflowsGit(tools)
 
