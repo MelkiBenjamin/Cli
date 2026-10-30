@@ -214,7 +214,6 @@ func startGenerate(tools []Tool) {
 	if hasTool(tools, "helm") {
 		runShell("kompose convert -c") // lance kompose pour helm chart
 	}
-	//WorflowsGit(AutoIsMicroservice())
 }
 
 func installAutoDocker(misePath string) []Tool {
@@ -443,7 +442,7 @@ func stepInstallAndConfig(misePath string) []Tool {
 		runMise(misePath, tools)
 		if hasTool(tools, "k3s") {
 			fmt.Println("[*] Mode Expert : Démarrage de k3s server...")
-			configK3sRootless1(adminUser, adminPass)
+			configK3sRootless1()
 		}
 	} else {
 		// Mode Automatique
@@ -457,11 +456,12 @@ func stepInstallAndConfig(misePath string) []Tool {
 	return tools
 }
 
-func stepGenerate(misePath string, tools []Tool) {
+func stepGenerate(misePath string, tools []Tool, adminUser, adminPass string) {
 	fmt.Println("\n=== ÉTAPE 2 : GÉNÉRATION DES ARTÉFACTS ===")
 	startGenerate(tools)
 	if _, err := os.Stat("Install.json"); err != nil {
 		microservicesk8s(misePath)
+		CreateArgoCDAppRaw("application.yaml", username, pass)
 	}
 	WorflowsGit(tools)
 
@@ -546,7 +546,6 @@ WantedBy=default.target
 	time.Sleep(20 * time.Second)
 	runShell("systemctl", "--user", "status", "k3s-rootless")
     os.Setenv("KUBECONFIG", filepath.Join(homeDir, ".kube", "k3s.yaml"))
-	err = CreateArgoCDAppRaw("application.yaml", username, pass)
 	
 	return nil
 }
