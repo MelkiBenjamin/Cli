@@ -646,9 +646,9 @@ func main() {
 	// Headless IDP : prepare, generate and publish a deployable project.
 	// Étape 1 : prerequis, install et config outils selon 2 modes "expert" (outils dans json+forgejo) ou "automatique" (outils docker fogejo et selon regle k8s ou non)
     misePath := installMise()
-    tools := stepInstallAndConfig(misePath)
+    tools, adminUser, adminPass := stepInstallAndConfig(misePath)
 	// Étape 2 : principale metier DevOps Generation des yaml et fichier DevOps (dockerfile, docker compose, manifest k8s, helm, workflows actions git)
-    stepGenerate(misePath, tools)
+    stepGenerate(misePath, tools, adminUser, adminPass)
 	// Étape 3 : deploiement Push
 	gitAddCommitPush()
 
