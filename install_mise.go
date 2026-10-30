@@ -467,7 +467,7 @@ func stepGenerate(misePath string, tools []Tool, adminUser, adminPass string) {
 
 }
 
-func configK3sRootless1(username, pass string) error {
+func configK3sRootless1() error {
 	homeDir, err := os.UserHomeDir()
 	must(err)
 
