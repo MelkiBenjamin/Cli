@@ -239,11 +239,13 @@ func installAndGenerateK8s(misePath string) {
     startGenerate(k8sTools)
 }
 
-func microservicesk8s(misePath string) {
+func microservicesk8s(misePath string) bool {
     if AutoIsMicroservice() {
             installAndGenerateK8s(misePath)
+		    return true
     } else {
             fmt.Println("📦 Monolithe détecté -> On reste sur Docker Compose.")
+		    return false
     }
 }
 
@@ -459,8 +461,12 @@ func stepInstallAndConfig(misePath string) ([]Tool, string, string) {
 func stepGenerate(misePath string, tools []Tool, adminUser, adminPass string) {
 	fmt.Println("\n=== ÉTAPE 2 : GÉNÉRATION DES ARTÉFACTS ===")
 	startGenerate(tools)
+	isMicro := hasTool(tools, "kubectl") || hasTool(tools, "k3s") || hasTool(tools, "helm")
 	if _, err := os.Stat("Install.json"); err != nil {
 		microservicesk8s(misePath)
+        isMicro = true
+	}
+	if isMicro {
 		CreateArgoCDAppRaw("application.yaml", adminUser, adminPass)
 	}
 	WorflowsGit(tools)
