@@ -463,8 +463,7 @@ func stepGenerate(misePath string, tools []Tool, adminUser, adminPass string) {
 	startGenerate(tools)
 	isMicro := hasTool(tools, "kubectl") || hasTool(tools, "k3s") || hasTool(tools, "helm")
 	if _, err := os.Stat("Install.json"); err != nil {
-		microservicesk8s(misePath)
-        isMicro = true
+		isMicro = microservicesk8s(misePath)
 	}
 	if isMicro {
 		CreateArgoCDAppRaw("application.yaml", adminUser, adminPass)
