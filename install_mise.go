@@ -429,7 +429,7 @@ func configGit(user, password string) {
 }
 
 func gitAddCommitPush() {
-	runShell("git add Dockerfile docker-compose.yml .env *.go .github/")
+	runShell("git add Dockerfile docker-compose.yml .env *.go go.mod .github/")
 	runShell("git commit -m 'Zero-Touch: Auto-generated pipeline'")
 	runShell("git push -u origin main --force")
 	fmt.Println("[+] Pipeline GitOps déployé !")
