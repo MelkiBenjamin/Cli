@@ -374,46 +374,6 @@ func createAdmin(forgejoDir string) (string, string) {
 	return adminUser, adminPass
 }
 
-func WorflowsGit(tools []Tool) {
-	fmt.Println("\n[*] --- Génération worflows Git ---")
-	must(os.MkdirAll(".github/workflows", 0o755))
-	isMicro := false
-	if _, err := os.Stat("Install.json"); err == nil {
-		// Mode Expert : on regarde les outils déclarés
-		isMicro = hasTool(tools, "kubectl") || hasTool(tools, "k3s") || hasTool(tools, "helm")
-	} else {
-		// Mode Automatique : on se base sur la structure du compose généré
-		isMicro = AutoIsMicroservice()
-	}
-
-	workflowContent := `name: CI/CD Pipeline
-on: [push]
-jobs:
-  build-deploy:
-    runs-on: self-hosted
-    steps:
-    - uses: actions/checkout@v7.0.1
-    - name: Build Docker Image
-      run: docker build --network=host --progress=plain -t app-prod .
-`
-	if isMicro {
-        workflowContent += `
-    - name: install argocd
-      run: |
-        kubectl create namespace argocd 
-        kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.6/manifests/core-install.yaml
-    - name: Deploy Kubernetes
-      run: kubectl apply -f application.yaml
-`
-	} else {
-		workflowContent += `
-    - name: Deploy Docker Compose
-      run: docker compose --progress=plain up -d 
-`
-	}
-	must(os.WriteFile(".github/workflows/main.yaml", []byte(workflowContent), 0o644))
-}
-
 func configGit(user, password string) {
 	_ = os.RemoveAll(".git")
 	fmt.Println("Config de Git...")
@@ -426,13 +386,6 @@ func configGit(user, password string) {
 	remoteURL := fmt.Sprintf("http://%s:%s@localhost:3000/%s/app-repo.git", user, password, user)
 	runShell("git remote remove origin || true")
 	runShell("git remote add origin " + remoteURL)
-}
-
-func gitAddCommitPush() {
-	runShell("git add Dockerfile docker-compose.yml .env *.go go.mod *.yaml .github/")
-	runShell("git commit -m 'Zero-Touch: Auto-generated pipeline'")
-	runShell("git push -u origin main --force")
-	fmt.Println("[+] Pipeline GitOps déployé !")
 }
 
 func stepInstallAndConfig(misePath string) ([]Tool, string, string) {
@@ -469,7 +422,6 @@ func stepGenerate(misePath string, tools []Tool, adminUser, adminPass string) {
 		CreateArgoCDAppRaw("application.yaml", adminUser, adminPass)
 	}
 	WorflowsGit(tools)
-
 }
 
 func configK3sRootless1() error {
@@ -486,8 +438,8 @@ include <tunables/global>
 %s flags=(unconfined) {
   userns,
 }`, miseK3sBin)
-	
-	profileFileName := "home.runner..local.share.mise.installs.k3s.1.35.3+k3s1.k3s"
+		
+    profileFileName := strings.ReplaceAll(strings.TrimPrefix(miseK3sBin, "/"), "/", ".")
 	cmdEcho := fmt.Sprintf("echo '%s' | sudo tee /etc/apparmor.d/%s > /dev/null", appArmorConfig, profileFileName)
 	
 	runShell(cmdEcho)
@@ -555,63 +507,6 @@ WantedBy=default.target
 	return nil
 }
 
-func configK3sRootless() error {
-	homeDir, err := os.UserHomeDir()
-	must(err)
-
-	fmt.Println("[*] Démarrage de K3s Rootless via systemd-run...")
-
-	miseK3sBin := filepath.Join(homeDir, ".local", "share", "mise", "installs", "k3s", "1.35.3+k3s1", "k3s")
-	logPath := filepath.Join(homeDir, "k3s.log")
-
-	// Création et application du profil AppArmor officiel
-	appArmorConfig := fmt.Sprintf(`abi <abi/4.0>,
-include <tunables/global>
-
-%s flags=(unconfined) {
-  userns,
-}`, miseK3sBin)
-	
-    profileFileName := strings.ReplaceAll(strings.TrimPrefix(miseK3sBin, "/"), "/", ".")
-	cmdEcho := fmt.Sprintf("echo '%s' | sudo tee /etc/apparmor.d/%s > /dev/null", appArmorConfig, profileFileName)
-	
-	runShell(cmdEcho)
-	runShell("sudo systemctl restart apparmor.service")
-
-	// 2. CONFIGURATION DES CGROUPS v2 (Délégation systemd pour le cpuset)
-	runShell("sudo mkdir -p /etc/systemd/system/user@.service.d")
-	delegateConfig := `[Service]
-Delegate=cpu memory io cpuset pids`
-	
-	cmdDelegate := fmt.Sprintf("echo '%s' | sudo tee /etc/systemd/system/user@.service.d/delegate.conf > /dev/null", delegateConfig)
-	runShell(cmdDelegate)
-	runShell("sudo systemctl daemon-reload")
-	runShell(fmt.Sprintf("sudo systemctl restart user@%d.service", os.Getuid()))
-	
-	// Forcer XDG_RUNTIME_DIR pour systemd utilisateur
-	os.Setenv("XDG_RUNTIME_DIR", fmt.Sprintf("/run/user/%d", os.Getuid()))
-
-	// Lancement via systemd-run avec --no-block (OBLIGATOIRE pour un serveur)
-	startDaemon(logPath, "systemd-run", "--user",
-		"--unit=k3s-rootless",
-		"-p", "Delegate=yes",
-		"-p", "KillMode=mixed",
-		"-p", "Restart=always",
-		"-p", "RestartSec=2",
-		miseK3sBin, "server", "--rootless", "--snapshotter=fuse-overlayfs",
-	)
-
-	fmt.Println("[*] Service enregistré. Attente de l'initialisation de K3s (20 secondes)...")
-	time.Sleep(20 * time.Second)
-
-	startDaemon(logPath, "systemctl", "--user", "status", "k3s-rootless", "-n", "200")
-
-	// Configuration de KUBECONFIG
-	os.Setenv("KUBECONFIG", filepath.Join(homeDir, ".kube", "k3s.yaml"))
-
-	return nil
-}
-
 func CreateArgoCDAppRaw(filename, user, password string) error {
 	// Construction dynamique de l'URL du dépôt avec les identifiants
 	repoURL := fmt.Sprintf("http://%s:%s@localhost:3000/%s/app-repo.git", user, password, user)
@@ -645,6 +540,53 @@ spec:
 
 	fmt.Printf("Fichier '%s' créé avec succès avec l'URL : %s\n", filename, repoURL)
 	return nil
+}
+
+func WorflowsGit(tools []Tool) {
+	fmt.Println("\n[*] --- Génération worflows Git ---")
+	must(os.MkdirAll(".github/workflows", 0o755))
+	isMicro := false
+	if _, err := os.Stat("Install.json"); err == nil {
+		// Mode Expert : on regarde les outils déclarés
+		isMicro = hasTool(tools, "kubectl") || hasTool(tools, "k3s") || hasTool(tools, "helm")
+	} else {
+		// Mode Automatique : on se base sur la structure du compose généré
+		isMicro = AutoIsMicroservice()
+	}
+
+	workflowContent := `name: CI/CD Pipeline
+on: [push]
+jobs:
+  build-deploy:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v7.0.1
+    - name: Build Docker Image
+      run: docker build --network=host --progress=plain -t app-prod .
+`
+	if isMicro {
+        workflowContent += `
+    - name: install argocd
+      run: |
+        kubectl create namespace argocd 
+        kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.6/manifests/core-install.yaml
+    - name: Deploy Kubernetes
+      run: kubectl apply -f application.yaml
+`
+	} else {
+		workflowContent += `
+    - name: Deploy Docker Compose
+      run: docker compose --progress=plain up -d 
+`
+	}
+	must(os.WriteFile(".github/workflows/main.yaml", []byte(workflowContent), 0o644))
+}
+
+func gitAddCommitPush() {
+	runShell("git add Dockerfile docker-compose.yml .env *.go go.mod *.yaml .github/")
+	runShell("git commit -m 'Zero-Touch: Auto-generated pipeline'")
+	runShell("git push -u origin main --force")
+	fmt.Println("[+] Pipeline GitOps déployé !")
 }
 
 func main() { 
