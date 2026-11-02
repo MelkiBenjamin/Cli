@@ -462,8 +462,6 @@ Delegate=cpu memory io cpuset pids`
 
 	must(os.MkdirAll(systemdUserDir, 0755))
 
-	// Astuce : on encapsule l'appel dans un shell (`/bin/sh -c`) pour rediriger stdout/stderr 
-	// directement dans le fichier de log, contournant les limitations de systemd sur les runners CI.
 	k3sCmd := fmt.Sprintf("/bin/sh -c '%s server --rootless --snapshotter=fuse-overlayfs >> %s 2>&1'", miseK3sBin, logPath)
 
 	serviceContent := fmt.Sprintf(`[Unit]
@@ -533,11 +531,8 @@ spec:
         - CreateNamespace=true
 `, repoURL)
 
-	err := os.WriteFile(filename, []byte(yamlContent), 0644)
-	if err != nil {
-		return fmt.Errorf("erreur lors de la création du fichier : %v", err)
-	}
-
+	os.WriteFile(filename, []byte(yamlContent), 0644)
+	
 	fmt.Printf("Fichier '%s' créé avec succès avec l'URL : %s\n", filename, repoURL)
 	return nil
 }
