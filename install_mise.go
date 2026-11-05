@@ -391,7 +391,7 @@ func configK3sRootless1() error {
 	must(err)
 
 	fmt.Println("[*] Configuration d'AppArmor pour K3s Rootless...")
-    miseK3sBin := filepath.Join(homeDir, ".local", "share", "mise", "installs", "k3s", "1.35.3+k3s1", "k3s")
+    miseK3sBin := filepath.Join(homeDir, ".local", "share", "mise", "installs", "k3s", "1.37.3+k3s1", "k3s")
 
 	// Création et application du profil AppArmor officiel
 	appArmorConfig := fmt.Sprintf(`abi <abi/4.0>,
