@@ -183,70 +183,6 @@ func runShell(command string, args ...string) { // Pour lancer des commandes she
 	must(cmd.Run())
 }
 
-func runMise(misePath string, tools []Tool) { // pour installer les outils
-	args := prepaMise(tools)
-	runShell(misePath, args...)
-}
-
-var cmdDockerizer = `
-    dockerizer . && \
-    sed -i '1,5d' Dockerfile && \
-    sed -i '1,3d' docker-compose.yml && \
-	cp .env.example .env && \
-    sed -i "s|.*build:.*|    image: app-prod|" docker-compose.yml && \
-    sed -i '/context:/d; /dockerfile:/d' docker-compose.yml && \
-	{ find . -name "*.go" -exec grep -qE "http\.ListenAndServe|http\.Serve|Listen\(" {} + || \
-    sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile; }
-`
-
-func startGenerate(tools []Tool) {
-	if hasTool(tools, "docker") {
-		runShell(cmdDockerizer)	// lance dockerizer.dev et corrige dockerfile 	
-	}
-
-	if hasTool(tools, "kompose") {
-		runShell("cp .env.example .env")
-		runShell("kompose convert") // lance kompose pour manifest k8s
-	}
-
-	if hasTool(tools, "helm") {
-		runShell("kompose convert -c") // lance kompose pour helm chart
-	}
-}
-
-func installAutoDocker(misePath string) []Tool {
-    fmt.Println("🤖 Aucun Install.json. Lancement du mode automatique...")	// On récupère le bundle docker
-	tools := append(bundles["forgejo"], bundles["docker"]...)
-
-	runMise(misePath, tools)
-	
-	return tools
-}
-
-func AutoIsMicroservice() bool { // Regle pour vérifier si apli microservices 
-	data, err := os.ReadFile("docker-compose.yml")
-	return err == nil && strings.Count(string(data), "image:") > 1
-}
-
-func installAndGenerateK8s(misePath string) {
-    fmt.Println("🏢 Architecture multiple détectée -> Passage à K8s")
-    
-    k8sTools := append(bundles["kubectl"], bundles["helm"]...)
-    
-    runMise(misePath, k8sTools)
-    startGenerate(k8sTools)
-}
-
-func microservicesk8s(misePath string) bool {
-    if AutoIsMicroservice() {
-            installAndGenerateK8s(misePath)
-		    return true
-    } else {
-            fmt.Println("📦 Monolithe détecté -> On reste sur Docker Compose.")
-		    return false
-    }
-}
-
 func startDaemon(logPath string, command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	logFile, err := os.Create(logPath)
@@ -254,6 +190,11 @@ func startDaemon(logPath string, command string, args ...string) error {
 	cmd.Stdout = logFile
 	cmd.Stderr = logFile
 	return cmd.Start()
+}
+
+func runMise(misePath string, tools []Tool) { // pour installer les outils
+	args := prepaMise(tools)
+	runShell(misePath, args...)
 }
 
 func ConfigForgejo() (string) {
@@ -553,6 +494,65 @@ jobs:
 `
 	}
 	must(os.WriteFile(".github/workflows/main.yaml", []byte(workflowContent), 0o644))
+}
+
+var cmdDockerizer = `
+    dockerizer . && \
+    sed -i '1,5d' Dockerfile && \
+    sed -i '1,3d' docker-compose.yml && \
+	cp .env.example .env && \
+    sed -i "s|.*build:.*|    image: app-prod|" docker-compose.yml && \
+    sed -i '/context:/d; /dockerfile:/d' docker-compose.yml && \
+	{ find . -name "*.go" -exec grep -qE "http\.ListenAndServe|http\.Serve|Listen\(" {} + || \
+    sed -i -e "/EXPOSE/d" -e "/HEALTHCHECK/,+1d" Dockerfile; }
+`
+
+func startGenerate(tools []Tool) {
+	if hasTool(tools, "docker") {
+		runShell(cmdDockerizer)	// lance dockerizer.dev et corrige dockerfile 	
+	}
+
+	if hasTool(tools, "kompose") {
+		runShell("cp .env.example .env")
+		runShell("kompose convert") // lance kompose pour manifest k8s
+	}
+
+	if hasTool(tools, "helm") {
+		runShell("kompose convert -c") // lance kompose pour helm chart
+	}
+}
+
+func installAutoDocker(misePath string) []Tool {
+    fmt.Println("🤖 Aucun Install.json. Lancement du mode automatique...")	// On récupère le bundle docker
+	tools := append(bundles["forgejo"], bundles["docker"]...)
+
+	runMise(misePath, tools)
+	
+	return tools
+}
+
+func AutoIsMicroservice() bool { // Regle pour vérifier si apli microservices 
+	data, err := os.ReadFile("docker-compose.yml")
+	return err == nil && strings.Count(string(data), "image:") > 1
+}
+
+func installAndGenerateK8s(misePath string) {
+    fmt.Println("🏢 Architecture multiple détectée -> Passage à K8s")
+    
+    k8sTools := append(bundles["kubectl"], bundles["helm"]...)
+    
+    runMise(misePath, k8sTools)
+    startGenerate(k8sTools)
+}
+
+func microservicesk8s(misePath string) bool {
+    if AutoIsMicroservice() {
+            installAndGenerateK8s(misePath)
+		    return true
+    } else {
+            fmt.Println("📦 Monolithe détecté -> On reste sur Docker Compose.")
+		    return false
+    }
 }
 
 func gitAddCommitPush() {
