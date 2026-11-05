@@ -372,20 +372,6 @@ func createAdmin(forgejoDir string) (string, string) {
 	return adminUser, adminPass
 }
 
-//func configGit(user, password string) {
-//	_ = os.RemoveAll(".git")
-//	fmt.Println("Config de Git...")
-//	runShell("git config --global init.defaultBranch main")
-	//runShell("git init")
-	//runShell("git config user.name '" + user + "'")
-	//runShell("git config user.email '" + user + "@localhost'")
-	//runShell("git config transfer.credentialsInUrl allow")
-    // création de dépôt a la volée avec fonction push to create Forgejo 
-	//remoteURL := fmt.Sprintf("http://%s:%s@localhost:3000/%s/app-repo.git", user, password, user)
-	//runShell("git remote remove origin || true")
-	//runShell("git remote add origin " + remoteURL)
-//}
-
 func configGit(user, password string) {
 	_ = os.RemoveAll(".git")
 	fmt.Println("Initialisation et configuration déclarative de Git...")
