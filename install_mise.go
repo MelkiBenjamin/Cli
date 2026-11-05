@@ -391,7 +391,7 @@ func configGit(user, password string) {
 	fmt.Println("Initialisation et configuration déclarative de Git...")
 	
 	// 1. Bootstrap structurel obligatoire
-	runShell("git init")
+	runShell("git init -b main")
 
 	// 2. Déclaration de l'état désiré dans .git/config
 	gitConfigContent := fmt.Sprintf(`[core]
