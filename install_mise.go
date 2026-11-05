@@ -372,18 +372,48 @@ func createAdmin(forgejoDir string) (string, string) {
 	return adminUser, adminPass
 }
 
+//func configGit(user, password string) {
+//	_ = os.RemoveAll(".git")
+//	fmt.Println("Config de Git...")
+//	runShell("git config --global init.defaultBranch main")
+	//runShell("git init")
+	//runShell("git config user.name '" + user + "'")
+	//runShell("git config user.email '" + user + "@localhost'")
+	//runShell("git config transfer.credentialsInUrl allow")
+    // création de dépôt a la volée avec fonction push to create Forgejo 
+	//remoteURL := fmt.Sprintf("http://%s:%s@localhost:3000/%s/app-repo.git", user, password, user)
+	//runShell("git remote remove origin || true")
+	//runShell("git remote add origin " + remoteURL)
+//}
+
 func configGit(user, password string) {
 	_ = os.RemoveAll(".git")
-	fmt.Println("Config de Git...")
-	runShell("git config --global init.defaultBranch main")
+	fmt.Println("Initialisation et configuration déclarative de Git...")
+	
+	// 1. Bootstrap structurel obligatoire
 	runShell("git init")
-	runShell("git config user.name '" + user + "'")
-	runShell("git config user.email '" + user + "@localhost'")
-	runShell("git config transfer.credentialsInUrl allow")
-    // création de dépôt a la volée avec fonction push to create Forgejo 
-	remoteURL := fmt.Sprintf("http://%s:%s@localhost:3000/%s/app-repo.git", user, password, user)
-	runShell("git remote remove origin || true")
-	runShell("git remote add origin " + remoteURL)
+
+	// 2. Déclaration de l'état désiré dans .git/config
+	gitConfigContent := fmt.Sprintf(`[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[init]
+	defaultBranch = main
+[user]
+	name = %s
+	email = %s@localhost
+[transfer]
+	credentialsInUrl = allow
+[remote "origin"]
+	url = http://%s:%s@localhost:3000/%s/app-repo.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+`, user, user, user, password, user)
+
+	configPath := filepath.Join(".git", "config")
+	must(os.WriteFile(configPath, []byte(gitConfigContent), 0o644))
+	fmt.Println("[+] Fichier .git/config généré avec succès de manière déclarative.")
 }
 
 func configK3sRootless1() error {
