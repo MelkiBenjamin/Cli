@@ -113,20 +113,20 @@ var bundles = map[string][]Tool{
 		{Name: "aqua:arttor/helmify", Version: "0.4.19"},
 	},
 	"kubectl": {
-		{Name: "kubectl", Version: "1.29.0"},
+		{Name: "kubectl", Version: "1.37.2"},
 		{Name: "kompose", Version: "1.38.0"},
 	},
 	"terraform": {
-		{Name: "terraform", Version: "1.8.5"},
+		{Name: "terraform", Version: "1.17.1"},
 	},
 	"k3s": {
-		{Name: "k3s", Version: "1.35.3+k3s1"},
+		{Name: "k3s", Version: "1.37.2+k3s1"},
 	},
 	"docker": {
 		{
 			Name:    "docker",
-			Version: "29.3.0",
-			URL:     "https://download.docker.com/linux/static/stable/x86_64/docker-29.3.0.tgz",
+			Version: "29.9.3",
+			URL:     "https://download.docker.com/linux/static/stable/x86_64/docker-29.9.3.tgz",
 		},
 		{
 			Name:    "dockerizer",
@@ -177,12 +177,10 @@ func runShell(command string, args ...string) { // Pour lancer des commandes she
 	if len(args) > 0 {
         fullCommand += " " + strings.Join(args, " ")
     }
-	//fmt.Println("Avant commande:", fullCommand)
 	cmd := exec.Command("sh", "-lc", fullCommand)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	must(cmd.Run())
-	//fmt.Println("Après commande:", fullCommand)
 }
 
 func runMise(misePath string, tools []Tool) { // pour installer les outils
@@ -388,42 +386,6 @@ func configGit(user, password string) {
 	runShell("git remote add origin " + remoteURL)
 }
 
-func stepInstallAndConfig(misePath string) ([]Tool, string, string) {
-	fmt.Println("\n=== ÉTAPE 1 : INSTALLATION ET CONFIGURATION ===")
-	var tools []Tool
-	if _, err := os.Stat("Install.json"); err == nil {
-		// Mode Expert
-		tools = append(bundles["forgejo"], expand(readTools("Install.json"))...)
-		runMise(misePath, tools)
-		if hasTool(tools, "k3s") {
-			fmt.Println("[*] Mode Expert : Démarrage de k3s server...")
-			configK3sRootless1()
-		}
-	} else {
-		// Mode Automatique
-		tools = installAutoDocker(misePath)
-	}
-	forgejoDir := ConfigForgejo()
-	adminUser, adminPass := createAdmin(forgejoDir)
-	ConfigRunner(forgejoDir)
-	configGit(adminUser, adminPass)
-
-	return tools, adminUser, adminPass
-}
-
-func stepGenerate(misePath string, tools []Tool, adminUser, adminPass string) {
-	fmt.Println("\n=== ÉTAPE 2 : GÉNÉRATION DES ARTÉFACTS ===")
-	startGenerate(tools)
-	isMicro := hasTool(tools, "kubectl") || hasTool(tools, "k3s") || hasTool(tools, "helm")
-	if _, err := os.Stat("Install.json"); err != nil {
-		isMicro = microservicesk8s(misePath)
-	}
-	if isMicro {
-		CreateArgoCDAppRaw("application.yaml", adminUser, adminPass)
-	}
-	WorflowsGit(tools)
-}
-
 func configK3sRootless1() error {
 	homeDir, err := os.UserHomeDir()
 	must(err)
@@ -584,15 +546,51 @@ func gitAddCommitPush() {
 	fmt.Println("[+] Pipeline GitOps déployé !")
 }
 
+func stepInstallAndConfig(misePath string) ([]Tool, string, string) {
+	fmt.Println("\n=== ÉTAPE 1 : INSTALLATION ET CONFIGURATION ===")
+	var tools []Tool
+	if _, err := os.Stat("Install.json"); err == nil {
+		// Mode Expert
+		tools = append(bundles["forgejo"], expand(readTools("Install.json"))...)
+		runMise(misePath, tools)
+		if hasTool(tools, "k3s") {
+			fmt.Println("[*] Mode Expert : Démarrage de k3s server...")
+			configK3sRootless1()
+		}
+	} else {
+		// Mode Automatique
+		tools = installAutoDocker(misePath)
+	}
+	forgejoDir := ConfigForgejo()
+	adminUser, adminPass := createAdmin(forgejoDir)
+	ConfigRunner(forgejoDir)
+	configGit(adminUser, adminPass)
+
+	return tools, adminUser, adminPass
+}
+
+func stepGenerate(misePath string, tools []Tool, adminUser, adminPass string) {
+	fmt.Println("\n=== ÉTAPE 2 : GÉNÉRATION DES ARTÉFACTS ===")
+	startGenerate(tools)
+	isMicro := hasTool(tools, "kubectl") || hasTool(tools, "k3s") || hasTool(tools, "helm")
+	if _, err := os.Stat("Install.json"); err != nil {
+		isMicro = microservicesk8s(misePath)
+	}
+	if isMicro {
+		CreateArgoCDAppRaw("application.yaml", adminUser, adminPass)
+	}
+	WorflowsGit(tools)
+}
+
 func main() { 
-	// Headless IDP : prepare, generate and publish a deployable project.
-	// Étape 1 : prerequis, install et config outils selon 2 modes "expert" (outils dans json+forgejo) ou "automatique" (outils docker fogejo et selon regle k8s ou non)
+	// Headless IDP : prepare, genere et publie un projet deployable.
+	// Étape 1 : Prerequis, install et config outils selon 2 modes : "expert" (outils dans json+forgejo) ou "automatique" (outils Docker, Forgejo et selon regle k8s ou non)
     misePath := installMise()
     tools, adminUser, adminPass := stepInstallAndConfig(misePath)
-	// Étape 2 : principale metier DevOps Generation des yaml et fichier DevOps (dockerfile, docker compose, manifest k8s, helm, workflows actions git)
+	// Étape 2 : Principale, metier DevOps avec Generation des yaml et fichier DevOps (Dockerfile, Docker Compose, Manifest K8s, Helm, workflows actions)
     stepGenerate(misePath, tools, adminUser, adminPass)
-	// Étape 3 : deploiement Push
+	// Étape 3 : Deploiement Push
 	gitAddCommitPush()
 
-	fmt.Println("\n[🎉] Chaîne complète exécutée avec succès !")
+	fmt.Println("\n[🎉] Toute les etapes sont complète et exécutée avec succès !")
 }
