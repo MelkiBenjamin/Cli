@@ -461,7 +461,7 @@ WantedBy=default.target
 
 	// Pause pour laisser K3s s'initialiser ou crasher
 	time.Sleep(20 * time.Second)
-	runShell("systemctl", "--user", "status", "k3s-rootless")
+	//runShell("systemctl", "--user", "status", "k3s-rootless")
     os.Setenv("KUBECONFIG", filepath.Join(homeDir, ".kube", "k3s.yaml"))
 	
 	return nil
