@@ -1,0 +1,28 @@
+name: Check Virtualization Support
+
+on: [workflow_dispatch]
+
+jobs:
+  check-vm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verifier les extensions CPU (Intel VT-x / AMD-V)
+        run: |
+          echo "=== Informations CPU ==="
+          lscpu | grep -E "Virtualization|SVM|VMX"
+
+      - name: Verifier la presence de /dev/kvm
+        run: |
+          echo "=== Verification de /dev/kvm ==="
+          ls -l /dev/kvm || echo "/dev/kvm est absent"
+
+      - name: Verifier les droits d'acces a KVM
+        run: |
+          if [ -e /dev/kvm ]; then
+            groups
+            id
+            ls -ld /dev/kvm
+          fi
