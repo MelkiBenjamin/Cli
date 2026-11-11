@@ -3,26 +3,92 @@ name: Check Virtualization Support
 on: [workflow_dispatch]
 
 jobs:
-  check-vm:
+  terraform-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Verifier les extensions CPU (Intel VT-x / AMD-V)
+      - name: Installer les dépendances KVM & Libvirt
         run: |
-          echo "=== Informations CPU ==="
-          lscpu | grep -E "Virtualization|SVM|VMX"
+          sudo apt-get update
+          sudo apt-get install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils genisoimage
 
-      - name: Verifier la presence de /dev/kvm
+      - name: Démarrer et configurer Libvirt
         run: |
-          echo "=== Verification de /dev/kvm ==="
-          ls -l /dev/kvm || echo "/dev/kvm est absent"
+          sudo systemctl start libvirtd
+          sudo systemctl status libvirtd
+          sudo usermod -aG libvirt $USER
+          sudo virsh net-start default || true
+          sudo virsh net-autostart default || true
 
-      - name: Verifier les droits d'acces a KVM
+      - name: Configurer Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.0
+
+      - name: Créer le fichier main.tf directement dans le workflow
         run: |
-          if [ -e /dev/kvm ]; then
-            groups
-            id
-            ls -ld /dev/kvm
-          fi
+          cat << 'EOF' > main.tf
+          terraform {
+            required_providers {
+              libvirt = {
+                source  = "dmacvicar/libvirt"
+                version = "~> 0.8.0"
+              }
+            }
+          }
+
+          provider "libvirt" {
+            uri = "qemu:///system"
+          }
+
+          # Télécharger l'image Cloud Ubuntu officielle
+          resource "libvirt_volume" "ubuntu_base" {
+            name   = "ubuntu-22.04-base.qcow2"
+            pool   = "default"
+            source = "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
+            format = "qcow2"
+          }
+
+          # Créer un volume disque lié à l'image de base
+          resource "libvirt_volume" "ubuntu_vm_disk" {
+            name           = "github-action-vm-disk.qcow2"
+            pool           = "default"
+            base_volume_id = libvirt_volume.ubuntu_base.id
+            size           = 10737418240
+          }
+
+          # Lancer la machine virtuelle
+          resource "libvirt_domain" "my_vm" {
+            name   = "github-action-vm"
+            memory = "2048"
+            vcpu   = 2
+
+            disk {
+              volume_id = libvirt_volume.ubuntu_vm_disk.id
+            }
+
+            network_interface {
+              network_name   = "default"
+              wait_for_lease = true
+            }
+
+            graphics {
+              type        = "spice"
+              listen_type = "address"
+              autoport    = true
+            }
+          }
+          EOF
+
+      - name: Exécuter Terraform (Init, Plan, Apply)
+        run: |
+          sg libvirt -c "terraform init"
+          sg libvirt -c "terraform plan"
+          sg libvirt -c "terraform apply -auto-approve"
+
+      - name: Vérifier que la VM tourne
+        run: |
+          sudo virsh list --all
