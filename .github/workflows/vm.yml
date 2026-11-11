@@ -7,9 +7,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout du code
-        uses: actions/checkout@v4
-
       - name: Installer les dépendances KVM & Libvirt
         run: |
           sudo apt-get update
@@ -18,8 +15,11 @@ jobs:
       - name: Démarrer et configurer Libvirt
         run: |
           sudo systemctl start libvirtd
-          sudo systemctl status libvirtd
-          sudo usermod -aG libvirt $USER
+          # Créer et activer le pool de stockage 'default' s'il n'existe pas
+          sudo virsh pool-define-as --name default --type dir --target /var/lib/libvirt/images || true
+          sudo virsh pool-start default || true
+          sudo virsh pool-autostart default || true
+          # Activer le réseau par la même occasion
           sudo virsh net-start default || true
           sudo virsh net-autostart default || true
 
